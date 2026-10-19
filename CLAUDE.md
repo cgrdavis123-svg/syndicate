@@ -73,6 +73,7 @@ These apply to every change, every page and every email.
 ### Privacy
 - **Never publish** Grady's phone number, personal email, home address or full ZIP code. Public contact is **hello@stusyn.com** only. Location is "Spartanburg, SC".
 - Careers mail uses **careers@stusyn.com**. Nothing else is public.
+- **Cold outreach emails** must carry a postal address (CAN-SPAM). They use the LLC's registered business address, kept only in the Project doc `claude/outreach-settings.md`. It goes in outreach email footers and nowhere else: not on the sites, in page copy or in this repo.
 - Applicant data is covered by `src/legal/applicant-privacy.html`. Resumes are kept for the retention period (730 days) and served only to logged-in admins.
 
 ### Secrets
