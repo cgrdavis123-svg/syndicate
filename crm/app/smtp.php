@@ -95,6 +95,7 @@ function build_message(array $m): array {
     $h[] = 'Message-ID: <' . $mid . '>';
     if (!empty($m['in_reply_to'])) $h[] = 'In-Reply-To: <' . $m['in_reply_to'] . '>';
     if (!empty($m['references'])) $h[] = 'References: ' . implode("\r\n ", array_map(function ($r) { return '<' . $r . '>'; }, $m['references']));
+    foreach ($m['headers'] ?? [] as $k => $v) $h[] = preg_replace('/[^A-Za-z0-9-]/', '', $k) . ': ' . str_replace(["\r", "\n"], ' ', $v); // e.g. List-Unsubscribe
     $h[] = 'MIME-Version: 1.0';
     $text = "Content-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n" . quoted_printable_encode(str_replace(["\r\n", "\r", "\n"], ["\n", "\n", "\r\n"], $m['text']));
     if (empty($m['attachments'])) return [implode("\r\n", $h) . "\r\n" . $text . "\r\n", $mid];

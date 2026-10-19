@@ -9,6 +9,7 @@ $counts = $user ? [
     'inbox' => (int)val("SELECT COUNT(DISTINCT thread_id) FROM emails WHERE folder = 'inbox' AND seen = 0 AND archived = 0"),
     'store' => (int)val("SELECT COUNT(*) FROM orders WHERE status = 'paid' AND seen_at IS NULL"),
     'bookings' => (int)val("SELECT COUNT(*) FROM bookings WHERE status = 'confirmed' AND seen_at IS NULL"),
+    'outreach' => (int)val("SELECT COUNT(*) FROM outreach_prospects WHERE status = 'needs_you'"),
     'care' => (int)val("SELECT COUNT(*) FROM sites WHERE monitor = 1 AND status = 'down'") + (int)val("SELECT COUNT(*) FROM care_requests WHERE status = 'open'"),
 ] : [];
 $mailDue = !defined('ADS_APP') && !defined('WIKI_APP') && $user && val('SELECT 1 FROM mailboxes LIMIT 1') && (setting('mail_last_sync') === '' || strtotime(setting('mail_last_sync')) < time() - 120);
@@ -17,6 +18,7 @@ $nav = [
     'inbox' => ['inbox.php', 'Inbox', '<path d="M2.5 11.5 5 4h10l2.5 7.5V16h-15z"/><path d="M2.5 11.5h4l1 2h5l1-2h4"/>', $counts['inbox'] ?? 0],
     'deals' => ['deals.php', 'Pipeline', '<path d="M3 4h4v12H3zM8 4h4v8H8zM13 4h4v5h-4z"/>', $counts['deals'] ?? 0],
     'projects' => ['projects.php', 'Projects', '<path d="M3 6.5h14v10H3z"/><path d="M7 6.5V4h6v2.5M3 10.5h14"/>', $counts['projects'] ?? 0],
+    'outreach' => ['outreach.php', 'Outreach', '<path d="M2.5 9.5 17 3l-4 14-3.5-5.5z"/><path d="M9.5 11.5 17 3"/>', $counts['outreach'] ?? 0],
     'store' => ['store.php', 'Store', '<path d="M3.5 7.5h13l-1 9.5h-11z"/><path d="M7 7.5V6a3 3 0 0 1 6 0v1.5"/>', $counts['store'] ?? 0],
     'care' => ['care.php', 'Care', '<path d="M10 17s-6.5-3.8-6.5-8.6A3.6 3.6 0 0 1 10 6.2a3.6 3.6 0 0 1 6.5 2.2C16.5 13.2 10 17 10 17z"/><path d="M5.5 10h2l1.2-2 2 4 1.3-2h2.5"/>', $counts['care'] ?? 0],
     'wiki' => [wiki_url('team.php'), 'Wiki ↗', '<path d="M4 3.5h9l3 3v10H4z"/><path d="M13 3.5v3h3M7 10h6M7 13h4"/>'],

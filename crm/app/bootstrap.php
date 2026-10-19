@@ -456,6 +456,34 @@ function migrate(PDO $pdo): void {
         }
         $pdo->exec('PRAGMA user_version = 18');
     }
+    if ($v < 19) {
+        // v19: outreach. Prospects researched by the outreach agent, emailed from a dedicated mailbox with two follow-ups,
+        // replies and opt-outs tracked; a permanent do-not-contact list.
+        $pdo->exec("
+            CREATE TABLE outreach_prospects (id INTEGER PRIMARY KEY AUTOINCREMENT, business TEXT NOT NULL, contact_name TEXT NOT NULL DEFAULT '',
+                email TEXT NOT NULL COLLATE NOCASE, domain TEXT NOT NULL DEFAULT '', website TEXT NOT NULL DEFAULT '', city TEXT NOT NULL DEFAULT '', niche TEXT NOT NULL DEFAULT '',
+                notes TEXT NOT NULL DEFAULT '', best_fit TEXT NOT NULL DEFAULT '', sku TEXT NOT NULL DEFAULT '', priority TEXT NOT NULL DEFAULT 'B', batch TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL DEFAULT 'queued', step INTEGER NOT NULL DEFAULT 0, next_at INTEGER, subject TEXT NOT NULL, body TEXT NOT NULL,
+                fu1 TEXT NOT NULL DEFAULT '', fu2 TEXT NOT NULL DEFAULT '', token TEXT NOT NULL UNIQUE, msg_ids TEXT NOT NULL DEFAULT ' ',
+                first_sent_at TEXT, last_sent_at TEXT, replied_at TEXT, reply_email_id INTEGER, contact_id INTEGER REFERENCES contacts(id) ON DELETE SET NULL,
+                deal_id INTEGER REFERENCES deals(id) ON DELETE SET NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+            CREATE INDEX idx_outreach_due ON outreach_prospects(status, next_at);
+            CREATE INDEX idx_outreach_email ON outreach_prospects(email);
+            CREATE INDEX idx_outreach_domain ON outreach_prospects(domain);
+            CREATE TABLE outreach_log (id INTEGER PRIMARY KEY AUTOINCREMENT, prospect_id INTEGER NOT NULL REFERENCES outreach_prospects(id) ON DELETE CASCADE,
+                kind TEXT NOT NULL, body TEXT NOT NULL DEFAULT '', email_id INTEGER, created_at TEXT NOT NULL);
+            CREATE INDEX idx_outreach_log ON outreach_log(prospect_id, id);
+            CREATE INDEX idx_outreach_log_kind ON outreach_log(kind, created_at);
+            CREATE TABLE outreach_optout (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL DEFAULT '' COLLATE NOCASE, domain TEXT NOT NULL DEFAULT '' COLLATE NOCASE,
+                reason TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL);
+            CREATE INDEX idx_optout_email ON outreach_optout(email);
+            CREATE INDEX idx_optout_domain ON outreach_optout(domain);
+        ");
+        $ins = $pdo->prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
+        foreach (['outreach_on' => '0', 'outreach_mailbox' => '', 'outreach_from_name' => 'Grady Davis', 'outreach_address' => '', 'outreach_start' => '8',
+            'outreach_cap' => '30', 'outreach_api_hash' => '', 'outreach_last_email' => '0', 'outreach_paused' => ''] as $k => $val) $ins->execute([$k, $val]);
+        $pdo->exec('PRAGMA user_version = 19');
+    }
 }
 function migrate_v1(PDO $pdo): void {
     $pdo->exec("

@@ -10,6 +10,9 @@ DirectoryIndex index.php
   RewriteCond %{HTTP:X-Forwarded-Proto} !https
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301,NE]
   RewriteRule ^(app|storage)(/|$) - [F,L]
+  # Pass the Authorization header through to PHP (outreach-api.php), which some PHP handlers drop
+  RewriteCond %{HTTP:Authorization} .
+  RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 </IfModule>
 
 <FilesMatch "\.(sqlite|sqlite-wal|sqlite-shm|log|ini|md|key|gz|lock|mmdb)$">

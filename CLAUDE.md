@@ -357,6 +357,7 @@ Each has a live demo site, desktop and mobile screenshots (`assets/work/*-deskto
 | Contacts | `contacts.php`, `contact.php`, `contact-edit.php` | People, with a timeline of activities (note, call, email, meeting) |
 | Tasks | `tasks.php` | To-dos with due dates and priority, linked to records |
 | Projects | `projects.php`, `project.php`, `project-edit.php`, `project-file.php` | Client projects with steps, updates and files, shared with the client portal |
+| Outreach | `outreach.php` | Prospects the outreach agent found and emailed, replies waiting on you, settings (mailbox, postal address, warm-up), agent key, do-not-contact list; see “Outreach (cold email)” |
 | Store | `store.php`, `store-order.php`, `store-products.php`, `store-product.php`, `store-offers.php`, `store-settings.php` | Orders from syndicatemarketing.co, product/price editor, special offers, Stripe keys, promo/tax/notify settings |
 | Quotes | `quotes.php`, `quote-edit.php`, `quote.php` | Proposals with optional items and deposits, paid online |
 | Bookings | `bookings.php`, `booking.php`, `booking-setup.php`, `booking-type.php` | Online scheduling: meeting types, hours, blocks, bookings |
@@ -382,6 +383,8 @@ Each has a live demo site, desktop and mobile screenshots (`assets/work/*-deskto
 | `q.php` | Public proposal: view, choose options, accept, pay deposit, decline |
 | `book.php` | Public booking page (`?type=discovery-call`, `kickoff`, `tiktok-shop-consultation`) |
 | `care-report.php` | Monthly care report web page (signed link) |
+| `outreach-api.php` | Outreach agent API (key-protected: `Authorization: Bearer <key>` or `X-Api-Key`): `status`, `check`, `add`, `pending`, `respond` |
+| `u.php` | Unsubscribe from outreach emails (`?t=` token; one-click POST from mail apps) |
 | `portal-ads.php` | One-click hop from the client portal into the ads portal (2-minute one-time link) |
 | `portal.php`, `portal-care.php`, `portal-login.php`, `portal-logout.php`, `portal-project.php`, `portal-file.php`, `portal-stats.php`, `portal-plans.php` | Client portal (magic-link login); `portal-login.php?to=plans` opens Plans & billing |
 | `api.php` | Internal JSON helpers |
@@ -676,7 +679,16 @@ A public help center for clients and staff-only Team docs, in the CRM's `wiki/` 
 - **Staff pages**: `team.php` (Team docs by topic, recent changes), `articles.php` (views and helpful %), `edit.php` (editor with preview, live tags help, every save keeps the previous version with one-click restore, reader comments), `insights.php` (questions to answer, searches with no answer, unhelpful articles, most read, top searches).
 - **Topics** (`WIKI_CATEGORIES` / `WIKI_TEAM_CATEGORIES`): Getting started, Websites, Paid ads, Community management, Website care, Site Stats, Client portal, Billing & plans, Audits & consulting, Policies & privacy, Glossary; Team: Running the business, Client work, Systems & setup, Rules & voice, When something breaks.
 - **Linked from**: the marketing site footer, the client portal and ads portal footers, and the CRM menu (“Wiki ↗”).
-- **Keep it true:** when a promise, process or feature changes, update the matching help article (search the wiki) in the same change. 70 public and 25 team articles shipped on October 18, 2026; `offers-and-free-months` added the same day, then a **Community management** topic with `community-plans-compared`, `discord-server-setup`, `discord-access` and `community-moderation` (75 public).
+- **Keep it true:** when a promise, process or feature changes, update the matching help article (search the wiki) in the same change. 70 public and 25 team articles shipped on October 18, 2026; `offers-and-free-months` added the same day, then a **Community management** topic with `community-plans-compared`, `discord-server-setup`, `discord-access` and `community-moderation` (75 public). Team article `team-outreach` added October 19, 2026 (26 team).
+
+### Outreach (cold email)
+The outreach agent finds prospects and the CRM emails them. Engine `app/outreach.php`, admin `outreach.php`, agent API `outreach-api.php`, unsubscribe page `u.php`, Team article `team-outreach`.
+- **Split of work:** a scheduled task (the agent) researches businesses, writes a first email and two follow-ups, and answers replies through the API. The CRM does everything rule-based: sending, timing, follow-ups, stopping on reply, opt-outs, bounces, the do-not-contact list.
+- **Sending:** from the mailbox chosen in CRM → Outreach (`outreach_mailbox`; **outreach@syndicatemarketing.co**, never hello@), sender name `outreach_from_name` (Grady Davis). Weekdays 9 AM–5 PM, spread across the day in 15-minute cron runs. Warm-up limit: `outreach_start` (8) a day, +4 each week since the first send, up to `outreach_cap` (30); agent replies count toward it. Follow-up 1 four business days after the first email, follow-up 2 ten business days after it, both as replies in the same thread (`Re:`, `In-Reply-To`). The CRM adds the signature, the postal address (`outreach_address`), a “reply no thanks” line and the unsubscribe link to every email, plus `List-Unsubscribe` (mailto + URL) and `List-Unsubscribe-Post` headers. Off until switched on (`outreach_on`), and refuses to start without a mailbox and an address.
+- **Guards:** `out_blocked()` skips addresses on the do-not-contact list (email, or the whole business domain; free-mail domains are never blocked as a whole), anyone already a prospect at the same business domain, and anyone already a CRM contact. `out_links_error()` allows links only to our sites (`OUT_LINK_HOSTS`) and the prospect's own website, and refuses leftover placeholders. More than 8% bounces over 14 days (at 20+ sends) switches outreach off and emails `shop_notify` (`outreach_paused`).
+- **Replies** (`out_process_mail()`, each cron run after `mail_sync()`, reading only the outreach mailbox from `outreach_last_email`): bounces (mailer-daemon, or an RCPT refusal at send) → `bounced` + do-not-contact. Auto-replies (headers or subject) → logged, sequence continues. “No thanks / not interested / unsubscribe / remove me” → `declined` or `unsubscribed` + whole domain on do-not-contact, no further mail. Any other reply → `replied`, sequence stops, `shop_notify` is emailed, and it waits for the agent. If Grady answers from his own mail or the CRM inbox, the prospect moves to `talking` and the agent leaves it alone.
+- **Agent answers** (`out_respond()`): `reply` (send, → `talking`), `interested` (optional reply; creates the contact, a `qualified` deal with source “Cold outreach” valued at the `sku` price, a task, and emails Grady), `decline` (do-not-contact), `handoff` (→ `needs_you`, task + email with the suggested reply), `resume` (not a real reply). Only conversations in `replied` can be answered, once.
+- **Statuses:** queued, active (in sequence), replied (agent to answer), talking, interested, needs_you, finished (no reply), declined, unsubscribed, bounced, paused, cancelled. The nav badge counts `needs_you`. The Monday summary lists “Outreach: your turn” and the week's numbers.
 
 ### Plans & billing (online cancellation)
 Clients see their monthly plans (store orders and won quotes with a live Stripe subscription) at `portal-plans.php` and cancel in two steps. `plan_cancel()` in `app/shop.php` sets `cancel_at` (ads, with notice, `proration_behavior=none`) or `cancel_at_period_end` in Stripe, stores `cancel_at`, logs it and sends both emails. The webhook also records `cancel_at` when a plan is cancelled from the Stripe dashboard.
@@ -726,7 +738,8 @@ Each run:
 8. `bookings_cleanup()`: releases unpaid holds after 35 minutes, sends the 18–26 hour reminders
 9. `care_cron()`: uptime checks every run; SSL daily; domain, security scan and PageSpeed weekly; backup-due, Care Plus tune-up and review-call tasks; monthly care reports on days 1–5
 10. `ads_cron()`: monthly ads report notes tasks and emails (days 1–5), one approval reminder after 2 days
-11. `pipeline_digest_send()` (`app/digest.php`): the **weekly summary**, emailed to `shop_notify` once a week on Monday from 7 AM (setting `digest_week` stops repeats). It lists tasks due or overdue, open deals with no activity in 14+ days, quotes waiting on the client (flags those expiring within 7 days), overdue invoices, unpaid checkouts from the last 7 days, calls booked this week, and the last 7 days in numbers (new leads, deals won, money in, visitors to the two campaign pages). Also sent on demand from the dashboard (“Email me this week’s summary”) or `php app/cli.php digest [send]` (without `send` it just prints).
+11. `outreach_cron()` (`app/outreach.php`): reads replies, bounces and opt-outs in the outreach mailbox, then sends what's due (weekdays 9–5, within the warm-up limit)
+12. `pipeline_digest_send()` (`app/digest.php`): the **weekly summary**, emailed to `shop_notify` once a week on Monday from 7 AM (setting `digest_week` stops repeats). It lists tasks due or overdue, open deals with no activity in 14+ days, quotes waiting on the client (flags those expiring within 7 days), overdue invoices, unpaid checkouts from the last 7 days, calls booked this week, and the last 7 days in numbers (new leads, deals won, money in, visitors to the two campaign pages). Also includes outreach (conversations waiting on Grady, and the week's sends, replies and bounces). Sent on demand from the dashboard (“Email me this week’s summary”) or `php app/cli.php digest [send]` (without `send` it just prints).
 
 It prints a one-line summary (cPanel can email it to you; set the cron email to blank to silence it).
 
@@ -735,7 +748,7 @@ It prints a one-line summary (cPanel can email it to you; set the cron email to 
 ## 17. Databases and migrations
 
 ### CRM: `crm/storage/crm.sqlite`
-Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v19**.
+Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v20**.
 
 | Version | Adds |
 |---|---|
@@ -756,6 +769,7 @@ Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_versi
 | v15 | Ads management: `ad_clients`, `ad_accounts`, `ad_campaigns`, `ad_stats` (one row per campaign per day), `ad_imports`, `ad_creatives`, `ad_log`, `ad_messages`, `ad_months` (report notes) |
 | v16 | Wiki: `wiki_articles`, `wiki_revisions`, `wiki_searches` (no-result searches), `wiki_feedback`, `wiki_questions` |
 | v17 | Special offers: `offers` (seeded from `catalog.json` → `offers`); `orders.offer`, `orders.trial_end`, `orders.trial_reminded_at`; `order_items.list_price`, `order_items.trial_months` |
+| v19 | Outreach: `outreach_prospects`, `outreach_log`, `outreach_optout`; settings `outreach_on`, `outreach_mailbox`, `outreach_from_name`, `outreach_address`, `outreach_start`, `outreach_cap`, `outreach_api_hash`, `outreach_last_email`, `outreach_paused` |
 | v18 | Community products (`com-discord-setup`, `com-audit`, `com-manage`, `com-manage-plus`, after the care plans) and the `add-presskit` add-on, from `catalog.json` |
 
 ### Site Stats: `crm/storage/analytics.sqlite`
@@ -933,6 +947,7 @@ All setup items below were done by October 18, 2026, except the ones still open.
 - [ ] Confirm the `starter-500` offer limits before emailing it: 10 spots, ends November 30, 2026 (change both in CRM → Store → Offers; the page and checkout follow). Read Grady's note on the page and edit it if it doesn't sound like you
 - [ ] Confirm the community prices ($300 setup, $125 audit, $350/mo, $650/mo, $150 press kit) and promises (weekday vs daily check-ins, reports within one business day, events per month, volunteer mods on Plus), and read Grady's note on `gaming-communities.html`. Change prices in CRM → Store → Products and `catalog.json`
 - [ ] Set up a Discord account for Syndicate Marketing (with two-factor on) to use for client servers, and write the staff guide template the setup promises
+- [ ] Outreach setup: create outreach@syndicatemarketing.co in cPanel (SPF, DKIM and DMARC valid for syndicatemarketing.co), connect it in Inbox → Mailboxes, choose it and enter the postal address in CRM → Outreach, make an agent key and add it as a network secret for crm.stusyn.com on the scheduled tasks' cloud environment (network access must include crm.stusyn.com), then switch outreach on. Steps in the Team article `team-outreach`
 - [ ] Later: apply for API access (Google Ads developer token, Meta Marketing API, TikTok Marketing API) to replace CSV imports
 - [x] Confirm the Care Plus price ($99) and promises (2 hours, one business day, quarterly tune-up, yearly call)
 
@@ -982,8 +997,9 @@ All setup items below were done by October 18, 2026, except the ones still open.
 | Consulting rate | $150/hour |
 | Exclude own visits | `?syn_ignore=1` |
 | Cart storage | `localStorage.sm_cart`, `sessionStorage.sm_src`, `sm_checkout`, `sm_order` |
-| CRM DB version | v18 (next: v19) |
+| CRM DB version | v19 (next: v20) |
 | Gaming campaign | `syndicatemarketing.co/gaming-communities.html?t=studio\|creator\|esports\|business&b=Name&n=First` |
+| Outreach | CRM → Outreach; sends from outreach@syndicatemarketing.co; agent API `crm.stusyn.com/outreach-api.php` |
 | Current offer | `starter-500`: $500 Starter website + 3 months Care Plus free · `syndicatemarketing.co/starter-website-offer.html?b=Business+Name&n=First` |
 | Help center | https://wiki.stusyn.com (CRM's `wiki/` folder); Team docs at /team.php |
 | Ads app | https://ads.stusyn.com (CRM's `ads/` folder) |

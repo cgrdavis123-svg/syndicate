@@ -59,11 +59,21 @@ function pipeline_digest(): array {
         return date('D M j, g:i A', (int)$b['starts_at']) . ' · ' . ($b['type_name'] ?: 'Meeting') . ' · ' . $b['name'] . ($b['business'] ? ' (' . $b['business'] . ')' : '');
     }, $meet), null];
 
+    // Outreach: conversations waiting on Grady, and the week's numbers.
+    $needs = all("SELECT * FROM outreach_prospects WHERE status IN ('needs_you','interested') AND updated_at >= ? ORDER BY updated_at DESC LIMIT 10", [$since]);
+    if ($needs) $s[] = ['Outreach: your turn', array_map(function ($p) use ($link) {
+        return $p['business'] . ' · ' . ($p['status'] === 'interested' ? 'interested' : 'needs your answer') . "\n    " . $link('outreach.php?id=' . $p['id']);
+    }, $needs), null];
+    $ok = []; foreach (all('SELECT kind, COUNT(*) n FROM outreach_log WHERE created_at >= ? GROUP BY kind', [$since]) as $r) $ok[$r['kind']] = (int)$r['n'];
+    $outLine = !empty($ok['sent']) ? 'Outreach: ' . $ok['sent'] . ' sent, ' . (($ok['reply'] ?? 0) + ($ok['declined'] ?? 0) + ($ok['unsubscribe'] ?? 0)) . ' replies, ' . ($ok['bounce'] ?? 0) . ' bounced'
+        . (setting('outreach_on') === '1' ? '' : ' (outreach is switched off)') : '';
+
     // Last week in numbers.
     $leads = (int)val("SELECT COUNT(*) FROM deals WHERE created_at >= ? AND stage != 'won'", [$since]);
     $won = one("SELECT COUNT(*) n, COALESCE(SUM(value),0) v FROM deals WHERE stage = 'won' AND closed_at >= ?", [$since]);
     $paid = 0.0; foreach (all("SELECT id FROM invoices WHERE status = 'paid' AND paid_at >= ?", [$since]) as $p) $paid += invoice_total((int)$p['id'])['total'];
     $nums = ["New leads: $leads", 'Deals won: ' . (int)$won['n'] . ($won['v'] > 0 ? ' (' . money($won['v'], false) . ')' : ''), 'Money in: ' . money($paid)];
+    if ($outLine) $nums[] = $outLine;
 
     // Campaign pages (Site Stats on the marketing site). Counts only; the pages don't record who visited.
     try {
@@ -75,7 +85,7 @@ function pipeline_digest(): array {
     } catch (Throwable $e) { /* analytics is optional */ }
     $s[] = ['Last 7 days', $nums, null];
 
-    $nudges = count($tasks) + count($stale) + count($quotes) + count($inv) + count($carts);
+    $nudges = count($tasks) + count($stale) + count($quotes) + count($inv) + count($carts) + count($needs);
     $body = "Here’s your week, " . date('l, F j') . ".\n";
     foreach ($s as [$title, $lines, $more]) {
         $body .= "\n" . strtoupper($title) . "\n" . implode("\n", array_map(function ($l) { return '- ' . $l; }, $lines)) . "\n" . ($more ? "All: $more\n" : '');
