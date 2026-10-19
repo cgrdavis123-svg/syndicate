@@ -16,7 +16,9 @@ $hash = setting('outreach_api_hash');
 $auth = (string)($_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '');
 $key = preg_match('/^Bearer\s+(\S+)$/i', trim($auth), $m) ? $m[1] : trim((string)($_SERVER['HTTP_X_API_KEY'] ?? '')); // X-Api-Key works too
 if (too_many('outreach_api', 10, 15)) out_reply(429, ['ok' => false, 'error' => 'Too many failed attempts. Try again later.']);
-if ($hash === '' || $key === '' || !hash_equals($hash, hash('sha256', $key))) { record_attempt('outreach_api'); out_reply(401, ['ok' => false, 'error' => 'Missing or wrong key.']); }
+if ($hash === '') out_reply(401, ['ok' => false, 'error' => 'No agent key has been made yet. CRM → Outreach → Make a key.']);
+if ($key === '') out_reply(401, ['ok' => false, 'error' => 'No key received. The request had no Authorization or X-Api-Key header' . ($auth === '' ? '' : ' in the expected form') . '.']);
+if (!hash_equals($hash, hash('sha256', $key))) { record_attempt('outreach_api'); out_reply(401, ['ok' => false, 'error' => 'Wrong key. Make sure the key in the cloud environment matches the newest one from CRM → Outreach.']); }
 
 $a = get('a');
 $in = [];
