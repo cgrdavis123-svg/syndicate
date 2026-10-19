@@ -2,7 +2,7 @@
 // including sample ads drawn in HTML the way they appear on Meta, Google and TikTok.
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const nl = s => esc(s).replace(/\n/g, '<br>');
-const SERVICE = { website: 'Website', ads: 'Paid ads', analytics: 'Site Stats' };
+const SERVICE = { website: 'Website', ads: 'Paid ads', analytics: 'Site Stats', community: 'Community' };
 const PLATFORM = { meta: 'Meta · Facebook & Instagram feed', google: 'Google Search', tiktok: 'TikTok · In-feed video' };
 const money = n => '$' + Number(n).toLocaleString('en-US');
 const initials = s => s.replace(/&/g, '').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();

@@ -149,7 +149,7 @@ These apply to every change, every page and every email.
 ├── marketing/                 ← syndicatemarketing.co source
 │   ├── layout.html, pages/, legal/
 │   ├── assets/css/sm.css, assets/js/{cards,sm,checkout}.js, assets/work/*.jpg
-│   ├── work/                  ← 4 fictional demo sites (+ .htaccess: noindex, Google Fonts allowed)
+│   ├── work/                  ← 6 fictional demo sites (+ .htaccess: noindex, Google Fonts allowed)
 │   ├── work.json              ← portfolio data (concepts, ad campaigns)
 │   ├── work-render.mjs        ← renders the case-study pages
 │   └── htaccess.txt           ← becomes dist-marketing/.htaccess
@@ -305,7 +305,7 @@ Legal (`src/legal/`): `privacy.html`, `cookies.html`, `terms.html` (section 7 co
 | `paid-ads.html` | Ads plans (1, 2 or 3 platforms), ad account setup, ads audit |
 | `analytics.html` | Site Stats, analytics setup, site audit |
 | `pricing.html` | Every product and price, comparison table |
-| `work.html` + `work-<slug>.html` | Portfolio grid + 4 case pages (fictional concepts, clearly labelled) |
+| `work.html` + `work-<slug>.html` | Portfolio grid + 6 case pages (fictional concepts, clearly labelled) |
 | `about.html` | Who we are (part of Syndicate Holdings Group, Grady) |
 | `contact.html` | Lead form → CRM `shop-api.php?a=lead` (creates contact + deal + task) |
 | `checkout.html` | 4-step checkout (see below) |
@@ -324,7 +324,7 @@ Legal (`marketing/legal/`): `terms.html` (terms of sale) and `privacy.html`.
 - Prices and products load live from `shop-api.php?a=catalog`, with the built-in catalog as a fallback.
 
 ### Portfolio (`marketing/work.json`, `marketing/work/`)
-All four are **fictional concepts**, labelled as such, with `.example` domains and 555-01xx numbers, and `noindex`.
+All six are **fictional concepts**, labelled as such, with `.example` domains and 555-01xx numbers, and `noindex`.
 
 | Concept | Business | Shows off | Demo folder |
 |---|---|---|---|
@@ -332,8 +332,10 @@ All four are **fictional concepts**, labelled as such, with `.example` domains a
 | Ridgeline Heating & Air | HVAC | Starter website (5 pages) + Google/Meta ads | `work/ridgeline-air/` |
 | Pine Street Dental | Dental practice | Business website (10 pages + blog) + ads | `work/pine-street-dental/` |
 | Loom & Lantern | Candle shop | Online store (collections, products with sizes and stock, bundles, cart, demo checkout that stops before payment) + TikTok/Meta ads | `work/loom-and-lantern/` |
+| Fernhollow Interactive | Indie game studio | Business website (9 pages: games, team, news + posts, careers with pay ranges, press, contact) + Meta/Google ads; links to its game's site | `work/fernhollow/` |
+| Lampwright | Fernhollow's upcoming co-op game | Starter website (5 pages: home, the game, media gallery, community with Discord/playtest/roadmap) + press kit add-on + TikTok/Meta ads | `work/lampwright/` |
 
-Each has a live demo site, desktop and mobile screenshots (`assets/work/*-desktop.jpg`, `*-mobile.jpg`, made with `node tools/work-shots.cjs`), and mock ad campaigns (ad creatives, targeting, an illustrative results panel labelled as example figures).
+The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `community.html`: they're unreleased or small, so they show no reviews, press quotes, awards, wishlist or sales numbers, and the Lampwright art (key art, “screenshots”) is SVG drawn in `marketing/demos/lampwright.mjs` and labelled as illustration. Each has a live demo site, desktop and mobile screenshots (`assets/work/*-desktop.jpg`, `*-mobile.jpg`, made with `node tools/work-shots.cjs`), and mock ad campaigns (ad creatives, targeting, an illustrative results panel labelled as example figures).
 
 ### Site Stats
 - Tracker: `<script defer src="https://crm.stusyn.com/a.js" data-site="UIOdnDz160w8"></script>`

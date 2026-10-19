@@ -11,8 +11,8 @@ for (const f of readdirSync(here).filter(f => f.endsWith('.mjs') && !['build.mjs
   const d = (await import(join(here, f))).default;
   if (only && d.slug !== only) continue;
   const out = join(here, '..', 'work', d.slug);
-  for (const old of readdirSync(out, { withFileTypes: true })) if (old.isFile() && /\.(html|css|js)$/.test(old.name)) rmSync(join(out, old.name));
   mkdirSync(out, { recursive: true });
+  for (const old of readdirSync(out, { withFileTypes: true })) if (old.isFile() && /\.(html|css|js)$/.test(old.name)) rmSync(join(out, old.name));
   writeFileSync(join(out, 'style.css'), baseCss + d.css);
   writeFileSync(join(out, 'site.js'), baseJs + (d.js || ''));
   for (const p of d.pages) {

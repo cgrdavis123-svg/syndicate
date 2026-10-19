@@ -116,6 +116,161 @@
           ["Cart reminders", "Meta", "Added to cart or viewed a product, last 14 days", "Purchases", 25]
         ]
       }
+    },
+    {
+      "slug": "fernhollow",
+      "name": "Fernhollow Interactive",
+      "kind": "Indie game studio",
+      "package": "web-business",
+      "services": ["website", "community", "ads", "analytics"],
+      "summary": "A studio site with room to grow: every game gets a home, every role shows its pay, and press can find what they need in one click.",
+      "colors": { "bg": "#f6f1e6", "ink": "#1f2a1d", "accent": "#2f6b3a" },
+      "challenge": "A seven-person studio with one game out and a bigger one coming. Their old site was a single page with a store link, so press, players and job seekers all landed in the same place and nobody found what they came for.",
+      "approach": [
+        "A page per game that sends players to the right place: the store for the game that’s out, the new game’s own site for the one that isn’t.",
+        "News and devlogs they publish themselves, so updates don’t wait on a developer.",
+        "A careers page with pay ranges on every role, and a press page with logos and keys in one place."
+      ],
+      "built": [
+        "Home, Games, Studio, News + posts, Careers, Press, Contact",
+        "News and devlog posts the studio edits itself",
+        "Careers with pay ranges and a hiring process",
+        "Press page with fact sheet, logos and key requests",
+        "Newsletter and Discord sign-ups tracked in Site Stats"
+      ],
+      "goals": ["Store click", "Newsletter signup", "Discord join click", "Key request", "Contact form sent"],
+      "ads": [
+        {
+          "platform": "meta",
+          "page": "Fernhollow Interactive",
+          "primary": "Our cozy puzzle game Mossletter just got a free update: 20 new puzzles, snow tiles and a few letters you might have been waiting for.",
+          "image_title": "The Winter Route\nis here",
+          "image_sub": "Free update · 20 new puzzles",
+          "headline": "Mossletter 1.3, free for everyone",
+          "domain": "fernhollow.example",
+          "cta": "Learn more",
+          "bg": "#2f6b3a",
+          "fg": "#f6f1e6",
+          "accent": "#e9a23b"
+        },
+        {
+          "platform": "google",
+          "domain": "fernhollow.example",
+          "path": "games",
+          "headline": "Mossletter | Cozy Puzzle Game",
+          "headline2": "Out Now on PC and Mac",
+          "desc": "Lay the paths, deliver the mail, learn everyone’s business. 120 puzzles, no timers and no way to fail.",
+          "sitelinks": [
+            "Mossletter",
+            "Lampwright",
+            "Careers",
+            "Press kit"
+          ]
+        }
+      ],
+      "plan": {
+        "budget": 600,
+        "rows": [
+          [
+            "Winter Route update",
+            "Meta",
+            "People who follow cozy and puzzle games, plus past site visitors",
+            "Store clicks",
+            50
+          ],
+          [
+            "Studio name search",
+            "Google Search",
+            "“fernhollow”, “mossletter game”",
+            "Store clicks",
+            20
+          ],
+          [
+            "Careers",
+            "Meta",
+            "Game developers in the US, interests in game engines and indie games",
+            "Applications",
+            30
+          ]
+        ]
+      }
+    },
+    {
+      "slug": "lampwright",
+      "name": "Lampwright",
+      "kind": "Upcoming co-op video game",
+      "package": "web-starter",
+      "services": ["website", "community", "ads", "analytics"],
+      "summary": "A game site built to turn interest into wishlists, playtest sign-ups and Discord members, with a press kit ready before anyone asks.",
+      "colors": { "bg": "#0b0e1a", "ink": "#f3ead8", "accent": "#ffb648" },
+      "challenge": "An unreleased game with a store page, a trailer and a Discord, but nowhere that tied them together. Wishlists and playtest interest were scattered, and press had to email to get a screenshot.",
+      "approach": [
+        "One clear action on every page, Wishlist, with the playtest and Discord close behind.",
+        "A media page with the trailer and a screenshot gallery that works on a phone.",
+        "A full press kit page, so writers and creators never have to wait on an email."
+      ],
+      "built": [
+        "Home, The game, Media, Community, Press kit",
+        "Trailer, screenshot gallery with lightbox",
+        "Playtest sign-up and newsletter forms",
+        "Discord page with channel preview, roadmap and devlog",
+        "Press kit add-on: fact sheet, descriptions, screenshots, trailer, logos, contact",
+        "Wishlist and sign-up tracking in Site Stats"
+      ],
+      "goals": ["Wishlist click", "Playtest signup", "Newsletter signup", "Discord join click", "Press kit download"],
+      "ads": [
+        {
+          "platform": "tiktok",
+          "handle": "lampwrightgame",
+          "caption": "four lanterns, one street, 30 seconds until the bell 🏮 playtest sign-ups are open #indiegame #coop #gamedev",
+          "overlay": "Light the city.\nHold the night.",
+          "sub": "Co-op for 1–4 · Playtest open",
+          "cta": "Sign up",
+          "bg": "#0b0e1a",
+          "fg": "#f3ead8",
+          "accent": "#ffb648",
+          "sound": "original sound · Lampwright"
+        },
+        {
+          "platform": "meta",
+          "page": "Lampwright",
+          "primary": "The night in Varrow is alive, and you’re the last one who knows how to make light. Sign up for the closed playtest this winter.",
+          "image_title": "Lampwright\nclosed playtest",
+          "image_sub": "Co-op roguelite · 1–4 players · PC",
+          "headline": "Request a playtest key",
+          "domain": "lampwright.example",
+          "cta": "Sign up",
+          "bg": "#0b0e1a",
+          "fg": "#f3ead8",
+          "accent": "#ffb648"
+        }
+      ],
+      "plan": {
+        "budget": 1200,
+        "rows": [
+          [
+            "Playtest sign-ups",
+            "TikTok",
+            "Players of co-op and roguelite games, ages 18–34",
+            "Playtest signups",
+            45
+          ],
+          [
+            "Wishlist push",
+            "Meta",
+            "Followers of indie and co-op games, lookalikes of sign-ups",
+            "Wishlist clicks",
+            40
+          ],
+          [
+            "Retargeting",
+            "Meta",
+            "Site visitors who watched the trailer but didn’t sign up",
+            "Wishlist clicks",
+            15
+          ]
+        ]
+      }
     }
   ]
 }
