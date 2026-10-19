@@ -4,6 +4,7 @@ require __DIR__ . '/app/recurring.php';
 $user = require_user();
 
 if (is_post() && post('action') === 'sync') { $r = sync_website(true); flash($r['message']); redirect('./'); }
+if (is_post() && post('action') === 'digest') { require_once __DIR__ . '/app/digest.php'; flash(pipeline_digest_send(true) . '.'); redirect('./'); }
 $sync = sync_website();
 $rec = recurring_message(run_recurring());
 if ($sync['imported'] || $rec) flash(trim(($sync['imported'] ? $sync['message'] : '') . ' ' . $rec));
@@ -40,6 +41,9 @@ $hour = (int)date('G');
   <form method="post" class="sync"><?= csrf_field() ?><input type="hidden" name="action" value="sync">
     <span class="muted small" title="<?= e($sync['message']) ?>"><span class="dot <?= $sync['ok'] ? 'ok' : 'off' ?>"></span>Website sync<?= setting('site_last_sync') ? ' · ' . e(ago(setting('site_last_sync'))) : '' ?></span>
     <button class="btn ghost sm" type="submit">Sync now</button>
+  </form>
+  <form method="post" class="sync"><?= csrf_field() ?><input type="hidden" name="action" value="digest">
+    <button class="btn ghost sm" type="submit" title="The same summary cron sends every Monday morning">Email me this week’s summary</button>
   </form>
 </div>
 <?php if (!$sync['ok']): ?><p class="notice"><?= e($sync['message']) ?> Website leads will appear here once it&rsquo;s connected. See Settings.</p><?php endif; ?>

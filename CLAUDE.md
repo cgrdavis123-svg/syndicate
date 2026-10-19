@@ -349,7 +349,7 @@ Each has a live demo site, desktop and mobile screenshots (`assets/work/*-deskto
 | Module | Files | What it does |
 |---|---|---|
 | Care | `care.php`, `care-site.php` | Website care plans and monitoring (see “Website care”) |
-| Dashboard | `index.php` | Today: tasks due, upcoming consultations/bookings, open deals, unpaid invoices, store orders, stats |
+| Dashboard | `index.php` | Today: tasks due, upcoming consultations/bookings, open deals, unpaid invoices, store orders, stats; “Email me this week’s summary” (see §16) |
 | Inbox | `inbox.php`, `email.php`, `compose.php`, `mailboxes.php`, `email-file.php`, `email-img.php` | IMAP/SMTP email inside the CRM, linked to contacts and deals; passwords encrypted with `storage/mail.key` |
 | Pipeline | `deals.php`, `deal.php`, `deal-edit.php` | Deals by stage: **New lead → Contacted → Qualified → Proposal → Won / Lost** |
 | Companies | `companies.php`, `company.php`, `company-edit.php` | Organizations |
@@ -725,6 +725,7 @@ Each run:
 8. `bookings_cleanup()`: releases unpaid holds after 35 minutes, sends the 18–26 hour reminders
 9. `care_cron()`: uptime checks every run; SSL daily; domain, security scan and PageSpeed weekly; backup-due, Care Plus tune-up and review-call tasks; monthly care reports on days 1–5
 10. `ads_cron()`: monthly ads report notes tasks and emails (days 1–5), one approval reminder after 2 days
+11. `pipeline_digest_send()` (`app/digest.php`): the **weekly summary**, emailed to `shop_notify` once a week on Monday from 7 AM (setting `digest_week` stops repeats). It lists tasks due or overdue, open deals with no activity in 14+ days, quotes waiting on the client (flags those expiring within 7 days), overdue invoices, unpaid checkouts from the last 7 days, calls booked this week, and the last 7 days in numbers (new leads, deals won, money in, visitors to the two campaign pages). Also sent on demand from the dashboard (“Email me this week’s summary”) or `php app/cli.php digest [send]` (without `send` it just prints).
 
 It prints a one-line summary (cPanel can email it to you; set the cron email to blank to silence it).
 

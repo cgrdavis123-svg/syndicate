@@ -10,4 +10,9 @@ if ($cmd === '2fa-off' && $arg !== '') {
     echo $n ? "Two-step sign-in turned off for $arg. Sign in with the password and set it up again in Settings.\n" : "No CRM user with that email.\n";
     exit($n ? 0 : 1);
 }
-echo "Usage: php app/cli.php 2fa-off you@example.com\n"; exit(1);
+if ($cmd === 'digest') { // php app/cli.php digest   Prints this week's pipeline summary (add "send" to email it)
+    require __DIR__ . '/digest.php';
+    if ($arg === 'send') { echo pipeline_digest_send(true), "\n"; exit(0); }
+    $d = pipeline_digest(); echo $d['subject'], "\n\n", $d['body']; exit(0);
+}
+echo "Usage: php app/cli.php 2fa-off you@example.com | digest [send]\n"; exit(1);
