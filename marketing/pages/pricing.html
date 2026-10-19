@@ -1,0 +1,66 @@
+<!-- {
+  "title": "Pricing — websites, ads plans and audits — Syndicate Marketing",
+  "description": "Every Syndicate Marketing price in one place: website packages from {{amount:web-one-page}}, ads management from {{amount:ads-one}}/month, care plans, add-ons and audits. Buy online with Stripe.",
+  "nav": "pricing"
+} -->
+
+<section class="page-hero" style="padding-bottom:30px">
+  <div class="wrap">
+    <div class="crumbs reveal"><a href="./">Home</a><span>/</span><span>Pricing</span></div>
+    <h1 class="reveal d1">Every price, <span class="serif hl">on the page.</span></h1>
+    <p class="lede reveal d2">No “contact us for a quote.” Add what you need to your cart, answer a few questions about your project, and pay securely with Stripe.</p>
+    <div class="reveal d3" style="margin-top:36px">
+      <div class="tabs" role="tablist" aria-label="Show">
+        <button type="button" role="tab" aria-selected="true" data-tab="all">Everything</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="website">Websites</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="ads">Paid ads</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="community">Community</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="service">Audits &amp; services</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="addon">Add-ons &amp; care</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section tight" style="padding-top:0">
+  <div class="wrap">
+    <div class="cat-block" data-cat="website" id="websites" style="margin-top:20px">
+      <h2>Websites</h2><p class="muted">One-time prices. Mobile design, a lead form, SEO basics and Site Stats in every package. <a class="link" href="websites.html">Compare them</a></p>
+      <div class="pkg-grid" style="--cols:4" data-products="website">{{products:website}}</div>
+    </div>
+    <div class="cat-block" data-cat="ads" id="ads">
+      <h2>Paid ads management</h2><p class="muted">Monthly, cancel online any time with 30 days’ notice. Ad spend is paid directly to the platforms. <a class="link" href="paid-ads.html">How it works</a></p>
+      <div class="pkg-grid" style="--cols:3" data-products="ads">{{products:ads}}</div>
+    </div>
+    <div class="cat-block" data-cat="community" id="community">
+      <h2>Community management</h2><p class="muted">Discord servers for games, creators, esports and gaming businesses. Monthly plans cancel online any time. <a class="link" href="community.html">How it works</a></p>
+      <div class="pkg-grid" style="--cols:2" data-products="sku:com-manage,com-manage-plus">{{products:sku:com-manage,com-manage-plus}}</div>
+      <div class="mini-grid" style="margin-top:16px" data-products="sku:com-discord-setup,com-audit" data-kind="mini">{{products:sku:com-discord-setup,com-audit:mini}}</div>
+    </div>
+    <div class="cat-block" data-cat="service" id="services">
+      <h2>Audits &amp; services</h2><p class="muted">Not ready for a package? Start with a clear plan.</p>
+      <div class="mini-grid" data-products="service" data-kind="mini">{{products:service:mini}}</div>
+    </div>
+    <div class="cat-block" data-cat="addon" id="addons">
+      <h2>Add-ons &amp; care</h2><p class="muted">Add these alongside a package.</p>
+      <div class="mini-grid" data-products="care,addon" data-kind="mini">{{products:care,addon:mini}}</div>
+    </div>
+  </div>
+</section>
+
+<section class="section tight">
+  <div class="wrap">
+    <div class="sec-head center" style="justify-content:center;text-align:center"><div><h2 class="reveal">Buying questions</h2></div></div>
+    <div class="faq">
+      <details class="reveal"><summary>How do I pay?</summary><p>By card (Visa, Mastercard, Amex, Discover), Apple Pay or Google Pay, on Stripe’s secure checkout page. We never see or store your card number.</p></details>
+      <details class="reveal"><summary>Can I combine a website and an ads plan?</summary><p>Yes. Add both to your cart. You pay the website and the first month of ads today, and the ads plan renews monthly after that.</p></details>
+      <details class="reveal"><summary>Do you offer discounts?</summary><p>If you have a promo code, you can enter it on the payment page.</p></details>
+      <details class="reveal"><summary>Do I get an invoice?</summary><p>Yes. Stripe emails a receipt right away, and the paid invoice is in your client portal.</p></details>
+      <details class="reveal"><summary>What’s your refund policy?</summary><p>If we haven’t started work, you get a full refund. Read the details in our <a class="link" href="terms.html#refunds">terms of sale</a>.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-bottom:40px">
+  <div class="cta-band reveal"><div><h2>Not sure what you need?</h2><p>Tell us about your business and we’ll recommend a package, usually within one business day.</p></div><div class="cta-row"><a href="contact.html" class="btn btn-ink">Get a recommendation {{arrow}}</a></div></div>
+</section>

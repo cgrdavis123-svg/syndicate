@@ -1,0 +1,121 @@
+{
+  "_note": "Concept projects for the portfolio. Every business here is fictional; the pages say so. Each project has a demo site in marketing/work/<slug>/ and sample ads rendered on its case page.",
+  "projects": [
+    {
+      "slug": "hearth-and-grain",
+      "name": "Hearth & Grain",
+      "kind": "Neighborhood bakery",
+      "package": "web-one-page",
+      "services": ["website", "ads", "analytics"],
+      "summary": "A one-page site that sells the morning: today’s bakes, order-ahead pickup and catering, with Meta and Google ads for the busy weekend rush.",
+      "colors": { "bg": "#f3e6d3", "ink": "#2b1a10", "accent": "#c2452d" },
+      "challenge": "A small bakery that sells out by noon. Most customers find it on Google Maps or Instagram, but there’s no way to order ahead, and catering requests get lost in DMs.",
+      "approach": [
+        "One page, ordered the way customers decide: what’s fresh today, when you’re open, how to order ahead.",
+        "A pickup order button and a catering form above the fold on phones.",
+        "Big, warm type and real prices, so it reads like the chalkboard menu inside the shop."
+      ],
+      "built": ["One-page site, mobile first", "Today’s menu with prices", "Order-ahead and catering forms", "Hours, map and directions", "Site Stats goals for calls, orders and catering"],
+      "goals": ["Order-ahead clicks", "Catering form sent", "Phone call", "Directions click"],
+      "ads": [
+        { "platform": "meta", "page": "Hearth & Grain", "primary": "Saturday sourdough sells out by 10. Order tonight, pick it up warm at 7am. 🍞", "image_title": "Order ahead.\nSkip the line.", "image_sub": "Sourdough · croissants · cinnamon knots", "headline": "Pick up warm bread at 7am", "domain": "hearthandgrain.example", "cta": "Order now", "bg": "#c2452d", "fg": "#fff6ea" },
+        { "platform": "google", "domain": "hearthandgrain.example", "path": "order-ahead", "headline": "Hearth & Grain Bakery | Fresh Bread Baked at 5am", "headline2": "Order Ahead for Pickup", "desc": "Sourdough, croissants and pastries baked every morning. Order online and skip the line. Catering for offices and events.", "sitelinks": ["Today’s menu", "Order ahead", "Catering", "Hours & directions"], "call": "(864) 555-0110" }
+      ],
+      "plan": {
+        "budget": 600,
+        "rows": [
+          ["Order ahead · weekends", "Meta", "Within 5 miles, ages 25–55, interests in food and coffee", "Website clicks", 40],
+          ["Bakery near me", "Google Search", "“bakery near me”, “sourdough”, “croissants”", "Calls and directions", 35],
+          ["Catering for offices", "Google Search", "“office catering”, “breakfast catering”", "Catering form", 25]
+        ]
+      }
+    },
+    {
+      "slug": "ridgeline-air",
+      "name": "Ridgeline Heating & Air",
+      "kind": "HVAC contractor",
+      "package": "web-starter",
+      "services": ["website", "ads", "analytics"],
+      "summary": "A five-page site built around one action, calling, with Google call campaigns that run hardest when it’s hottest.",
+      "colors": { "bg": "#0f2a4a", "ink": "#ffffff", "accent": "#ff7a1a" },
+      "challenge": "A family HVAC company competing with national brands on Google. When the AC breaks, people call the first trustworthy number they see, so every second on the site matters.",
+      "approach": [
+        "A tap-to-call button that follows you down the page on phones, and same-day availability shown up top.",
+        "A section for each service so Google can match “AC repair” and “furnace install” searches.",
+        "Financing and service area answered before anyone has to ask."
+      ],
+      "built": ["Home, Services, Financing, Service area, Contact", "Sticky click-to-call on mobile", "Quote request form", "Service-area page with a section for each town", "Call and form tracking in Site Stats"],
+      "goals": ["Phone call", "Quote form sent", "Financing page visit"],
+      "ads": [
+        { "platform": "google", "domain": "ridgelineair.example", "path": "ac-repair", "headline": "AC Repair Today | Ridgeline Heating & Air", "headline2": "Same-Day Service, Upfront Pricing", "desc": "Local, licensed technicians. Call now and we’ll be there today. Repairs, tune-ups and new systems with financing available.", "sitelinks": ["AC repair", "Furnace service", "Financing", "Service area"], "call": "(864) 555-0142" },
+        { "platform": "meta", "page": "Ridgeline Heating & Air", "primary": "Don’t wait for the first 95° day. Book a spring AC tune-up and we’ll check all 21 points before summer hits.", "image_title": "$79 spring\nAC tune-up", "image_sub": "21-point check · priority summer scheduling", "headline": "Book your tune-up in 60 seconds", "domain": "ridgelineair.example", "cta": "Book now", "bg": "#0f2a4a", "fg": "#ffffff", "accent": "#ff7a1a" }
+      ],
+      "plan": {
+        "budget": 1500,
+        "rows": [
+          ["Emergency AC repair", "Google Search", "“ac repair near me”, “ac not cooling”, call ads 7am–9pm", "Phone calls", 55],
+          ["System replacement", "Google Search", "“new ac unit cost”, “hvac replacement”", "Quote form", 25],
+          ["Spring tune-up", "Meta", "Homeowners within the service area, ages 30–65", "Tune-up bookings", 20]
+        ]
+      }
+    },
+    {
+      "slug": "pine-street-dental",
+      "name": "Pine Street Dental",
+      "kind": "Family dental practice",
+      "package": "web-business",
+      "services": ["website", "ads", "analytics"],
+      "summary": "A calm, ten-page practice site with online booking and a blog, plus a new-patient campaign on Meta and Google.",
+      "colors": { "bg": "#e7efe9", "ink": "#16302b", "accent": "#2f7d6d" },
+      "challenge": "A growing practice that needs a steady flow of new patients. Nervous patients want to know who they’ll see, what it costs and whether their insurance works, before they ever call.",
+      "approach": [
+        "Soft colors and plain answers: insurance, costs and what a first visit is like, all one tap from the home page.",
+        "A new-patient offer and online booking on every page.",
+        "A blog the front desk can update, for the questions patients ask every week."
+      ],
+      "built": ["Ten pages plus a blog", "New-patient offer and booking form", "Insurance and payment page", "Meet-the-team page", "Editing access for the office", "Booking and call goals in Site Stats"],
+      "goals": ["Booking form sent", "Phone call", "New-patient offer page"],
+      "ads": [
+        { "platform": "meta", "page": "Pine Street Dental", "primary": "New to the area? Your first exam, cleaning and X-rays are $99 when you don’t have insurance. Evening appointments on Tuesdays and Thursdays.", "image_title": "New patient?\n$99 first visit.", "image_sub": "Exam · cleaning · X-rays", "headline": "Book your first visit online", "domain": "pinestreetdental.example", "cta": "Book now", "bg": "#2f7d6d", "fg": "#f4faf7" },
+        { "platform": "google", "domain": "pinestreetdental.example", "path": "new-patients", "headline": "Pine Street Dental | New Patients Welcome", "headline2": "Evening Appointments Available", "desc": "Gentle family dentistry. Most PPO plans accepted. $99 new-patient exam, cleaning and X-rays without insurance. Book online in minutes.", "sitelinks": ["New patients", "Insurance", "Book online", "Our team"], "call": "(864) 555-0167" }
+      ],
+      "plan": {
+        "budget": 1200,
+        "rows": [
+          ["New patient offer", "Meta", "Within 8 miles, ages 25–60, recently moved", "Bookings", 45],
+          ["Dentist near me", "Google Search", "“dentist near me”, “family dentist”, “dentist accepting new patients”", "Bookings and calls", 40],
+          ["Retargeting", "Meta", "Site visitors who didn’t book, last 30 days", "Bookings", 15]
+        ]
+      }
+    },
+    {
+      "slug": "loom-and-lantern",
+      "name": "Loom & Lantern",
+      "kind": "Candle and home goods shop",
+      "package": "web-store",
+      "services": ["website", "ads", "analytics"],
+      "summary": "An online store for hand-poured candles and woven throws, launched with TikTok and Meta ads made for the feed.",
+      "colors": { "bg": "#2a1d33", "ink": "#fbefe4", "accent": "#f2b45c" },
+      "challenge": "A maker selling at weekend markets who wants to sell online all year. The products are beautiful in person, so the store and the ads have to carry that feeling on a phone screen.",
+      "approach": [
+        "Scent-first shopping: browse by mood, with notes, burn time and size on every product.",
+        "A free-shipping bar and bundles that raise the order value without discounts.",
+        "Short behind-the-pour videos for TikTok and Reels, retargeted to people who watched."
+      ],
+      "built": ["Store with collections and bundles", "Products with variants and stock", "Card, Apple Pay and Google Pay checkout", "Shipping, tax and order emails", "Sales and checkout tracking in Site Stats"],
+      "goals": ["Purchase", "Add to cart", "Checkout started"],
+      "ads": [
+        { "platform": "tiktok", "handle": "loomandlantern", "caption": "pouring 200 candles for the fall drop 🕯️ which scent are you? #candletok #smallbusiness", "overlay": "Fall drop is live", "sub": "Fireside · Orchard · Cedar & Smoke", "cta": "Shop now", "bg": "#2a1d33", "fg": "#fbefe4", "accent": "#f2b45c", "sound": "original sound · Loom & Lantern" },
+        { "platform": "meta", "page": "Loom & Lantern", "primary": "Hand-poured in small batches, 60+ hour burn. Free shipping on two or more. 🕯️", "image_title": "The fall\ncollection", "image_sub": "Fireside · Orchard · Cedar & Smoke", "headline": "Free shipping on 2+ candles", "domain": "loomandlantern.example", "cta": "Shop now", "bg": "#f2b45c", "fg": "#2a1d33" }
+      ],
+      "plan": {
+        "budget": 2000,
+        "rows": [
+          ["Behind the pour", "TikTok", "Broad, ages 20–45, home and lifestyle interests", "Purchases", 40],
+          ["Fall collection", "Meta", "Lookalike of past buyers, home decor interests", "Purchases", 35],
+          ["Cart reminders", "Meta", "Added to cart or viewed a product, last 14 days", "Purchases", 25]
+        ]
+      }
+    }
+  ]
+}

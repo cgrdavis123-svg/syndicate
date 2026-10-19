@@ -1,0 +1,187 @@
+<!-- {
+  "title": "Checkout — Syndicate Marketing",
+  "description": "Review your order, tell us about your project, and pay securely with Stripe.",
+  "robots": "noindex",
+  "nav": "pricing",
+  "scripts": ["checkout.js"]
+} -->
+
+<section class="co" id="checkout">
+  <div class="wrap">
+    <div class="co-head">
+      <h1>Checkout</h1>
+      <span class="secure"><svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.4"/></svg>Secure checkout · payments by Stripe</span>
+    </div>
+    <div class="alert info" id="coCancelled" hidden style="margin-bottom:18px">Payment cancelled, nothing was charged. Your cart and answers are saved, so you can pick up where you left off.</div>
+    <div class="alert bad" id="coOffline" hidden style="margin-bottom:18px">We can’t reach our checkout right now. You can still fill this in, or email <a class="link" href="mailto:{{email}}">{{email}}</a> and we’ll send you a payment link.</div>
+    <noscript><div class="alert bad" style="margin-bottom:18px">Checkout needs JavaScript. Turn it on, or email {{email}} and we’ll send a payment link.</div></noscript>
+
+    <ol class="co-steps" id="coSteps">
+      <li data-step="1" class="cur"><button type="button">Your order</button></li>
+      <li data-step="2"><button type="button" disabled>Your details</button></li>
+      <li data-step="3"><button type="button" disabled>Your project</button></li>
+      <li data-step="4"><button type="button" disabled>Review &amp; pay</button></li>
+    </ol>
+
+    <div class="co-grid">
+      <div class="co-panel">
+        <div class="co-step" data-step="1">
+          <h2>Your order</h2>
+          <p class="muted">Change quantities or add extras. You can still edit this later.</p>
+          <div id="coLines" class="rev"><p class="muted">Loading your cart…</p></div>
+          <div id="coProblems" style="display:grid;gap:10px;margin-top:12px"></div>
+          <div id="coSuggest"></div>
+          <div class="co-nav"><a class="back" href="pricing.html">← Keep shopping</a><button type="button" class="btn btn-ink" data-next="1">Continue {{arrow}}</button></div>
+        </div>
+
+        <form id="coForm" novalidate>
+          <div class="co-step" data-step="2" hidden>
+            <h2>Your details</h2>
+            <p class="muted">So we can send your receipt and set up your client portal.</p>
+            <div class="form-grid">
+              <label class="field"><span>Full name</span><input name="name" autocomplete="name" required><span class="err">Enter your name.</span></label>
+              <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" required><span class="err">Enter a valid email address.</span></label>
+              <label class="field"><span>Business name</span><input name="business" autocomplete="organization" required><span class="err">Enter your business name.</span></label>
+              <label class="field"><span>Phone <small>(optional)</small></span><input name="phone" type="tel" autocomplete="tel"></label>
+              <label class="field full"><span>Current website <small>(if you have one)</small></span><input name="website" inputmode="url" autocomplete="url" placeholder="yourbusiness.com"></label>
+              <div class="hp" aria-hidden="true"><label>Leave this empty <input name="website_url" tabindex="-1" autocomplete="off"></label></div>
+            </div>
+            <div class="co-nav"><button type="button" class="back" data-back>← Back</button><button type="button" class="btn btn-ink" data-next="2">Continue {{arrow}}</button></div>
+          </div>
+
+          <div class="co-step" data-step="3" hidden>
+            <h2>Your project</h2>
+            <p class="muted">A few quick questions so we come to your kickoff call prepared. Skip anything you’re not sure about.</p>
+
+            <div class="co-sec">
+              <h3>About your business</h3>
+              <label class="field"><span>What does your business do? <small>(industry)</small></span><input name="industry" placeholder="e.g. Bakery and catering in Spartanburg"></label>
+            </div>
+
+            <div class="co-sec" data-for="website">
+              <h3>Your website <span class="cat-tag">Website</span></h3>
+              <fieldset class="field"><legend>Main goal for the site</legend>
+                <div class="opts">
+                  <div class="opt"><input type="radio" name="goal" id="g1" value="More calls and leads"><label for="g1">More calls and leads<small>Quotes, bookings, inquiries</small></label></div>
+                  <div class="opt"><input type="radio" name="goal" id="g2" value="Sell online"><label for="g2">Sell online<small>Products or gift cards</small></label></div>
+                  <div class="opt"><input type="radio" name="goal" id="g3" value="Look established"><label for="g3">Look established<small>Trust and credibility</small></label></div>
+                  <div class="opt"><input type="radio" name="goal" id="g4" value="Launch a new business"><label for="g4">Launch something new<small>A new business or offer</small></label></div>
+                </div>
+                <span class="err">Choose the main goal for your website.</span>
+              </fieldset>
+              <label class="field"><span>Pages you’d like <small>(optional)</small></span><textarea name="pages" rows="2" placeholder="e.g. Home, Menu, Catering, About, Contact"></textarea></label>
+              <label class="field"><span>Websites or styles you like <small>(optional)</small></span><textarea name="style" rows="2" placeholder="Links, colors, or words like “clean”, “bold”, “warm”"></textarea></label>
+              <fieldset class="field"><legend>Do you have a domain name?</legend>
+                <div class="opts">
+                  <div class="opt"><input type="radio" name="has_domain" id="hd1" value="yes"><label for="hd1">Yes</label></div>
+                  <div class="opt"><input type="radio" name="has_domain" id="hd2" value="no"><label for="hd2">No, help me get one</label></div>
+                  <div class="opt"><input type="radio" name="has_domain" id="hd3" value="unsure"><label for="hd3">Not sure</label></div>
+                </div>
+              </fieldset>
+              <label class="field" id="domainField" hidden><span>Your domain</span><input name="domain" placeholder="yourbusiness.com" inputmode="url"><span class="err">Enter the domain, like yourbusiness.com.</span></label>
+              <fieldset class="field"><legend>Do you have a logo?</legend>
+                <div class="opts">
+                  <div class="opt"><input type="radio" name="has_logo" id="hl1" value="yes"><label for="hl1">Yes</label></div>
+                  <div class="opt"><input type="radio" name="has_logo" id="hl2" value="no"><label for="hl2">No</label></div>
+                </div>
+              </fieldset>
+              <div id="logoOffer" hidden></div>
+              <fieldset class="field"><legend>Photos and text for the site</legend>
+                <div class="opts">
+                  <div class="opt"><input type="radio" name="assets" id="as1" value="ready"><label for="as1">I have them ready</label></div>
+                  <div class="opt"><input type="radio" name="assets" id="as2" value="some"><label for="as2">I have some of it</label></div>
+                  <div class="opt"><input type="radio" name="assets" id="as3" value="help"><label for="as3">I need help with the words</label></div>
+                </div>
+              </fieldset>
+              <div id="copyOffer" hidden></div>
+              <label class="field"><span>Any date you need it by? <small>(optional)</small></span><input name="deadline" placeholder="e.g. Before our grand opening on March 1"></label>
+            </div>
+
+            <div class="co-sec" data-for="ads">
+              <h3>Your ads <span class="cat-tag">Paid ads</span></h3>
+              <fieldset class="field"><legend>Platforms <small id="platHint"></small></legend>
+                <div class="opts">
+                  <div class="opt"><input type="checkbox" name="platforms" id="p1" value="google"><label for="p1">Google<small>Search, Maps, YouTube</small></label></div>
+                  <div class="opt"><input type="checkbox" name="platforms" id="p2" value="meta"><label for="p2">Meta<small>Facebook &amp; Instagram</small></label></div>
+                  <div class="opt"><input type="checkbox" name="platforms" id="p3" value="tiktok"><label for="p3">TikTok<small>In-feed video</small></label></div>
+                </div>
+                <span class="err">Pick the right number of platforms for your plan.</span>
+              </fieldset>
+              <div class="form-grid">
+                <label class="field"><span>Monthly ad budget <small>(paid to the platforms)</small></span><select name="ad_budget"><option value="">Choose one</option><option>Under $500</option><option>$500–$1,500</option><option>$1,500–$5,000</option><option>$5,000+</option><option>Not sure yet</option></select></label>
+                <label class="field"><span>Where are your customers?</span><input name="ad_area" placeholder="e.g. 25 miles around Spartanburg"></label>
+              </div>
+              <fieldset class="field"><legend>Do you already have ad accounts?</legend>
+                <div class="opts">
+                  <div class="opt"><input type="radio" name="ad_accounts" id="aa1" value="have"><label for="aa1">Yes, I have them</label></div>
+                  <div class="opt"><input type="radio" name="ad_accounts" id="aa2" value="new"><label for="aa2">No, set them up for me</label></div>
+                  <div class="opt"><input type="radio" name="ad_accounts" id="aa3" value="unsure"><label for="aa3">Not sure</label></div>
+                </div>
+              </fieldset>
+              <div id="setupOffer" hidden></div>
+            </div>
+
+            <div class="co-sec" data-for="care" data-not="website">
+              <h3>The website we’ll look after <span class="cat-tag">Care</span></h3>
+              <label class="field"><span>Website address</span><input name="care_url" inputmode="url" placeholder="yourbusiness.com"><span class="err">Enter the address of the website you’d like us to look after.</span></label>
+              <div class="form-grid">
+                <label class="field"><span>What is it built with?</span><select name="care_platform"><option value="">Choose one</option><option value="wordpress">WordPress</option><option value="shopify">Shopify</option><option value="squarespace">Squarespace</option><option value="wix">Wix</option><option value="webflow">Webflow</option><option value="custom">Hand-built or other</option><option value="unsure">Not sure</option></select></label>
+                <fieldset class="field"><legend>Do you have the admin logins?</legend>
+                  <div class="opts">
+                    <div class="opt"><input type="radio" name="care_access" id="ca1" value="yes"><label for="ca1">Yes</label></div>
+                    <div class="opt"><input type="radio" name="care_access" id="ca2" value="no"><label for="ca2">No, help me find them</label></div>
+                  </div>
+                </fieldset>
+              </div>
+              <p class="muted" style="font-size:13.5px;margin-top:4px">Monitoring starts as soon as you pay. We’ll ask for access after checkout so we can take a first backup and make your edits. On Shopify, Squarespace, Wix and Webflow the platform runs software updates and server backups; we export your content monthly.</p>
+            </div>
+
+            <div class="co-sec" data-for="community">
+              <h3>Your community <span class="cat-tag">Community</span></h3>
+              <div class="form-grid">
+                <label class="field"><span>Who is the community for?</span><select name="com_kind"><option value="">Choose one</option><option value="Game studio">A game or game studio</option><option value="Creator">A streamer or creator</option><option value="Esports">An esports team, league or tournament</option><option value="Gaming business">A gaming business</option><option value="Other">Something else</option></select></label>
+                <label class="field"><span>Game, channel or team name <small>(optional)</small></span><input name="com_name" placeholder="e.g. Starfall Tactics"></label>
+              </div>
+              <div class="form-grid">
+                <label class="field"><span>Discord invite or link <small>(if you have a server)</small></span><input name="com_link" placeholder="discord.gg/…"></label>
+                <label class="field"><span>Members today <small>(roughly)</small></span><select name="com_size"><option value="">Choose one</option><option value="No server yet">No server yet</option><option value="Under 500">Under 500</option><option value="500–5,000">500–5,000</option><option value="5,000–25,000">5,000–25,000</option><option value="Over 25,000">Over 25,000</option></select></label>
+              </div>
+              <p class="muted" style="font-size:13.5px;margin-top:4px">After checkout we’ll ask you to give our account a staff role on your server (or we’ll create the server and hand ownership to you). You always stay the owner.</p>
+            </div>
+
+            <div class="co-sec" data-for="service">
+              <h3>What we’ll review <span class="cat-tag">Audits &amp; services</span></h3>
+              <label class="field"><span>Website or ad account <small>(optional)</small></span><input name="audit_url" placeholder="yourbusiness.com, or which ad accounts"></label>
+              <label class="field"><span>What should we focus on? <small>(optional)</small></span><textarea name="audit_focus" rows="2" placeholder="e.g. We get traffic but few calls"></textarea></label>
+            </div>
+
+            <div class="co-sec">
+              <h3>Anything else?</h3>
+              <label class="field"><span>Notes <small>(optional)</small></span><textarea name="notes" rows="3" placeholder="Anything that would help us get started"></textarea></label>
+            </div>
+            <div class="co-nav"><button type="button" class="back" data-back>← Back</button><button type="button" class="btn btn-ink" data-next="3">Review order {{arrow}}</button></div>
+          </div>
+
+          <div class="co-step" data-step="4" hidden>
+            <h2>Review &amp; pay</h2>
+            <p class="muted">Check everything, then pay on Stripe’s secure page. <span data-promo hidden>Have a promo code? You can enter it there.</span></p>
+            <div id="coReview" class="rev"></div>
+            <p class="alert info" data-show-if-mo hidden style="margin-top:16px"><b>Automatic renewal:</b> you’ll be charged <b class="mo-amt"></b>/month, starting <b class="mo-start">today</b> and on the same date each month, until you cancel. Cancel online any time in your client portal. Ads management ends at the first billing date at least 30 days after you cancel; other monthly plans end when the paid month runs out. <a href="terms.html#monthly" target="_blank" rel="noopener">Details</a></p>
+            <label class="agree" style="margin-top:20px"><input type="checkbox" name="agree" value="1"> <span>I agree to the <a href="terms.html" target="_blank" rel="noopener">terms of sale</a>, including the refund terms<span data-show-if-mo hidden>, and I agree to be charged <b class="mo-amt"></b> every month starting <span class="mo-start">today</span> until I cancel</span>.</span></label>
+            <div class="alert bad" id="payAlert" hidden style="margin-top:16px"></div>
+            <div style="margin-top:22px"><button type="submit" class="btn btn-lime btn-block pay-btn" id="payBtn">Pay securely {{arrow}}</button></div>
+            <p class="stripe-note"><b style="color:#635bff">Powered by Stripe</b> · Card, Apple Pay and Google Pay. We never see your card details.</p>
+            <div class="co-nav"><button type="button" class="back" data-back>← Back</button><span></span></div>
+          </div>
+        </form>
+      </div>
+
+      <aside class="co-sum" id="coSum" aria-label="Order summary">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h3>Order summary</h3><button type="button" class="sum-toggle" aria-expanded="false"><span class="sum-count"></span> ▾</button></div>
+        <div class="sum-lines"></div>
+        <div class="sum-totals"></div>
+        <div class="sum-perks" style="display:grid;gap:10px"></div>
+      </aside>
+    </div>
+  </div>
+</section>

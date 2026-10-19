@@ -1,0 +1,57 @@
+<!-- {
+  "title": "Contact — Syndicate Holdings Group",
+  "description": "Get in touch with Syndicate Holdings Group. Bring us an idea, book a TikTok Shop consultation with Creator Ops Media, or work with Syndicate Marketing.",
+  "nav": "contact"
+} -->
+
+<section class="page-hero" style="padding-bottom:70px">
+  <div class="wrap">
+    <div class="crumbs reveal"><a href="index.html">Home</a><i>/</i><span>Contact</span></div>
+    <h1 class="reveal d1">Let&rsquo;s <span class="serif grad-text">build</span> something.</h1>
+    <p class="lede reveal d2">Ideas, brands, partnerships, or careers: tell us what you&rsquo;re working on and we&rsquo;ll route it to the right team.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:80px">
+  <div class="wrap form-wrap">
+    <div class="reveal">
+      <span class="eyebrow"><span class="dot"></span>Direct line</span>
+      <h2 style="font-size:clamp(30px,3.4vw,44px)">Prefer email?</h2>
+      <p style="color:var(--muted);margin:16px 0 0">Reach us directly. Every message gets read by a person.</p>
+      <div class="contact-cards">
+        <a class="c-card" href="mailto:{{email}}" data-copy="{{email}}"><div><b>{{email}}</b><span>All inquiries</span></div><span class="copy">CLICK TO COPY</span></a>
+        <a class="c-card" href="about.html"><div><b>Founded in Spartanburg, SC</b><span>Remote-first · Eastern Time</span></div><span class="copy">STORY →</span></a>
+        <a class="c-card" href="{{bookConsult}}"><div><b>TikTok Shop consultations</b><span>1:1 with Grady Davis · $150 per hour · book online</span></div><span class="copy">BOOK →</span></a>
+        <a class="c-card" href="ideas.html"><div><b>Have an idea?</b><span>We help bring ideas to life through our brands.</span></div><span class="copy">LEARN →</span></a>
+      </div>
+    </div>
+
+    <form class="form spot reveal d1" id="contactForm" data-to="{{email}}">
+      <div class="f">
+        <label>What&rsquo;s this about?</label>
+        <div class="topics">
+          <input type="radio" name="topic" id="t-idea" value="idea" checked><label for="t-idea">Bring an idea</label>
+          <input type="radio" name="topic" id="t-consult" value="consult"><label for="t-consult">Book a consultation</label>
+          <input type="radio" name="topic" id="t-tiktok" value="tiktok"><label for="t-tiktok">TikTok Shop</label>
+          <input type="radio" name="topic" id="t-web" value="web"><label for="t-web">Website</label>
+          <input type="radio" name="topic" id="t-ads" value="ads"><label for="t-ads">Paid ads</label>
+          <input type="radio" name="topic" id="t-marketing" value="marketing"><label for="t-marketing">Marketing</label>
+          <input type="radio" name="topic" id="t-careers" value="careers"><label for="t-careers">Careers</label>
+          <input type="radio" name="topic" id="t-other" value="other"><label for="t-other">Something else</label>
+        </div>
+      </div>
+      <div class="hp" aria-hidden="true"><label for="f-website">Website</label><input id="f-website" name="website" tabindex="-1" autocomplete="off"></div>
+      <div class="field-row">
+        <div class="f"><label for="f-name">Name</label><input id="f-name" name="name" required autocomplete="name" placeholder="Your name"></div>
+        <div class="f"><label for="f-email">Email</label><input id="f-email" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>
+      </div>
+      <div class="f"><label for="f-company">Company / brand <span style="color:var(--dim)">(optional)</span></label><input id="f-company" name="company" autocomplete="organization" placeholder="Company name or website"></div>
+      <div class="f"><label for="f-msg">Message</label><textarea id="f-msg" name="message" required placeholder="Tell us about your idea, brand, or goals. For a consultation, include your shop and a few times that work for you."></textarea></div>
+      {{captcha}}
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+        <p class="form-note" id="formNote">A real person reads every message. We use your details only to reply. See our <a href="privacy.html" style="color:var(--text);text-decoration:underline">Privacy Policy</a>.</p>
+        <button class="btn btn-primary" type="submit">Send message {{arrow}}</button>
+      </div>
+    </form>
+  </div>
+</section>

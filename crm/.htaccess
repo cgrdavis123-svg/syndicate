@@ -1,0 +1,47 @@
+# Syndicate CRM (crm.stusyn.com) — private app
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Always use HTTPS
+  RewriteCond %{REQUEST_URI} !^/\.well-known/
+  RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301,NE]
+  RewriteRule ^(app|storage)(/|$) - [F,L]
+</IfModule>
+
+<FilesMatch "\.(sqlite|sqlite-wal|sqlite-shm|log|ini|md|key|gz|lock|mmdb)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+<IfModule mod_headers.c>
+  Header always set X-Robots-Tag "noindex, nofollow"
+  Header always set X-Frame-Options "DENY"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "same-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set Strict-Transport-Security "max-age=31536000"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
+</IfModule>
+
+AddType font/woff2 .woff2
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+# The site stats script that clients put on their websites
+<Files "a.js">
+  <IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=86400"
+    Header always unset X-Frame-Options
+  </IfModule>
+</Files>

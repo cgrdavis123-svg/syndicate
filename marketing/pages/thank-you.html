@@ -1,0 +1,71 @@
+<!-- {
+  "title": "Thank you for your order — Syndicate Marketing",
+  "description": "Your order with Syndicate Marketing. Here's what happens next.",
+  "robots": "noindex"
+} -->
+
+<section class="ty">
+  <div class="wrap">
+    <div class="ty-card" id="ty" aria-live="polite">
+      <span class="ty-ico wait" id="tyIco"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3a9 9 0 1 0 9 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span>
+      <h1 id="tyTitle">Confirming your payment…</h1>
+      <p class="lede" id="tyLede">This takes a few seconds. Please keep this page open.</p>
+      <div id="tyItems" class="rev" style="margin-top:28px"></div>
+      <ol class="ty-next" id="tyNext" hidden>
+        <li><i>✓</i><div><b>Order paid</b><span>Stripe has emailed your receipt to <b id="tyEmail"></b>.</span></div></li>
+        <li><i>2</i><div><b>Your client portal is ready</b><span>We’ve emailed you a link. Upload your logo, photos and anything else you’d like us to use.</span></div></li>
+        <li><i>3</i><div><b>Book your kickoff call</b><span>Pick a time that suits you: <a class="link" href="{{bookKickoff}}">choose a time</a>. The link is in your email too.</span></div></li>
+        <li><i>4</i><div><b>We get to work</b><span>You’ll see every step, draft and approval in your portal.</span></div></li>
+      </ol>
+      <div class="cta-row" id="tyCta" hidden><a class="btn btn-ink" href="{{bookKickoff}}">Book your kickoff call {{arrow}}</a><a class="btn btn-ghost" id="tyPortal" href="#">Open your client portal</a></div>
+      <p class="muted" style="margin-top:26px;font-size:14px">Questions? Email <a class="link" href="mailto:{{email}}">{{email}}</a><span id="tyRef"></span>.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var SM = window.SM, C = window.SMCards;
+  var q = new URLSearchParams(location.search), saved = {};
+  try { saved = JSON.parse(sessionStorage.getItem('sm_order') || '{}'); } catch (e) {}
+  var ref = q.get('ref') || saved.ref, k = q.get('k') || saved.k, sid = q.get('session_id') || '';
+  var $ = function (id) { return document.getElementById(id); };
+  function show(o) {
+    var paid = o.status === 'paid';
+    $('tyIco').className = 'ty-ico' + (paid ? '' : ' wait');
+    $('tyIco').innerHTML = paid ? '<svg viewBox="0 0 24 24" fill="none"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="#0d0f0c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' : $('tyIco').innerHTML;
+    $('tyTitle').innerHTML = paid ? 'Thank you, ' + C.esc(o.name) + '. <span class="serif hl">You’re in.</span>' : (o.status === 'processing' ? 'Your payment is processing.' : 'Confirming your payment…');
+    $('tyLede').textContent = paid ? 'Your order is confirmed and your project is set up. Here’s what happens next.' : (o.status === 'processing' ? 'Bank payments can take a few days to clear. We’ll email you as soon as it does, and we can still schedule your kickoff now.' : 'This takes a few seconds. Please keep this page open.');
+    $('tyItems').innerHTML = (o.items || []).map(function (i) { return '<div class="line"><div><b>' + (i.qty > 1 ? i.qty + ' × ' : '') + C.esc(i.name) + '</b></div><div class="lp">' + (i.trial_months ? 'Free<small>' + i.trial_months + ' months, then ' + C.money(i.price * i.qty) + '/mo</small>' : C.money(i.price * i.qty) + (i.interval === 'month' ? '<small>per month</small>' : '')) + '</div></div>'; }).join('') +
+      (paid ? '<div class="totals" style="margin-top:6px"><div class="big"><span>Paid today</span><span>' + C.money(o.paid) + '</span></div>' + (o.monthly ? '<div class="mo"><span>Then ' + C.money(o.monthly) + '/month' + (o.trial_end ? ' from ' + C.esc(o.trial_end) : '') + '</span><span>' + (o.trial_end ? 'free until then' : 'billed automatically') + '</span></div>' : '') + '</div>' : '');
+    $('tyEmail').textContent = o.email;
+    $('tyRef').textContent = ' with your order number, ' + o.ref;
+    $('tyNext').hidden = !paid; $('tyCta').hidden = !paid;
+    $('tyPortal').href = o.portal;
+    if (paid) {
+      if (SM) SM.clear();
+      try { sessionStorage.removeItem('sm_checkout'); } catch (e) {}
+      var key = 'sm_paid_' + o.ref, done = false; try { done = !!localStorage.getItem(key); localStorage.setItem(key, '1'); } catch (e) {}
+      if (!done) { var t = 0, iv = setInterval(function () { if (window.syn) { window.syn('Purchase', { value: String(o.paid), ref: o.ref }); clearInterval(iv); } else if (++t > 20) clearInterval(iv); }, 250); }
+    }
+  }
+  if (!ref || !k) {
+    $('tyIco').className = 'ty-ico';
+    $('tyTitle').textContent = 'Thanks for your order.';
+    $('tyLede').textContent = 'We couldn’t find your order details in this browser, but if you paid, you’ll have a receipt from Stripe and a confirmation email from us.';
+    return;
+  }
+  var tries = 0;
+  (function poll() {
+    fetch(SM.API + '?a=order&ref=' + encodeURIComponent(ref) + '&k=' + encodeURIComponent(k) + (sid ? '&session_id=' + encodeURIComponent(sid) : ''), { credentials: 'omit' })
+      .then(function (r) { return r.json(); })
+      .then(function (o) {
+        if (!o.ok) throw 0;
+        show(o);
+        if (o.status !== 'paid' && o.status !== 'processing' && ++tries < 15) setTimeout(poll, 2000);
+        else if (o.status !== 'paid' && o.status !== 'processing') { $('tyLede').textContent = 'We haven’t received confirmation from Stripe yet. If you were charged, you’ll get a confirmation email shortly, or email us with your order number.'; }
+      })
+      .catch(function () { if (++tries < 15) setTimeout(poll, 2500); });
+  })();
+});
+</script>

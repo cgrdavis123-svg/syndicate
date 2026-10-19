@@ -1,0 +1,24 @@
+dist/
+dist-crm/
+node_modules/
+*.zip
+crm/storage/*.sqlite*
+crm/storage/sessions/
+crm/storage/backups/
+crm/storage/*.log
+/Grady-Davis-Resume.pdf
+dist-marketing/
+# Server settings and secrets: never in git or a deploy zip (copy app/config.sample.php)
+crm/app/config.php
+src/php/app/config.php
+crm/storage/*.key
+src/php/storage/*.key
+src/php/storage/reset-link.json
+src/php/storage/*.sqlite*
+crm/storage/ads/
+crm/ads/assets/
+crm/wiki/assets/
+__pycache__/
+*.pyc
+/*.png
+.DS_Store

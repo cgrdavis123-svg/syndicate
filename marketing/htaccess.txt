@@ -1,0 +1,48 @@
+# Syndicate Marketing — {{domain}} (Apache / LiteSpeed on cPanel)
+Options -Indexes -MultiViews
+DirectoryIndex index.html
+ErrorDocument 404 /404.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Always use https://{{domain}} (no www)
+  RewriteCond %{REQUEST_URI} !^/\.well-known/
+  RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://{{domain}}%{REQUEST_URI} [L,R=301,NE]
+  RewriteCond %{REQUEST_URI} !^/\.well-known/
+  RewriteCond %{HTTP_HOST} ^www\. [NC]
+  RewriteRule ^ https://{{domain}}%{REQUEST_URI} [L,R=301,NE]
+
+  # Clean addresses: /pricing works as well as /pricing.html
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME}.html -f
+  RewriteRule ^([a-z0-9-]+)/?$ $1.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' {{crm}} https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' {{crm}}; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
+  # Tells browsers to always use HTTPS for this domain.
+  Header always set Strict-Transport-Security "max-age=31536000"
+  <FilesMatch "(checkout|thank-you)\.html$">
+    Header set Cache-Control "no-store"
+  </FilesMatch>
+</IfModule>
+
+AddType font/woff2 .woff2
+AddType application/json .json
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>

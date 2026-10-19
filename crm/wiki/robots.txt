@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /search.php
+Disallow: /ask.php
+Disallow: /team.php
+Disallow: /edit.php
+Disallow: /insights.php
+Disallow: /login.php
+
+Sitemap: https://wiki.stusyn.com/sitemap.xml

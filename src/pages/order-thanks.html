@@ -1,0 +1,36 @@
+<!-- {
+  "title": "Thank you for your order — Syndicate Marketing",
+  "description": "Your one-page website order with Syndicate Marketing. Here's what happens next.",
+  "nav": "syndicate-marketing",
+  "robots": "noindex"
+} -->
+
+<section class="page-hero op-thanks">
+  <div class="wrap">
+    <div class="reveal"><span class="tag acc" id="orderRef">ORDER CONFIRMED</span></div>
+    <h1 class="reveal d1">Thank you. Let&rsquo;s build your <span class="serif grad-text">website.</span></h1>
+    <p class="lede reveal d2">Your payment went through, and Stripe has emailed you a receipt. Here&rsquo;s what happens next.</p>
+    <ol class="flow op-flow reveal d2" style="margin-top:48px">
+      <li class="loop"><span class="fl-ico">✓</span><b>Order and pay</b><span>Done. Your project details are saved</span></li>
+      <li><span class="fl-ico">2</span><b>Kickoff</b><span>We&rsquo;ll email you within one business day to schedule it</span></li>
+      <li><span class="fl-ico">3</span><b>First draft</b><span>Shared in your client portal to review</span></li>
+      <li><span class="fl-ico">4</span><b>Changes</b><span>Two rounds of revisions</span></li>
+      <li><span class="fl-ico">5</span><b>Launch</b><span>Live on your domain, with stats running</span></li>
+    </ol>
+    <div class="cta-row reveal d3" style="margin-top:44px">
+      <a href="mailto:{{email}}?subject=My%20one-page%20website%20order" class="btn btn-primary">Send us your logo &amp; photos {{arrow}}</a>
+      <a href="syndicate-marketing.html" class="btn btn-ghost">Back to Syndicate Marketing</a>
+    </div>
+    <p class="muted reveal d3" style="margin-top:22px;font-size:14px">Questions in the meantime? Email <a href="mailto:{{email}}" style="color:var(--text)">{{email}}</a>.</p>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var ref = ''; try { ref = sessionStorage.getItem('syn_order_ref') || ''; } catch (e) {}
+    if (ref) { document.getElementById('orderRef').textContent = 'ORDER ' + ref; }
+    // Counts the paid order as a goal in Site Stats (once per order, in this browser).
+    var done = false; try { done = sessionStorage.getItem('syn_order_paid') === ref; sessionStorage.setItem('syn_order_paid', ref); } catch (e) {}
+    if (!done) { var tries = 0, t = setInterval(function () { if (window.syn) { window.syn('Website order paid', { plan: 'One-page', ref: ref }); clearInterval(t); } else if (++tries > 20) clearInterval(t); }, 250); }
+  })();
+</script>
