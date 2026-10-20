@@ -128,11 +128,13 @@
     var p = product(i.sku); if (!p) return null;
     var o = offerItem(i.sku);
     if (o) p = Object.assign({}, p, { price: o.price, was: o.list_price > o.price ? o.list_price : 0, trial: p.interval === 'month' ? o.trial_months : 0 });
+    // Included free with a package in the same cart (e.g. domain setup with the Business website).
+    if ((p.free_with || []).some(function (s) { return inCart(s); })) p = Object.assign({}, p, { price: 0, was: p.price, incl: true });
     return { p: p, qty: i.qty };
   }).filter(Boolean); }
   function totals(ls) {
     var t = { one: 0, mo: 0, trialMo: 0, was: 0 };
-    ls.forEach(function (l) { var a = l.p.price * l.qty; if (l.p.interval === 'month') { t.mo += a; if (l.p.trial) t.trialMo += a; } else t.one += a; if (l.p.was) t.was += (l.p.was - l.p.price) * l.qty; });
+    ls.forEach(function (l) { var a = l.p.price * l.qty; if (l.p.interval === 'month') { t.mo += a; if (l.p.trial) t.trialMo += a; } else t.one += a; if (l.p.was && !l.p.incl) t.was += (l.p.was - l.p.price) * l.qty; });
     t.today = t.one + t.mo - t.trialMo;
     var o = offerOn(); t.trialEnds = o && t.trialMo ? o.trial_ends : ''; t.trialMonths = o ? o.trial_months : 0;
     return t;
@@ -179,6 +181,7 @@
     var p = l.p, multi = (p.max_qty || 1) > 1;
     return '<div class="line"><div><span class="cat-tag">' + C.esc((catalog.categories || {})[p.category] || p.category) + '</span><br><b>' + C.esc(p.name) + '</b></div>' +
       '<div class="lp">' + (p.trial ? '<span class="free">Free</span><small>' + p.trial + ' months, then ' + C.money(p.price * l.qty) + '/mo</small>'
+        : p.incl ? '<span class="free">Included</span><small><s class="was">' + C.money(p.was * l.qty) + '</s> with your package</small>'
         : (p.was ? '<s class="was">' + C.money(p.was * l.qty) + '</s> ' : '') + C.money(p.price * l.qty) + (p.interval === 'month' ? '<small>per month</small>' : (multi ? '<small>' + C.money(p.price) + ' ' + C.esc(p.unit || 'each') + '</small>' : ''))) + '</div>' +
       (editable ? '<div class="line-meta">' + (multi ? '<span class="qty"><button type="button" data-qty="' + p.sku + '" data-d="-1" aria-label="Fewer">−</button><span>' + l.qty + '</span><button type="button" data-qty="' + p.sku + '" data-d="1" aria-label="More">+</button></span>' : '') +
         '<button type="button" class="rm" data-rm="' + p.sku + '">Remove</button></div>' : '') + '</div>';

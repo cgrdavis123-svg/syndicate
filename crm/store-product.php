@@ -18,6 +18,7 @@ if (is_post()) {
         'features' => implode("\n", array_slice(product_lines(post('features')), 0, 12)), 'price' => round(max(0, (float)post('price')), 2), 'interval' => post('interval') === 'month' ? 'month' : '',
         'unit' => mb_substr(post('unit'), 0, 30), 'max_qty' => max(1, min(100, (int)post('max_qty'))), 'requires' => implode(',', array_intersect((array)($_POST['requires'] ?? []), array_keys(SHOP_CATEGORIES))),
         'badge' => mb_substr(post('badge'), 0, 24), 'featured' => post('featured') === '1' ? 1 : 0, 'timeline_days' => max(0, min(365, (int)post('timeline_days'))),
+        'free_with' => implode(',', array_intersect((array)($_POST['free_with'] ?? []), array_column(shop_products(false), 'sku'))),
         'steps' => implode("\n", array_slice(product_lines(post('steps')), 0, 30)), 'site' => post('site') === '1' ? 1 : 0, 'active' => post('active') === '1' ? 1 : 0, 'position' => (int)post('position'),
     ]);
     $sku = $id ? $p['sku'] : strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', post('sku') ?: $p['name']), '-'));
@@ -25,7 +26,7 @@ if (is_post()) {
     elseif ($p['price'] < 1) $error = 'Enter a price of at least $1.';
     elseif (!$id && ($sku === '' || val('SELECT 1 FROM products WHERE sku = ?', [$sku]))) $error = 'That product code is already used. Choose another.';
     else {
-        $cols = ['category', 'name', 'blurb', 'features', 'price', 'interval', 'unit', 'max_qty', 'requires', 'badge', 'featured', 'timeline_days', 'steps', 'site', 'active', 'position'];
+        $cols = ['category', 'name', 'blurb', 'features', 'price', 'interval', 'unit', 'max_qty', 'requires', 'free_with', 'badge', 'featured', 'timeline_days', 'steps', 'site', 'active', 'position'];
         $vals = array_map(function ($c) use ($p) { return $p[$c]; }, $cols);
         if ($id) q('UPDATE products SET ' . implode(', ', array_map(function ($c) { return "$c = ?"; }, $cols)) . ', updated_at = ? WHERE id = ?', array_merge($vals, [now(), $id]));
         else { q('INSERT INTO products (sku, ' . implode(', ', $cols) . ', created_at, updated_at) VALUES (?' . str_repeat(',?', count($cols)) . ',?,?)', array_merge([$sku], $vals, [now(), now()])); $id = (int)db()->lastInsertId(); }
@@ -33,6 +34,7 @@ if (is_post()) {
     }
 }
 $req = array_filter(explode(',', $p['requires']));
+$freeWith = array_filter(explode(',', (string)($p['free_with'] ?? '')));
 layout_top($id ? $p['name'] : 'New product', 'store', $user);
 ?>
 <div class="page-head"><div><a class="muted small" href="store-products.php">← Products</a><h1><?= $id ? e($p['name']) : 'New product' ?></h1><?php if ($id): ?><p class="muted small mono"><?= e($p['sku']) ?></p><?php endif; ?></div></div>
@@ -67,6 +69,9 @@ layout_top($id ? $p['name'] : 'New product', 'store', $user);
       <label class="chk span2"><input type="checkbox" name="site" value="1"<?= $p['site'] ? ' checked' : '' ?>> <span>Set up Site Stats for the client’s website</span></label>
       <fieldset class="f span2"><span>Only sold together with <small class="muted">(for add-ons)</small></span>
         <?php foreach (['website' => 'A website package', 'ads' => 'An ads plan'] as $k => $l): ?><label class="chk"><input type="checkbox" name="requires[]" value="<?= $k ?>"<?= in_array($k, $req, true) ? ' checked' : '' ?>> <span><?= e($l) ?></span></label><?php endforeach; ?>
+      </fieldset>
+      <fieldset class="f span2"><span>Included free with <small class="muted">(costs $0 when one of these is in the same order)</small></span>
+        <?php foreach (shop_products(false) as $o): if ($o['category'] === 'addon' || $o['sku'] === ($p['sku'] ?? '')) continue; ?><label class="chk"><input type="checkbox" name="free_with[]" value="<?= e($o['sku']) ?>"<?= in_array($o['sku'], $freeWith, true) ? ' checked' : '' ?>> <span><?= e($o['name']) ?></span></label><?php endforeach; ?>
       </fieldset>
       <p class="muted small span2">Add-on steps are added to the package they were bought with, right after the kickoff call.</p>
     </section>

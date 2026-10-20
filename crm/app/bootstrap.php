@@ -511,6 +511,28 @@ function migrate(PDO $pdo): void {
         }
         $pdo->exec('PRAGMA user_version = 20');
     }
+    if ($v < 21) {
+        // v21: products can be included free with certain packages (free_with = SKUs); domain setup is free with the Business website and Online store.
+        $pdo->exec("ALTER TABLE products ADD COLUMN free_with TEXT NOT NULL DEFAULT ''");
+        foreach (json_decode((string)@file_get_contents(__DIR__ . '/catalog.json'), true)['products'] ?? [] as $p) {
+            if (empty($p['free_with'])) continue;
+            $pdo->prepare('UPDATE products SET free_with = ? WHERE sku = ?')->execute([implode(',', $p['free_with']), $p['sku']]);
+            // Refresh the blurb only if nobody has edited it since v20.
+            if ($p['sku'] === 'add-domain-setup') $pdo->prepare('UPDATE products SET blurb = ? WHERE sku = ? AND blurb = ?')->execute([$p['blurb'], $p['sku'],
+                'We set up your domain, Namecheap hosting and business email in an account in your name, then hand you the logins. You pay Namecheap directly, with no markup.']);
+        }
+        // Show the perk on the packages it comes with, just before the rounds of changes.
+        $feat = 'Domain, hosting & email setup included';
+        foreach (['web-business', 'web-store'] as $sku) {
+            $f = (string)$pdo->query('SELECT features FROM products WHERE sku = ' . $pdo->quote($sku))->fetchColumn();
+            if ($f === '' || strpos($f, $feat) !== false) continue;
+            $ls = explode("\n", $f); $at = count($ls);
+            foreach ($ls as $i => $l) if (stripos($l, 'rounds of changes') !== false) { $at = $i; break; }
+            array_splice($ls, $at, 0, [$feat]);
+            $pdo->prepare('UPDATE products SET features = ? WHERE sku = ?')->execute([implode("\n", $ls), $sku]);
+        }
+        $pdo->exec('PRAGMA user_version = 21');
+    }
 }
 function migrate_v1(PDO $pdo): void {
     $pdo->exec("

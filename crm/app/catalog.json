@@ -77,6 +77,7 @@
         "Landing page built for your ads",
         "Full on-page SEO and speed tuning",
         "Site Stats analytics with goals and campaigns",
+        "Domain, hosting & email setup included",
         "Three rounds of changes",
         "Live in about 4–5 weeks"
       ],
@@ -110,6 +111,7 @@
         "Checkout with card, Apple Pay and Google Pay",
         "Shipping, tax and order emails set up",
         "Site Stats with sales and checkout tracking",
+        "Domain, hosting & email setup included",
         "Three rounds of changes",
         "Live in about 6 weeks"
       ],
@@ -451,7 +453,11 @@
       "requires": [
         "website"
       ],
-      "blurb": "We set up your domain, Namecheap hosting and business email in an account in your name, then hand you the logins. You pay Namecheap directly, with no markup.",
+      "free_with": [
+        "web-business",
+        "web-store"
+      ],
+      "blurb": "You pay Namecheap for the domain, hosting and email, at their price with no markup. You pay us once to set it all up right in an account in your name, including email that lands in inboxes, not spam. Free with the Business website and Online store.",
       "features": [],
       "steps": [
         "Namecheap account, domain and hosting set up in your name",

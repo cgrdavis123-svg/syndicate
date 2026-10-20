@@ -78,6 +78,7 @@
     $$('.mo-start').forEach(function (el) { el.textContent = t.trialEnds ? SM.longDate(t.trialEnds) + ' (after your ' + t.trialMonths + ' free months)' : 'today'; });
   }
   function priceText(l) {
+    if (l.p.incl) return '<s class="was">' + C.money(l.p.was * l.qty) + '</s> Included';
     if (l.p.trial) return 'Free for ' + l.p.trial + ' months<small style="display:block;font-weight:400;text-align:right">then ' + C.money(l.p.price * l.qty) + '/mo</small>';
     return (l.p.was ? '<s class="was">' + C.money(l.p.was * l.qty) + '</s> ' : '') + C.money(l.p.price * l.qty) + (l.p.interval === 'month' ? '/mo' : '');
   }
@@ -114,7 +115,8 @@
     var el = $(sel); if (!el) return;
     var p = SM.product(sku);
     el.hidden = !show || !p;
-    if (show && p) el.innerHTML = '<div class="sug" style="margin:0"><div><b>' + C.esc(p.name) + ' · ' + C.short(p) + '</b><span>' + C.esc(p.blurb) + '</span></div><button type="button" class="btn btn-ink btn-xs" data-add="' + sku + '">' + C.plus + ' Add</button></div>';
+    var incl = p && (p.free_with || []).some(inCart);
+    if (show && p) el.innerHTML = '<div class="sug" style="margin:0"><div><b>' + C.esc(p.name) + ' · ' + (incl ? 'Free with your package' : C.short(p)) + '</b><span>' + C.esc(p.blurb) + '</span></div><button type="button" class="btn btn-ink btn-xs" data-add="' + sku + '">' + C.plus + ' Add</button></div>';
   }
 
   /* ---------- Validation ---------- */

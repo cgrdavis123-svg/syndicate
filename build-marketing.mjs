@@ -31,7 +31,7 @@ site.domain = site.siteUrl.replace(/^https?:\/\//, '');
 const seed = JSON.parse(readFileSync('crm/app/catalog.json', 'utf8'));
 const products = seed.products.map(p => ({
   sku: p.sku, category: p.category, name: p.name, blurb: p.blurb || '', features: p.features || [], price: p.price, interval: p.interval || '',
-  unit: p.unit || '', max_qty: p.max_qty || 1, requires: p.requires || [], badge: p.badge || '', featured: !!p.featured, timeline_days: p.timeline_days || 0,
+  unit: p.unit || '', max_qty: p.max_qty || 1, requires: p.requires || [], badge: p.badge || '', featured: !!p.featured, timeline_days: p.timeline_days || 0, free_with: p.free_with || [],
 }));
 const catalog = { ok: true, currency: 'usd', ready: true, promo: true, products,
   categories: { website: 'Websites', ads: 'Paid ads', care: 'Care plans', community: 'Community', service: 'Audits & services', addon: 'Add-ons' },

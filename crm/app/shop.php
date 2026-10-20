@@ -30,7 +30,8 @@ function product_lines(string $s): array { return array_values(array_filter(arra
 function product_public(array $p): array {
     return ['sku' => $p['sku'], 'category' => $p['category'], 'name' => $p['name'], 'blurb' => $p['blurb'], 'features' => product_lines($p['features']),
         'price' => (float)$p['price'], 'interval' => $p['interval'], 'unit' => $p['unit'], 'max_qty' => max(1, (int)$p['max_qty']),
-        'requires' => array_values(array_filter(explode(',', $p['requires']))), 'badge' => $p['badge'], 'featured' => (bool)$p['featured'], 'timeline_days' => (int)$p['timeline_days']];
+        'requires' => array_values(array_filter(explode(',', $p['requires']))), 'badge' => $p['badge'], 'featured' => (bool)$p['featured'], 'timeline_days' => (int)$p['timeline_days'],
+        'free_with' => array_values(array_filter(explode(',', (string)($p['free_with'] ?? ''))))];
 }
 function price_label(float $price, string $interval = '', string $unit = ''): string {
     return money($price, floor($price) != $price) . ($interval === 'month' ? '/mo' : '') . ($unit !== '' ? ' ' . $unit : '');
@@ -225,6 +226,8 @@ function shop_price_cart(array $items, array $brief = [], string $offer = ''): a
         if ($trial) foreach ($lines as $l) if ($l['product']['interval'] === 'month' && !$l['trial_months'])
             return ['error' => $l['product']['name'] . ' can’t be in the same order as this offer’s free months. Remove it and add it later, or email ' . setting('business_email') . '.'];
     }
+    // Included free when a package it comes with is in the same order (e.g. domain setup with the Business website).
+    foreach ($lines as $sku => $l) if (array_intersect(array_filter(explode(',', (string)($l['product']['free_with'] ?? ''))), array_keys($lines))) $lines[$sku]['price'] = 0.0;
     $one = 0; $mo = 0; $now = 0;
     foreach ($lines as $l) {
         $amt = $l['price'] * $l['qty'];
@@ -294,6 +297,7 @@ function shop_checkout(array $in): array {
         $p = $l['product'];
         q('INSERT INTO order_items (order_id, product_id, sku, name, category, price, interval, quantity, list_price, trial_months) VALUES (?,?,?,?,?,?,?,?,?,?)',
             [$orderId, $p['id'], $p['sku'], $p['name'], $p['category'], $l['price'], $p['interval'], $l['qty'], $l['list_price'], $l['trial_months']]);
+        if ($l['price'] <= 0 && !$l['trial_months'] && $p['interval'] !== 'month') continue; // included free: recorded on the order, nothing to charge
         $label = $p['name'] . ($l['trial_months'] ? ' — first ' . $l['trial_months'] . ' months free' : ($l['price'] < $l['list_price'] ? ' (offer price, regularly ' . money($l['list_price']) . ')' : ''));
         $pd = ['currency' => 'usd', 'unit_amount' => (int)round($l['price'] * 100), 'product_data' => ['name' => $label, 'metadata' => ['sku' => $p['sku']]]];
         if ($p['blurb'] !== '') $pd['product_data']['description'] = mb_substr($p['blurb'], 0, 300);
@@ -394,7 +398,7 @@ function shop_fulfil(array $o, array $s): void {
         foreach ($items as $it) {
             $free = (int)$it['trial_months'] > 0;
             $desc = $it['name'] . ($free ? ' — first ' . (int)$it['trial_months'] . ' months free, then ' . money((float)$it['price']) . '/month' : ($it['interval'] === 'month' ? ' — first month' : ''))
-                . (!$free && $it['list_price'] !== null && (float)$it['list_price'] > (float)$it['price'] ? ' (offer price; regularly ' . money((float)$it['list_price']) . ')' : '');
+                . (!$free && $it['list_price'] !== null && (float)$it['list_price'] > (float)$it['price'] ? ((float)$it['price'] <= 0 ? ' (included with your package; regularly ' : ' (offer price; regularly ') . money((float)$it['list_price']) . ')' : '');
             q('INSERT INTO invoice_items (invoice_id, description, quantity, unit_price, position) VALUES (?,?,?,?,?)', [$invoiceId, $desc, $it['quantity'], $free ? 0 : $it['price'], $pos++]);
         }
         if ($discount > 0) q('INSERT INTO invoice_items (invoice_id, description, quantity, unit_price, position) VALUES (?,?,?,?,?)', [$invoiceId, 'Discount', 1, -$discount, $pos++]);
