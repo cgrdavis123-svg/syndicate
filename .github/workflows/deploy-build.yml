@@ -1,23 +1,37 @@
-# Builds all three sites on every push to main and commits the result to the `deploy` branch.
-# cPanel → Git Version Control pulls that branch and runs deploy.sh (tools/deploy/), which copies
-# each site into its live folder. The server needs no Node; nothing here touches the server directly.
-name: Build for cPanel
+# On every push to main: build all three sites and upload them to the cPanel server over FTPS.
+# The upload (tools/deploy/ftp-deploy.sh) adds and replaces files only. It never deletes anything on the
+# server and never uploads app/config.php or storage/ data. Until the FTP secrets are set it only builds.
+# Run it by hand from the Actions tab (Run workflow); tick "check only" to see where files would go.
+name: Deploy to cPanel
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      check:
+        description: Check only (find the folders, upload nothing)
+        type: boolean
+        default: false
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: deploy-build
+  group: deploy
   cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    env:
+      FTP_SERVER: ${{ secrets.FTP_SERVER }}
+      FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      STUSYN_DIR: ${{ vars.STUSYN_DIR }}
+      MARKETING_DIR: ${{ vars.MARKETING_DIR }}
+      CRM_DIR: ${{ vars.CRM_DIR }}
+      FTP_VERIFY_CERT: ${{ vars.FTP_VERIFY_CERT }}
     steps:
       - uses: actions/checkout@v4
 
@@ -27,42 +41,23 @@ jobs:
 
       - name: Build the three sites
         env:
-          # Public Turnstile site key (Settings → Secrets and variables → Actions → Variables). Empty = no widget.
+          # Public Turnstile site key (repo variable). Empty = no widget, which matches what's live now.
           TURNSTILE_SITE: ${{ vars.TURNSTILE_SITE }}
         run: |
           npm run build
           npm run build:marketing
           npm run package:crm
-
-      - name: Put the builds together
-        run: |
           rm -rf out && mkdir out
-          cp -a dist out/stusyn
-          cp -a dist-marketing out/marketing
-          cp -a dist-crm out/crm
-          # Never ship server data or settings, even if something slipped into a build.
+          cp -a dist out/stusyn && cp -a dist-marketing out/marketing && cp -a dist-crm out/crm
           find out -name 'config.php' -path '*/app/*' -delete
           find out \( -name '*.sqlite*' -o -name '*.key' -o -name '*.zip' \) -delete
-          cp tools/deploy/cpanel.yml out/.cpanel.yml
-          cp tools/deploy/deploy.sh out/deploy.sh
-          cp tools/deploy/README.md out/README.md
-          printf 'Built from %s (%s)\n%s\n' "${GITHUB_SHA::7}" "$(date -u +'%Y-%m-%d %H:%M UTC')" "$(git log -1 --pretty=%s)" > out/BUILD.txt
 
-      - name: Commit to the deploy branch
+      - name: Upload to the server
+        if: env.FTP_SERVER != ''
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git ls-remote --exit-code --heads origin deploy >/dev/null; then
-            git fetch --depth 1 origin deploy
-            git worktree add d FETCH_HEAD
-          else
-            git worktree add --detach d
-            (cd d && git checkout -q --orphan deploy && git rm -rfq .)
-          fi
-          cd d
-          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
-          cp -a ../out/. .
-          git add -A
-          if git diff --cached --quiet; then echo "No changes to deploy."; exit 0; fi
-          git commit -q -m "Build ${GITHUB_SHA::7}: $(git -C .. log -1 --pretty=%s)"
-          git push origin HEAD:refs/heads/deploy
+          sudo apt-get install -y -qq lftp >/dev/null
+          bash tools/deploy/ftp-deploy.sh out ${{ inputs.check && '--check' || '' }}
+
+      - name: No FTP details yet
+        if: env.FTP_SERVER == ''
+        run: echo "Built, but not uploaded. Add the FTP_SERVER, FTP_USERNAME and FTP_PASSWORD secrets to deploy."
