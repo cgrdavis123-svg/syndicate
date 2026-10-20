@@ -31,7 +31,16 @@ function demo_enter(string $dest): void {
     if (!$c) { http_response_code(503); exit('The demo is being set up. Refresh in a moment.'); }
     demo_cookie(true);
     portal_sign_in($c);
-    redirect($dest);
+    redirect(demo_dest($c, $dest));
+}
+// ?to= opens a page inside the demo, so a link on the marketing site can land on the part it's talking about.
+function demo_dest(array $c, string $dest): string {
+    $site = (int)val('SELECT id FROM sites WHERE company_id = ? ORDER BY id LIMIT 1', [(int)$c['company_id']]);
+    $wait = one("SELECT pp.id, pp.project_id FROM project_posts pp JOIN projects p ON p.id = pp.project_id WHERE p.company_id = ? AND pp.approval = 'pending' ORDER BY pp.id DESC LIMIT 1", [(int)$c['company_id']]);
+    $to = defined('ADS_APP')
+        ? ['approvals' => 'portal-creatives.php', 'setup' => 'portal-setup.php']
+        : ['care' => 'portal-care.php?id=' . $site, 'stats' => 'portal-stats.php?id=' . $site, 'approval' => $wait ? 'portal-project.php?id=' . $wait['project_id'] . '#post' . $wait['id'] : '', 'plans' => 'portal-plans.php'];
+    return ($to[get('to')] ?? '') ?: $dest;
 }
 function demo_bye(): void {
     $shop = setting('shop_site_url') ?: 'https://syndicatemarketing.co';

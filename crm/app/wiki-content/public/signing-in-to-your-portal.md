@@ -22,3 +22,7 @@ You stay signed in on that device for 30 days.
 ## Ads clients
 
 Your ads results, approvals and reports are in your **ads portal**. Sign in the same way at {{adsportal}}, or use the **Your ads** button inside your client portal.
+
+## Want to look around first?
+
+Open the [demo client portal](https://crm.stusyn.com/portal-demo.php). It’s a made-up business with sample data, so you can click through projects, approvals, invoices, website care and stats. Nothing you do there is saved or sent.
