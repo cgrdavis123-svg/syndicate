@@ -22,7 +22,10 @@ has() { ftp "cls -1 $(printf %q "$1")" >/dev/null 2>&1; }
 if ! err=$(ftp "set net:max-retries 1; cls -1 -D" 2>&1 >/dev/null); then
   echo "Couldn't sign in to $FTP_SERVER as $FTP_USERNAME. The server said:" >&2; echo "$err" | sed 's/^/  /' | tail -5 >&2
   case "$err" in
-    *certificate*|*Certificate*) echo "That's the security certificate: use the server name from cPanel → FTP Accounts → Configure FTP Client as FTP_SERVER, or set the variable FTP_VERIFY_CERT=no." >&2 ;;
+    *certificate*|*Certificate*)
+      echo "That's the security certificate. It was issued to these names; put one of them in the FTP_SERVER secret:" >&2
+      timeout 20 openssl s_client -connect "$FTP_SERVER:${FTP_PORT:-21}" -starttls ftp </dev/null 2>/dev/null \
+        | openssl x509 -noout -subject -ext subjectAltName 2>/dev/null | grep -oE '(CN ?= ?|DNS:)[^,/ ]+' | sed 's/^CN \?= \?//; s/^DNS://' | sort -u | sed 's/^/  /' >&2 || true ;;
     *530*|*Login*|*login*) echo "That's the username or password: FTP_USERNAME must be the full name, like deploy@stusyn.com." >&2 ;;
     *) echo "If it timed out, the host may be blocking connections from GitHub; ask them to allow FTP from outside, or use a different server name." >&2 ;;
   esac
