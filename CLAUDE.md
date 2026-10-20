@@ -189,7 +189,14 @@ No frameworks, no npm dependencies. Node 18+ locally.
 | `npm run resume:pdf` | Rebuilds the resume PDF (uses Playwright/Chromium) |
 | `npm run demos` | Regenerates the portfolio demo sites in `marketing/work/` from `marketing/demos/*.mjs` (then run `node tools/work-shots.cjs`) |
 
-### Deploying (cPanel)
+### Deploying with Git (cPanel → Git Version Control) — the usual way
+- **Every push to `main`** runs `.github/workflows/deploy-build.yml`: it builds all three sites (with the Turnstile site key from the repo variable `TURNSTILE_SITE`, empty = no widget, which matches what's live) and commits the result to the **`deploy` branch** (`stusyn/`, `marketing/`, `crm/`, plus `.cpanel.yml`, `deploy.sh` and `BUILD.txt` naming the source commit). Nothing on `main` holds built files.
+- **To put it live:** cPanel → Git Version Control → Manage (the `syndicate` repo, branch `deploy`) → Pull or Deploy → **Update from Remote**, then **Deploy HEAD Commit**. `.cpanel.yml` runs `deploy.sh` (source in `tools/deploy/`).
+- **`deploy.sh`** finds each site's live folder from cPanel (`uapi DomainInfo single_domain_data`), or from `~/.syndicate-deploy` (`STUSYN_DIR=`, `MARKETING_DIR=`, `CRM_DIR=`, and `DRY_RUN=1` to only print where things would go). It checks every folder first (inside the home folder, all different, the CRM and stusyn.com folders have `app/config.php`, the marketing folder has `index.html`) and stops before copying anything if one looks wrong. Then it copies like extracting the zips: adds and replaces files, deletes nothing, and never copies `app/config.php` or `storage/` data. Log: `~/.cpanel/logs/vc_*_git_deploy.log`.
+- **Server setup (once):** cPanel → SSH Access → generate a key with no passphrase; add its public key to GitHub → repo Settings → Deploy keys (read-only); in cPanel Terminal run `ssh -T git@github.com` once and accept GitHub's host key; Git Version Control → Create → clone `git@github.com:cgrdavis123-svg/syndicate.git` to `repositories/syndicate`; then Manage → set the checked-out branch to `deploy`.
+- The zips below still work as a fallback.
+
+### Deploying with zips (cPanel)
 1. Run the package command.
 2. cPanel → File Manager → the domain's folder → Upload the zip → Extract, overwriting files.
 3. Storage, databases and `app/config.php` survive because the zips don't include them. **Don't delete `storage/` or `config.php` on the server.**
