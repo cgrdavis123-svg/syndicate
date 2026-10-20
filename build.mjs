@@ -5,6 +5,7 @@
 // Usage: node build.mjs
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, rmSync, cpSync } from 'node:fs';
 import { join } from 'node:path';
+import { iconTags, reportMissing } from './tools/icons.mjs';
 
 const SRC = 'src', OUT = 'dist';
 const site = {
@@ -99,6 +100,8 @@ for (const [srcPath, file] of pages) {
   if (name === '404') html = html.replace('<head>', '<head>\n<base href="/">');
   html = html.replaceAll(`data-nav="${nav}"`, `data-nav="${nav}" aria-current="page"`);
 
+  html = iconTags(html);
+
   const left = html.match(/\{\{\w+\}\}/);
   if (left) throw new Error(`${file}: unfilled placeholder ${left[0]}`);
   writeFileSync(join(OUT, file), html);
@@ -126,3 +129,4 @@ writeFileSync(join(OUT, 'app/views/site-top.php'), header + top);
 writeFileSync(join(OUT, 'app/views/site-bottom.php'), header + bottom);
 
 console.log(`Built ${pages.length} pages + careers hub → ${OUT}/`);
+reportMissing('stusyn.com');

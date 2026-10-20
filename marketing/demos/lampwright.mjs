@@ -2,6 +2,9 @@
 // built as a game's own site, plus the press kit add-on, Discord/newsletter community pages and wishlist tracking.
 // All art is drawn in SVG here (no real screenshots exist). No reviews, press quotes or wishlist numbers: it's unreleased.
 import { head, demoBar, navLinks, menuBtn, esc } from './common.mjs';
+import { icon } from '../../tools/icons.mjs';
+
+const voiceIcon = icon('speaker').replace('<svg', '<svg width="13" height="13" style="vertical-align:-2px"');
 
 const NAV = [['features.html', 'The game'], ['media.html', 'Media'], ['community.html', 'Community'], ['presskit.html', 'Press kit']];
 const wish = (label = 'Wishlist on Steam', cls = 'btn') => `<a class="${cls}" href="#" data-demo="Demo only · on a live site this opens the store page">${label}</a>`;
@@ -268,7 +271,7 @@ const pages = [
         <div class="chans" aria-label="Example of the Discord channel list">
           <b>START HERE</b><span class="on"># welcome</span><span># rules</span><span># announcements</span>
           <b>THE GAME</b><span># general</span><span># lantern-recipes</span><span># fan-art</span><span># looking-for-group</span>
-          <b>PLAYTEST</b><span># bug-reports</span><span># feedback</span><span>🔊 Co-op voice</span>
+          <b>PLAYTEST</b><span># bug-reports</span><span># feedback</span><span>${voiceIcon} Co-op voice</span>
         </div>
         <div class="why"><span class="kicker">Discord</span><h2>The lamplighters’ guild</h2><p>Where playtests start, where we post devlogs first, and where you can find people to run the night with. Moderated every day by the team and volunteer mods.</p>
           <ul class="checks"><li>Playtest keys go to the Discord first</li><li>A monthly dev stream with Q&amp;A</li><li>Clear rules, and spoilers kept in spoiler tags</li></ul>

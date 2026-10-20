@@ -53,6 +53,7 @@ button { font: inherit; }
 .mono { font-family: var(--mono); }
 .serif { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -.01em; }
 .muted { color: var(--muted); }
+.ico { display: inline-block; width: 1em; height: 1em; flex: none; vertical-align: -.14em; }
 .eyebrow {
   display: inline-flex; align-items: center; gap: 10px;
   font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
@@ -260,6 +261,7 @@ h1 .serif, h2 .serif { letter-spacing: -.02em; font-size: 1.08em; }
 .brand-cell:hover { background: rgba(255,255,255,.02); }
 .brand-cell b { font-size: clamp(20px, 2.2vw, 28px); letter-spacing: -.03em; font-weight: 700; color: #d9dde2; }
 .brand-cell .serif { font-size: clamp(24px, 2.6vw, 32px); color: #d9dde2; }
+.brand-cell small .ico { margin-right: 5px; }
 .brand-cell small { display: block; margin-top: 6px; font-family: var(--mono); font-size: 10.5px; color: var(--dim); letter-spacing: .06em; text-transform: uppercase; }
 .brand-cell.more b { color: var(--dim); }
 
@@ -509,6 +511,7 @@ h3 { text-wrap: balance; }
 .channels { display: flex; flex-wrap: wrap; gap: 10px; }
 .channel { display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(255,255,255,.02); font-size: 14px; transition: border-color .2s, background .2s; }
 .channel:hover { border-color: rgba(198,255,61,.4); background: rgba(198,255,61,.05); }
+.channel .ico { width: 16px; height: 16px; }
 .channel i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 .calendar { padding: 22px; border-radius: 20px; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 16px; }

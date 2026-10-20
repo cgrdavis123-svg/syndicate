@@ -42,16 +42,16 @@ export function ad(a, p) {
   if (a.platform === 'tiktok') return `<figure class="ad ad-tiktok" style="--abg:${a.bg};--afg:${a.fg};--aacc:${a.accent}">
     <div class="tt-screen">
       <div class="tt-art"><span class="tt-glow"></span><b>${nl(a.overlay)}</b><span>${esc(a.sub)}</span></div>
-      <div class="tt-side"><span class="tt-av">${esc(initials(p.name))}</span><span>♥<small>Like</small></span><span>💬<small>Chat</small></span><span>↗<small>Share</small></span></div>
+      <div class="tt-side"><span class="tt-av">${esc(initials(p.name))}</span><span>♥<small>Like</small></span><span>{{icon:chat}}<small>Chat</small></span><span>↗<small>Share</small></span></div>
       <div class="tt-cap"><b>@${esc(a.handle)}</b> <span class="tt-sp">Sponsored</span><p>${esc(a.caption)}</p><small>♫ ${esc(a.sound)}</small><span class="tt-cta">${esc(a.cta)} ›</span></div>
     </div>
     <figcaption>${PLATFORM.tiktok}</figcaption></figure>`;
   return `<figure class="ad ad-meta">
-    <div class="m-top"><span class="m-av" style="background:${a.bg};color:${a.fg}">${esc(initials(p.name))}</span><span><b>${esc(a.page)}</b><small>Sponsored · 🌐</small></span><span class="m-dots">···</span></div>
+    <div class="m-top"><span class="m-av" style="background:${a.bg};color:${a.fg}">${esc(initials(p.name))}</span><span><b>${esc(a.page)}</b><small>Sponsored · {{icon:globe}}</small></span><span class="m-dots">···</span></div>
     <p class="m-primary">${esc(a.primary)}</p>
     <div class="m-art" style="--abg:${a.bg};--afg:${a.fg};--aacc:${a.accent || a.fg}"><b>${nl(a.image_title)}</b><span>${esc(a.image_sub)}</span><i></i></div>
     <div class="m-link"><span><small>${esc(a.domain.toUpperCase())}</small><b>${esc(a.headline)}</b></span><span class="m-cta">${esc(a.cta)}</span></div>
-    <div class="m-react"><span>👍 Like</span><span>💬 Comment</span><span>↗ Share</span></div>
+    <div class="m-react"><span>{{icon:like}} Like</span><span>{{icon:chat}} Comment</span><span>↗ Share</span></div>
     <figcaption>${PLATFORM.meta}</figcaption></figure>`;
 }
 

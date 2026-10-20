@@ -3,6 +3,7 @@
 // Usage: node build-marketing.mjs
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, rmSync, cpSync } from 'node:fs';
 import { join } from 'node:path';
+import { iconTags, reportMissing } from './tools/icons.mjs';
 import { grid as workGrid, casePage } from './marketing/work-render.mjs';
 
 const SRC = 'marketing', OUT = 'dist-marketing';
@@ -146,6 +147,7 @@ for (const [srcPath, file, virtMeta, virtBody] of pages) {
   else if (name !== '404') sitemap.push(name === 'index' ? '' : file);
   if (name === '404') html = html.replace('<head>', '<head>\n<base href="/">');
   html = html.replaceAll(`data-nav="${nav}"`, `data-nav="${nav}" aria-current="page"`);
+  html = iconTags(html);
   const left = html.match(/\{\{[\w:,-]+\}\}/);
   if (left) throw new Error(`${file}: unfilled placeholder ${left[0]}`);
   writeFileSync(join(OUT, file), html);
@@ -156,3 +158,4 @@ writeFileSync(join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\
 writeFileSync(join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /checkout.html\nDisallow: /thank-you.html\n\nSitemap: ${site.siteUrl}/sitemap.xml\n`);
 writeFileSync(join(OUT, '.htaccess'), fill(readFileSync(join(SRC, 'htaccess.txt'), 'utf8'), site));
 console.log(`Built ${pages.length} pages → ${OUT}/ (${site.domain})`);
+reportMissing('syndicatemarketing.co');

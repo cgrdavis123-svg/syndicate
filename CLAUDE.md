@@ -164,8 +164,10 @@ These apply to every change, every page and every email.
 │   │                            imap.php, smtp.php, mail.php, mime.php, ics.php, mmdb.php,
 │   │                            invoice-doc.php, recurring.php, partials.php, views/
 │   └── storage/               ← crm.sqlite, analytics.sqlite, mail, portal uploads, keys (web-blocked)
+├── icons/                     ← ui/ (our line icons) and brands/ (official logo files we add; see icons/README.md)
 ├── templates/CLAUDE.md        ← build rules for CLIENT sites
 └── tools/
+    ├── icons.mjs              ← the {{icon:…}} tag both site builds use
     ├── resume/build-pdf.cjs   ← builds Grady's resume PDF
     ├── work-shots.cjs         ← screenshots the demo sites for the portfolio
     └── video/                 ← TikTok video engine + PLAYBOOK.md (see "TikTok videos" in §24)
@@ -238,6 +240,7 @@ No frameworks, no npm dependencies. Node 18+ locally.
 | `{{amount:sku}}` | Raw number |
 | `{{work:grid}}` / `{{work:grid:2}}` | Portfolio grid (all, or the first N) |
 | `{{features:sku}}` | The product's feature list as `<li>` items with checkmarks |
+| `{{icon:name}}` / `{{icon:name\|Label}}` / `{{icon:name\|Label\|fallback}}` | Inline SVG from `icons/ui/` or `icons/brands/` (also works on stusyn.com). Decorative, or labelled with `Label`. A brand file not added yet shows the label (or the fallback HTML) instead, and the build lists what's missing |
 | `{{offer:slug:field}}` | From `catalog.json` → `offers`: `today`, `monthly`, `value`, `save`, `trialvalue` (money), `trial` (free months), `ends` (date), `spots`, `list.sku` / `price.sku` |
 
   Tags also work inside page titles and descriptions.
@@ -978,6 +981,7 @@ All setup items below were done by October 18, 2026, except the ones still open.
 - [x] Confirm the community prices ($300 setup, $125 audit, $350/mo, $650/mo, $150 press kit; confirmed October 19, 2026) and promises as written (weekday check-ins on Community management, daily on Plus; reports within one business day; one event a month, two on Plus; volunteer mods and a monthly strategy call on Plus; confirmed October 20, 2026). Change prices in CRM → Store → Products and `catalog.json`
 - [x] Read Grady's note on `gaming-communities.html` (kept as written, October 20, 2026)
 - [x] Write the Discord staff guide template the setup promises (done October 20, 2026: the doc “Discord Staff Guide — [Server name]”; copy it per client and fill the brackets)
+- [ ] Add the official brand logo files to `icons/brands/` (cards, Apple Pay, Google Pay, Stripe, Google, Meta, TikTok, Discord; list and sources in `icons/README.md`). Until then those spots show the name as text
 - [ ] Set up a Discord account for Syndicate Marketing (with two-factor on) to use for client servers
 - [x] Outreach setup (done October 19, 2026): create outreach@syndicatemarketing.co in cPanel (SPF, DKIM and DMARC valid for syndicatemarketing.co), connect it in Inbox → Mailboxes, choose it and enter the postal address in CRM → Outreach, make an agent key and add it as a network secret for crm.stusyn.com on the scheduled tasks' cloud environment (network access must include crm.stusyn.com), then switch outreach on. Steps in the Team article `team-outreach`
 - [ ] Later: apply for API access (Google Ads developer token, Meta Marketing API, TikTok Marketing API) to replace CSV imports
