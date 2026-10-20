@@ -19,7 +19,15 @@ OPEN="$TLS set net:max-retries 2; set net:timeout 30; set ftp:passive-mode true;
 ftp() { lftp -c "$OPEN; $1"; }
 has() { ftp "cls -1 $(printf %q "$1")" >/dev/null 2>&1; }
 
-ftp "cls -1 -D" >/dev/null 2>&1 || { echo "Couldn't sign in to $FTP_SERVER as $FTP_USERNAME. Check the FTP_SERVER, FTP_USERNAME and FTP_PASSWORD secrets." >&2; exit 1; }
+if ! err=$(ftp "set net:max-retries 1; cls -1 -D" 2>&1 >/dev/null); then
+  echo "Couldn't sign in to $FTP_SERVER as $FTP_USERNAME. The server said:" >&2; echo "$err" | sed 's/^/  /' | tail -5 >&2
+  case "$err" in
+    *certificate*|*Certificate*) echo "That's the security certificate: use the server name from cPanel → FTP Accounts → Configure FTP Client as FTP_SERVER, or set the variable FTP_VERIFY_CERT=no." >&2 ;;
+    *530*|*Login*|*login*) echo "That's the username or password: FTP_USERNAME must be the full name, like deploy@stusyn.com." >&2 ;;
+    *) echo "If it timed out, the host may be blocking connections from GitHub; ask them to allow FTP from outside, or use a different server name." >&2 ;;
+  esac
+  exit 1
+fi
 
 # find <given> <marker files…> -- <candidate folders…>: the first folder that has every marker file.
 find_dir() {
