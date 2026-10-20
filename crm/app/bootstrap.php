@@ -538,6 +538,18 @@ function migrate(PDO $pdo): void {
         $pdo->exec("ALTER TABLE users ADD COLUMN passkeys TEXT NOT NULL DEFAULT '[]'");
         $pdo->exec('PRAGMA user_version = 22');
     }
+    if ($v < 23) {
+        // v23: more than one staff login. Roles (owners manage the team), emailed invites, and an optional rule
+        // that everyone must use two-step sign-in. Everyone who already has an account is an owner.
+        $pdo->exec("
+            ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'owner';
+            CREATE TABLE user_invites (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL COLLATE NOCASE, name TEXT NOT NULL DEFAULT '',
+                role TEXT NOT NULL DEFAULT 'member', token_hash TEXT NOT NULL UNIQUE, invited_by TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL, expires_at INTEGER NOT NULL, accepted_at TEXT);
+            INSERT OR IGNORE INTO settings (key, value) VALUES ('require_2fa', '0');
+        ");
+        $pdo->exec('PRAGMA user_version = 23');
+    }
 }
 function migrate_v1(PDO $pdo): void {
     $pdo->exec("
@@ -666,7 +678,7 @@ function sign_in_user(array $u): void {
 function current_user(): ?array {
     start_session();
     if (empty($_SESSION['uid'])) return null;
-    $u = one('SELECT id, name, email, password_hash FROM users WHERE id = ?', [$_SESSION['uid']]);
+    $u = one('SELECT id, name, email, role, password_hash FROM users WHERE id = ?', [$_SESSION['uid']]);
     if (!$u || !hash_equals(pw_mark($u['password_hash']), (string)($_SESSION['pwv'] ?? ''))) { unset($_SESSION['uid'], $_SESSION['pwv']); return null; }
     unset($u['password_hash']);
     return $u;
@@ -688,8 +700,24 @@ function require_user(): array {
     if ((int)val('SELECT COUNT(*) FROM users') === 0) redirect('setup.php');
     $u = current_user();
     if (!$u) redirect('login.php');
+    // Settings → Team can make two-step sign-in a must: until it's set up, only Settings works.
+    if (setting('require_2fa') === '1') {
+        $script = ltrim(str_replace('\\', '/', substr((string)realpath((string)($_SERVER['SCRIPT_FILENAME'] ?? '')), strlen((string)realpath(DOCROOT)))), '/');
+        require_once __DIR__ . '/passkey.php';
+        if (!in_array($script, ['settings.php', 'passkey.php', 'logout.php'], true) && !tfa_on(one('SELECT totp_secret, passkeys FROM users WHERE id = ?', [$u['id']]))) {
+            flash('Set up two-step sign-in to keep using the CRM. A passkey takes about a minute.');
+            header('Location: ' . rtrim((string)config('app_url'), '/') . '/settings.php#tfa', true, 303); exit;
+        }
+    }
     if (is_post() && !csrf_ok()) { http_response_code(400); exit('Your session expired. Go back, refresh the page and try again.'); }
     return $u;
+}
+// Owners manage the team (users.php). Everything else is open to every staff login.
+const USER_ROLES = ['owner' => 'Owner', 'member' => 'Member'];
+function require_owner(array $u): void { if (($u['role'] ?? '') !== 'owner') { flash('Only an owner can do that.'); redirect('users.php'); } }
+function invite_lookup(string $tok): ?array {
+    if (!preg_match('/^[a-f0-9]{48}$/', $tok)) return null;
+    return one('SELECT * FROM user_invites WHERE token_hash = ? AND accepted_at IS NULL AND expires_at > ?', [hash('sha256', $tok), time()]);
 }
 function flash(?string $m = null): ?string { start_session(); if ($m !== null) { $_SESSION['flash'] = $m; return null; } $x = $_SESSION['flash'] ?? null; unset($_SESSION['flash']); return $x; }
 

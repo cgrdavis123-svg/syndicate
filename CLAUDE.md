@@ -377,7 +377,8 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 | Site stats | `analytics.php`, `site.php`, `site-edit.php`, `site-export.php` | Privacy-first analytics for all our and our clients' sites |
 | Calendar | `calendar.php` | Private ICS feed (token-protected) of consultations, bookings and tasks |
 | Search | `search.php` | Search across everything |
-| Settings | `settings.php` | Business details, invoice numbering, rates, mail, booking link, calendar token |
+| Team | `users.php`, `join.php` | Staff logins: owners invite people by email (`user_invites`, one-time link, 7 days), change roles (owner/member, `USER_ROLES`), remove people, clear a teammate's two-step sign-in, and can require two-step for everyone (`require_2fa`). Always at least one owner. Team article `team-logins` |
+| Settings | `settings.php` | Business details, invoice numbering, rates, mail, booking link, calendar token, your password and two-step sign-in |
 | Export | `export.php` | CSV exports |
 | Wiki | `wiki/*` on wiki.stusyn.com (menu item “Wiki ↗”) | Help center editor, Team docs, client questions; see “Help center & wiki” |
 | Ads | `ads/*` on ads.stusyn.com (menu item “Ads ↗”) | Ads management for every ads client; see “Ads management (ads.stusyn.com)” |
@@ -409,6 +410,7 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 - **Business:** `business_name` (Syndicate Holdings Group LLC), `business_email` (hello@stusyn.com), `business_location` (Spartanburg, South Carolina), `business_website` (stusyn.com), `default_rate` (150)
 - **Invoices:** `invoice_prefix` (SYN-), `invoice_next` (1001), `invoice_terms_days` (14), `invoice_footer`, `payment_instructions`, `payment_link_default`
 - **Mail:** `mail_from` (hello@stusyn.com)
+- **Team:** `require_2fa` (1 = everyone must have a passkey or authenticator app; until then only Settings works)
 - **Calendar:** `calendar_token`
 - **Website sync:** `site_last_message_id`, `site_last_sync`
 - **Store:** `shop_site_url`, `shop_promo` (1 = promo codes allowed at Stripe), `shop_tax` (0 = off; 1 = Stripe automatic tax), `shop_notify` (hello@stusyn.com), `stripe_secret` (encrypted), `stripe_webhook_secret` (encrypted)
@@ -699,7 +701,7 @@ A public help center for clients and staff-only Team docs, in the CRM's `wiki/` 
 - **Staff pages**: `team.php` (Team docs by topic, recent changes), `articles.php` (views and helpful %), `edit.php` (editor with preview, live tags help, every save keeps the previous version with one-click restore, reader comments), `insights.php` (questions to answer, searches with no answer, unhelpful articles, most read, top searches).
 - **Topics** (`WIKI_CATEGORIES` / `WIKI_TEAM_CATEGORIES`): Getting started, Websites, Paid ads, Community management, Website care, Site Stats, Client portal, Billing & plans, Audits & consulting, Policies & privacy, Glossary; Team: Running the business, Client work, Systems & setup, Rules & voice, When something breaks.
 - **Linked from**: the marketing site footer, the client portal and ads portal footers, and the CRM menu (“Wiki ↗”).
-- **Keep it true:** when a promise, process or feature changes, update the matching help article (search the wiki) in the same change. 70 public and 25 team articles shipped on October 18, 2026; `offers-and-free-months` added the same day, then a **Community management** topic with `community-plans-compared`, `discord-server-setup`, `discord-access` and `community-moderation` (75 public). Team article `team-outreach` added October 19, 2026 (26 team).
+- **Keep it true:** when a promise, process or feature changes, update the matching help article (search the wiki) in the same change. 70 public and 25 team articles shipped on October 18, 2026; `offers-and-free-months` added the same day, then a **Community management** topic with `community-plans-compared`, `discord-server-setup`, `discord-access` and `community-moderation` (75 public). Team article `team-outreach` added October 19, 2026 (26 team); `team-logins` October 20, 2026 (27 team).
 
 ### Outreach (cold email)
 The outreach agent finds prospects and the CRM emails them. Engine `app/outreach.php`, admin `outreach.php`, agent API `outreach-api.php`, unsubscribe page `u.php`, Team article `team-outreach`.
@@ -769,7 +771,7 @@ It prints a one-line summary (cPanel can email it to you; set the cron email to 
 ## 17. Databases and migrations
 
 ### CRM: `crm/storage/crm.sqlite`
-Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v23**.
+Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v24**.
 
 | Version | Adds |
 |---|---|
@@ -793,6 +795,7 @@ Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_versi
 | v19 | Outreach: `outreach_prospects`, `outreach_log`, `outreach_optout`; settings `outreach_on`, `outreach_mailbox`, `outreach_from_name`, `outreach_address`, `outreach_start`, `outreach_cap`, `outreach_api_hash`, `outreach_last_email`, `outreach_paused` |
 | v20 | The `add-domain-setup` add-on (Namecheap domain, hosting & email setup), from `catalog.json` |
 | v21 | `products.free_with` (SKUs that make a product free in the same order); domain setup free with `web-business` and `web-store`, plus the perk on those packages' feature lists |
+| v23 | Multiple staff logins: `users.role` (existing users become owners), `user_invites`, setting `require_2fa` |
 | v22 | `users.passkeys` (JSON list of passkey public keys for two-step sign-in) |
 | v18 | Community products (`com-discord-setup`, `com-audit`, `com-manage`, `com-manage-plus`, after the care plans) and the `add-presskit` add-on, from `catalog.json` |
 
@@ -1029,7 +1032,7 @@ All setup items below were done by October 18, 2026, except the ones still open.
 | Consulting rate | $150/hour |
 | Exclude own visits | `?syn_ignore=1` |
 | Cart storage | `localStorage.sm_cart`, `sessionStorage.sm_src`, `sm_checkout`, `sm_order` |
-| CRM DB version | v22 (next: v23) |
+| CRM DB version | v23 (next: v24) |
 | Gaming campaign | `syndicatemarketing.co/gaming-communities.html?t=studio\|creator\|esports\|business&b=Name&n=First` |
 | Outreach | CRM → Outreach; sends from outreach@syndicatemarketing.co; agent API `crm.stusyn.com/outreach-api.php` |
 | Current offer | `starter-500`: $500 Starter website + 3 months Care Plus free · `syndicatemarketing.co/starter-website-offer.html?b=Business+Name&n=First` |

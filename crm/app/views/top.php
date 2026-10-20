@@ -31,6 +31,7 @@ $nav = [
     'consultations' => ['consultations.php', 'Consultations', '<circle cx="10" cy="10" r="7.5"/><path d="M10 6v4l3 2"/>'],
     'quotes' => ['quotes.php', 'Quotes', '<path d="M5 2.5h7l3 3v12H5z"/><path d="M12 2.5v3h3M8 9h4M8 12h4M8 15h2"/>'],
     'invoices' => ['invoices.php', 'Invoices', '<path d="M5 2.5h10v15l-2.5-1.5L10 17.5 7.5 16 5 17.5z"/><path d="M8 7h4M8 10h4"/>', $counts['invoices'] ?? 0],
+    'users' => ['users.php', 'Team', '<circle cx="7.5" cy="7" r="2.8"/><path d="M2.5 16c.6-2.6 2.6-4 5-4s4.4 1.4 5 4M13 4.5a2.6 2.6 0 0 1 0 5M14.5 12.2c1.6.5 2.6 1.8 3 3.8"/>'],
     'settings' => ['settings.php', 'Settings', '<circle cx="10" cy="10" r="2.5"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4"/>'],
 ];
 if (defined('ADS_APP') && $user) {
