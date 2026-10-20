@@ -442,6 +442,23 @@
       ]
     },
     {
+      "sku": "add-domain-setup",
+      "category": "addon",
+      "name": "Domain, hosting & email setup",
+      "price": 100,
+      "interval": "",
+      "unit": "",
+      "requires": [
+        "website"
+      ],
+      "blurb": "We set up your domain, Namecheap hosting and business email in an account in your name, then hand you the logins. You pay Namecheap directly, with no markup.",
+      "features": [],
+      "steps": [
+        "Namecheap account, domain and hosting set up in your name",
+        "Business email live and logins handed over"
+      ]
+    },
+    {
       "sku": "add-rush",
       "category": "addon",
       "name": "Rush delivery",

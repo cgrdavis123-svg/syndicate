@@ -499,6 +499,18 @@ function migrate(PDO $pdo): void {
             'outreach_cap' => '30', 'outreach_api_hash' => '', 'outreach_last_email' => '0', 'outreach_paused' => ''] as $k => $val) $ins->execute([$k, $val]);
         $pdo->exec('PRAGMA user_version = 19');
     }
+    if ($v < 20) {
+        // v20: the domain, hosting & email setup add-on (Namecheap, in the client's own account), from catalog.json.
+        $ins = $pdo->prepare('INSERT OR IGNORE INTO products (sku, category, name, blurb, features, price, interval, unit, max_qty, requires, badge, featured, timeline_days, steps, site, position, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+        $at = (int)$pdo->query("SELECT COALESCE(MAX(position), 0) FROM products WHERE sku = 'add-gbp'")->fetchColumn() ?: (int)$pdo->query('SELECT COALESCE(MAX(position), 0) FROM products')->fetchColumn() + 10;
+        foreach (json_decode((string)@file_get_contents(__DIR__ . '/catalog.json'), true)['products'] ?? [] as $p) {
+            if ($p['sku'] !== 'add-domain-setup') continue;
+            $ins->execute([$p['sku'], $p['category'], $p['name'], $p['blurb'] ?? '', implode("\n", $p['features'] ?? []), (float)$p['price'], $p['interval'] ?? '', $p['unit'] ?? '',
+                (int)($p['max_qty'] ?? 1), implode(',', $p['requires'] ?? []), $p['badge'] ?? '', !empty($p['featured']) ? 1 : 0, (int)($p['timeline_days'] ?? 0),
+                implode("\n", $p['steps'] ?? []), !empty($p['site']) ? 1 : 0, $at + 1, date('Y-m-d H:i:s'), date('Y-m-d H:i:s')]);
+        }
+        $pdo->exec('PRAGMA user_version = 20');
+    }
 }
 function migrate_v1(PDO $pdo): void {
     $pdo->exec("

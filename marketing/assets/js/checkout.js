@@ -105,6 +105,7 @@
   function toggles() {
     var v = values();
     var dom = $('#domainField'); if (dom) dom.hidden = v.has_domain !== 'yes';
+    offer('#domainOffer', (v.has_domain === 'no' || v.has_domain === 'unsure') && !inCart('add-domain-setup'), 'add-domain-setup');
     offer('#logoOffer', v.has_logo === 'no' && !inCart('add-logo'), 'add-logo');
     offer('#copyOffer', v.assets === 'help' && !inCart('add-copy'), 'add-copy');
     offer('#setupOffer', v.ad_accounts === 'new' && !inCart('add-ads-setup'), 'add-ads-setup');

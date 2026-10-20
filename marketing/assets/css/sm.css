@@ -228,6 +228,7 @@ html:not(.js) .reveal { opacity: 1; transform: none; }
 .pkg.featured .btn-ghost { color: #fff; border-color: rgba(255,255,255,.22); }
 .pkg.in-cart .add-btn { background: var(--green); color: #fff; box-shadow: none; }
 .mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.mini-grid.c3 { grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); } /* six add-ons: three to a row */
 .mini { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
 .mini-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
 .mini-top b { font-size: 16px; letter-spacing: -.02em; line-height: 1.25; }
@@ -737,3 +738,4 @@ p.alert { display: block; }
 /* "See it in the demo portal" links under sections */
 .demo-link { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 24px 0 0; }
 .demo-link .muted { font-size: 14px; }
+.demo-link .btn { white-space: normal; height: auto; min-height: 50px; padding-block: 12px; max-width: 100%; text-align: left; }

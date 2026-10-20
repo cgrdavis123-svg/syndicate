@@ -486,6 +486,7 @@ Rules: one community management plan per order (setup and audit can be bought wi
 | `add-copy` | Copywriting | **$50 per page** | a website |
 | `add-logo` | Logo design | **$200** | — |
 | `add-gbp` | Google Business Profile setup | **$100** | — |
+| `add-domain-setup` | Domain, hosting & email setup on **Namecheap**, in an account in the client's name (domain registered or connected, hosting, SSL, business email with SPF/DKIM/DMARC, logins handed over). The client pays Namecheap directly; we never resell or mark up hosting or domains. Checkout suggests it when they answer “No” or “Not sure” to having a domain | **$100** | a website |
 | `add-rush` | Rush delivery | **$150** | a website |
 | `add-presskit` | Press kit page (fact sheet, description, screenshots, trailer, logos, press contact) | **$150** | a website |
 
@@ -768,7 +769,7 @@ It prints a one-line summary (cPanel can email it to you; set the cron email to 
 ## 17. Databases and migrations
 
 ### CRM: `crm/storage/crm.sqlite`
-Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v20**.
+Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v21**.
 
 | Version | Adds |
 |---|---|
@@ -790,6 +791,7 @@ Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_versi
 | v16 | Wiki: `wiki_articles`, `wiki_revisions`, `wiki_searches` (no-result searches), `wiki_feedback`, `wiki_questions` |
 | v17 | Special offers: `offers` (seeded from `catalog.json` → `offers`); `orders.offer`, `orders.trial_end`, `orders.trial_reminded_at`; `order_items.list_price`, `order_items.trial_months` |
 | v19 | Outreach: `outreach_prospects`, `outreach_log`, `outreach_optout`; settings `outreach_on`, `outreach_mailbox`, `outreach_from_name`, `outreach_address`, `outreach_start`, `outreach_cap`, `outreach_api_hash`, `outreach_last_email`, `outreach_paused` |
+| v20 | The `add-domain-setup` add-on (Namecheap domain, hosting & email setup), from `catalog.json` |
 | v18 | Community products (`com-discord-setup`, `com-audit`, `com-manage`, `com-manage-plus`, after the care plans) and the `add-presskit` add-on, from `catalog.json` |
 
 ### Site Stats: `crm/storage/analytics.sqlite`
@@ -1021,7 +1023,7 @@ All setup items below were done by October 18, 2026, except the ones still open.
 | Consulting rate | $150/hour |
 | Exclude own visits | `?syn_ignore=1` |
 | Cart storage | `localStorage.sm_cart`, `sessionStorage.sm_src`, `sm_checkout`, `sm_order` |
-| CRM DB version | v19 (next: v20) |
+| CRM DB version | v20 (next: v21) |
 | Gaming campaign | `syndicatemarketing.co/gaming-communities.html?t=studio\|creator\|esports\|business&b=Name&n=First` |
 | Outreach | CRM → Outreach; sends from outreach@syndicatemarketing.co; agent API `crm.stusyn.com/outreach-api.php` |
 | Current offer | `starter-500`: $500 Starter website + 3 months Care Plus free · `syndicatemarketing.co/starter-website-offer.html?b=Business+Name&n=First` |

@@ -17,7 +17,7 @@ const site = {
   bookKickoff: (process.env.SM_CRM || 'https://crm.stusyn.com') + '/book.php?type=kickoff',
   // Site Stats for this website (CRM → Site stats → Add a website → install code). Leave empty to turn them off.
   statsSite: process.env.SM_STATS ?? 'UIOdnDz160w8',
-  legalUpdated: 'October 18, 2026',
+  legalUpdated: 'October 20, 2026',
   // Cloudflare Turnstile bot check on the contact form (dash.cloudflare.com → Turnstile → the widget's site key).
   // The site key is public. The secret key goes only in app/config.php on the server. Empty turns the check off.
   turnstileSite: process.env.TURNSTILE_SITE ?? '',
