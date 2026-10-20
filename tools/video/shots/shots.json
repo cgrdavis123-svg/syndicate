@@ -1,0 +1,653 @@
+{
+ "crm-dashboard": {
+  "file": "crm-dashboard.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "crm",
+  "tall": false,
+  "label": "Demo data \u00b7 fictional clients",
+  "what": "CRM dashboard: open pipeline, today's tasks, pipeline bars, paid revenue chart",
+  "spots": {
+   "pipeline": [
+    0.26,
+    0.27,
+    2.6
+   ],
+   "tasks": [
+    0.4,
+    0.55,
+    2
+   ],
+   "stages": [
+    0.78,
+    0.53,
+    2
+   ],
+   "revenue": [
+    0.78,
+    0.85,
+    2
+   ],
+   "overview": [
+    0.5,
+    0.45,
+    1
+   ]
+  }
+ },
+ "crm-pipeline": {
+  "file": "crm-pipeline.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "crm",
+  "tall": false,
+  "label": "Demo data \u00b7 fictional clients",
+  "what": "Deal board by stage",
+  "spots": {
+   "board": [
+    0.38,
+    0.42,
+    1.6
+   ],
+   "overview": [
+    0.5,
+    0.4,
+    1
+   ]
+  }
+ },
+ "crm-sitestats": {
+  "file": "crm-sitestats.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "crm",
+  "tall": false,
+  "label": "Demo data \u00b7 fictional clients",
+  "what": "Site Stats: all sites with sparklines",
+  "spots": {
+   "tiles": [
+    0.55,
+    0.33,
+    1.9
+   ],
+   "overview": [
+    0.5,
+    0.4,
+    1
+   ]
+  }
+ },
+ "crm-site": {
+  "file": "crm-site.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "crm",
+  "tall": false,
+  "label": "Demo data \u00b7 fictional clients",
+  "what": "Site Stats for one site: KPIs and 30-day visitors chart",
+  "spots": {
+   "kpis": [
+    0.5,
+    0.3,
+    1.9
+   ],
+   "chart": [
+    0.58,
+    0.62,
+    1.9
+   ],
+   "overview": [
+    0.5,
+    0.45,
+    1
+   ]
+  }
+ },
+ "crm-care": {
+  "file": "crm-care.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "crm",
+  "tall": false,
+  "label": "Demo data \u00b7 fictional clients",
+  "what": "Care: every monitored site, uptime, response, SSL",
+  "spots": {
+   "table": [
+    0.55,
+    0.6,
+    1.8
+   ],
+   "kpis": [
+    0.3,
+    0.27,
+    2
+   ],
+   "overview": [
+    0.5,
+    0.45,
+    1
+   ]
+  }
+ },
+ "crm-care-site": {
+  "file": "crm-care-site.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "crm",
+  "tall": false,
+  "label": "Demo data \u00b7 fictional clients",
+  "what": "Care for one site: status, 100% uptime, 90-day uptime bar",
+  "spots": {
+   "kpis": [
+    0.45,
+    0.33,
+    2
+   ],
+   "uptime": [
+    0.62,
+    0.48,
+    2.4
+   ],
+   "overview": [
+    0.5,
+    0.45,
+    1
+   ]
+  }
+ },
+ "crm-invoices": {
+  "file": "crm-invoices.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "crm",
+  "tall": false,
+  "label": "Demo data \u00b7 fictional clients",
+  "what": "Invoices list",
+  "spots": {
+   "table": [
+    0.6,
+    0.6,
+    1.7
+   ],
+   "overview": [
+    0.5,
+    0.45,
+    1
+   ]
+  }
+ },
+ "crm-products": {
+  "file": "crm-products.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "crm",
+  "tall": false,
+  "label": "Demo data \u00b7 fictional clients",
+  "what": "Store products with prices",
+  "spots": {
+   "list": [
+    0.6,
+    0.5,
+    1.6
+   ],
+   "overview": [
+    0.5,
+    0.45,
+    1
+   ]
+  }
+ },
+ "crm-ads": {
+  "file": "crm-ads.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "crm",
+  "tall": false,
+  "label": "Demo data \u00b7 fictional clients",
+  "what": "Ads overview: spend, leads, cost per lead, budget pacing",
+  "spots": {
+   "kpis": [
+    0.32,
+    0.4,
+    2
+   ],
+   "pacing": [
+    0.5,
+    0.66,
+    1.8
+   ],
+   "overview": [
+    0.5,
+    0.45,
+    1
+   ]
+  }
+ },
+ "crm-ads-client": {
+  "file": "crm-ads-client.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "crm",
+  "tall": false,
+  "label": "Demo data \u00b7 fictional clients",
+  "what": "Ads client page: spend by day and conversions charts",
+  "spots": {
+   "bars": [
+    0.42,
+    0.75,
+    2.2
+   ],
+   "cpl": [
+    0.7,
+    0.47,
+    2.2
+   ],
+   "overview": [
+    0.5,
+    0.45,
+    1
+   ]
+  }
+ },
+ "crm-tasks": {
+  "file": "crm-tasks.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "crm",
+  "tall": false,
+  "label": "Demo data \u00b7 fictional clients",
+  "what": "Tasks list",
+  "spots": {
+   "list": [
+    0.5,
+    0.5,
+    1.6
+   ],
+   "overview": [
+    0.5,
+    0.45,
+    1
+   ]
+  }
+ },
+ "crm-care-report": {
+  "file": "crm-care-report.jpg",
+  "w": 1600,
+  "h": 2801,
+  "kind": "crm",
+  "tall": true,
+  "label": "Demo data \u00b7 fictional clients",
+  "what": "Monthly care report document, tall: uptime bars, response time, speed, work log",
+  "spots": {
+   "top": [
+    0.5,
+    0.1,
+    1
+   ],
+   "uptime": [
+    0.5,
+    0.3,
+    1
+   ]
+  }
+ },
+ "booking": {
+  "file": "booking.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "booking",
+  "tall": false,
+  "label": "",
+  "what": "Free discovery call booking page with calendar",
+  "spots": {
+   "calendar": [
+    0.62,
+    0.4,
+    1.6
+   ],
+   "times": [
+    0.62,
+    0.7,
+    1.8
+   ],
+   "overview": [
+    0.5,
+    0.5,
+    1
+   ]
+  }
+ },
+ "booking-phone": {
+  "file": "booking-phone.jpg",
+  "w": 780,
+  "h": 1688,
+  "kind": "booking",
+  "tall": true,
+  "label": "",
+  "what": "Booking page on a phone",
+  "spots": {}
+ },
+ "sm-home": {
+  "file": "sm-home.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "ours",
+  "tall": false,
+  "label": "",
+  "what": "syndicatemarketing.co home hero",
+  "spots": {
+   "hero": [
+    0.35,
+    0.4,
+    1.4
+   ],
+   "overview": [
+    0.5,
+    0.45,
+    1
+   ]
+  }
+ },
+ "sm-pricing": {
+  "file": "sm-pricing.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "ours",
+  "tall": false,
+  "label": "",
+  "what": "Pricing page with website package cards",
+  "spots": {
+   "cards": [
+    0.5,
+    0.8,
+    1.6
+   ],
+   "overview": [
+    0.5,
+    0.45,
+    1
+   ]
+  }
+ },
+ "sm-community": {
+  "file": "sm-community.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "ours",
+  "tall": false,
+  "label": "",
+  "what": "Community page with example Discord server mock",
+  "spots": {
+   "server": [
+    0.72,
+    0.54,
+    1.8
+   ],
+   "overview": [
+    0.5,
+    0.45,
+    1
+   ]
+  }
+ },
+ "sm-care": {
+  "file": "sm-care.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "ours",
+  "tall": false,
+  "label": "",
+  "what": "Website care page",
+  "spots": {
+   "uptime": [
+    0.6,
+    0.82,
+    1.6
+   ],
+   "overview": [
+    0.5,
+    0.45,
+    1
+   ]
+  }
+ },
+ "sm-gaming": {
+  "file": "sm-gaming.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "ours",
+  "tall": false,
+  "label": "",
+  "what": "Gaming communities page",
+  "spots": {
+   "server": [
+    0.72,
+    0.55,
+    1.8
+   ],
+   "overview": [
+    0.5,
+    0.45,
+    1
+   ]
+  }
+ },
+ "sm-home-phone": {
+  "file": "sm-home-phone.jpg",
+  "w": 780,
+  "h": 16000,
+  "kind": "ours",
+  "tall": true,
+  "label": "",
+  "what": "syndicatemarketing.co home on phone (tall)",
+  "spots": {}
+ },
+ "sm-pricing-phone": {
+  "file": "sm-pricing-phone.jpg",
+  "w": 780,
+  "h": 16000,
+  "kind": "ours",
+  "tall": true,
+  "label": "",
+  "what": "Pricing on phone (tall)",
+  "spots": {}
+ },
+ "sm-community-phone": {
+  "file": "sm-community-phone.jpg",
+  "w": 780,
+  "h": 16000,
+  "kind": "ours",
+  "tall": true,
+  "label": "",
+  "what": "Community page on phone (tall)",
+  "spots": {}
+ },
+ "sm-care-phone": {
+  "file": "sm-care-phone.jpg",
+  "w": 780,
+  "h": 16000,
+  "kind": "ours",
+  "tall": true,
+  "label": "",
+  "what": "Care page on phone (tall)",
+  "spots": {}
+ },
+ "demo-ridgeline": {
+  "file": "demo-ridgeline.jpg",
+  "w": 1600,
+  "h": 4558,
+  "kind": "concept",
+  "tall": true,
+  "label": "Concept site \u00b7 fictional business",
+  "what": "Ridgeline Heating & Air concept site (HVAC), desktop, tall",
+  "spots": {}
+ },
+ "demo-ridgeline-phone": {
+  "file": "demo-ridgeline-phone.jpg",
+  "w": 780,
+  "h": 13106,
+  "kind": "concept",
+  "tall": true,
+  "label": "Concept site \u00b7 fictional business",
+  "what": "Ridgeline concept site on phone, tall; Call now button near top",
+  "spots": {}
+ },
+ "demo-pinestreet": {
+  "file": "demo-pinestreet.jpg",
+  "w": 1600,
+  "h": 4765,
+  "kind": "concept",
+  "tall": true,
+  "label": "Concept site \u00b7 fictional business",
+  "what": "Pine Street Dental concept site, desktop, tall",
+  "spots": {}
+ },
+ "demo-pinestreet-phone": {
+  "file": "demo-pinestreet-phone.jpg",
+  "w": 780,
+  "h": 12936,
+  "kind": "concept",
+  "tall": true,
+  "label": "Concept site \u00b7 fictional business",
+  "what": "Pine Street Dental on phone, tall",
+  "spots": {}
+ },
+ "demo-hearth": {
+  "file": "demo-hearth.jpg",
+  "w": 1600,
+  "h": 4031,
+  "kind": "concept",
+  "tall": true,
+  "label": "Concept site \u00b7 fictional business",
+  "what": "Hearth & Grain bakery concept site, desktop, tall",
+  "spots": {}
+ },
+ "demo-hearth-phone": {
+  "file": "demo-hearth-phone.jpg",
+  "w": 780,
+  "h": 10192,
+  "kind": "concept",
+  "tall": true,
+  "label": "Concept site \u00b7 fictional business",
+  "what": "Hearth & Grain on phone, tall",
+  "spots": {}
+ },
+ "demo-loom": {
+  "file": "demo-loom.jpg",
+  "w": 780,
+  "h": 487,
+  "kind": "concept",
+  "tall": false,
+  "label": "Concept site \u00b7 fictional business",
+  "what": "Loom & Lantern candle store concept, desktop",
+  "spots": {}
+ },
+ "demo-fernhollow": {
+  "file": "demo-fernhollow.jpg",
+  "w": 780,
+  "h": 487,
+  "kind": "concept",
+  "tall": false,
+  "label": "Concept site \u00b7 fictional business",
+  "what": "Fernhollow indie game studio concept, desktop",
+  "spots": {}
+ },
+ "demo-lampwright": {
+  "file": "demo-lampwright.jpg",
+  "w": 780,
+  "h": 487,
+  "kind": "concept",
+  "tall": false,
+  "label": "Concept site \u00b7 fictional business",
+  "what": "Lampwright co-op game concept, desktop",
+  "spots": {}
+ },
+ "copperleaf-site": {
+  "file": "copperleaf-site.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "copperleaf",
+  "tall": false,
+  "label": "Fictional demo server",
+  "what": "Copperleaf SMP Minecraft server website (fictional)",
+  "spots": {
+   "ip": [
+    0.22,
+    0.6,
+    2.3
+   ],
+   "overview": [
+    0.5,
+    0.5,
+    1
+   ]
+  }
+ },
+ "copperleaf-site-phone": {
+  "file": "copperleaf-site-phone.jpg",
+  "w": 780,
+  "h": 5841,
+  "kind": "copperleaf",
+  "tall": true,
+  "label": "Fictional demo server",
+  "what": "Copperleaf site on phone, tall",
+  "spots": {}
+ },
+ "copperleaf-wiki": {
+  "file": "copperleaf-wiki.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "copperleaf",
+  "tall": false,
+  "label": "Fictional demo server",
+  "what": "Copperleaf server wiki: land claims page with commands table",
+  "spots": {
+   "table": [
+    0.6,
+    0.62,
+    2.2
+   ],
+   "overview": [
+    0.5,
+    0.5,
+    1
+   ]
+  }
+ },
+ "copperleaf-wiki-phone": {
+  "file": "copperleaf-wiki-phone.jpg",
+  "w": 780,
+  "h": 2500,
+  "kind": "copperleaf",
+  "tall": true,
+  "label": "Fictional demo server",
+  "what": "Copperleaf wiki on phone",
+  "spots": {}
+ },
+ "copperleaf-discord": {
+  "file": "copperleaf-discord.jpg",
+  "w": 2000,
+  "h": 1343,
+  "kind": "copperleaf",
+  "tall": false,
+  "label": "Fictional demo server",
+  "what": "Copperleaf example Discord server layout",
+  "spots": {
+   "messages": [
+    0.45,
+    0.35,
+    1.8
+   ],
+   "channels": [
+    0.2,
+    0.45,
+    2
+   ],
+   "overview": [
+    0.5,
+    0.5,
+    1
+   ]
+  }
+ }
+}

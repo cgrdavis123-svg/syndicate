@@ -1,0 +1,16 @@
+/* Fonts for the video engine (all SIL Open Font License, see fonts/LICENSE.txt) */
+@font-face{font-family:IS;src:url(fonts/instrument-serif.woff2)}
+@font-face{font-family:IS;src:url(fonts/instrument-serif-italic.woff2);font-style:italic}
+@font-face{font-family:IT;src:url(fonts/inter-tight-400.woff2);font-weight:400}
+@font-face{font-family:IT;src:url(fonts/inter-tight-500.woff2);font-weight:500}
+@font-face{font-family:IT;src:url(fonts/inter-tight-600.woff2);font-weight:600}
+@font-face{font-family:IT;src:url(fonts/inter-tight-800.woff2);font-weight:800}
+@font-face{font-family:IT;src:url(fonts/inter-tight-900.woff2);font-weight:900}
+@font-face{font-family:JB;src:url(fonts/jetbrains-mono-500.woff2);font-weight:500}
+@font-face{font-family:JB;src:url(fonts/jetbrains-mono-800.woff2);font-weight:800}
+@font-face{font-family:AN;src:url(fonts/anton.woff2)}
+@font-face{font-family:PS;src:url(fonts/press-start-2p.woff2)}
+@font-face{font-family:SK;src:url(fonts/silkscreen.woff2)}
+@font-face{font-family:SK;src:url(fonts/silkscreen-700.woff2);font-weight:700}
+@font-face{font-family:PX;src:url(fonts/pixelify-500.woff2);font-weight:500}
+@font-face{font-family:PX;src:url(fonts/pixelify-700.woff2);font-weight:700}

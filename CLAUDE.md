@@ -167,7 +167,8 @@ These apply to every change, every page and every email.
 ├── templates/CLAUDE.md        ← build rules for CLIENT sites
 └── tools/
     ├── resume/build-pdf.cjs   ← builds Grady's resume PDF
-    └── work-shots.cjs         ← screenshots the demo sites for the portfolio
+    ├── work-shots.cjs         ← screenshots the demo sites for the portfolio
+    └── video/                 ← TikTok video engine + PLAYBOOK.md (see "TikTok videos" in §24)
 ```
 
 Ignored by git: `dist/`, `dist-crm/`, `dist-marketing/`, `*.zip`, CRM databases, sessions, backups and logs, the root resume PDF, and `marketing/assets/favicon.svg` (generated).
@@ -965,6 +966,10 @@ All setup items below were done by October 18, 2026, except the ones still open.
 **Content**
 - [x] Confirm the promises in §23
 - [x] Confirm resume items: 7-Eleven end date, brand start years, Limestone grad year; add a headshot
+
+**TikTok videos** (set up October 20, 2026)
+- A scheduled task makes two videos a day (about 6:45 AM and 5:45 PM ET) with `tools/video/` and sends each to Grady's phone with its caption, hashtags and first comment; Grady posts them at 7 AM and 7 PM. It follows `tools/video/PLAYBOOK.md` (rotation, research, hard rules). TikTok's API posts only privately until an app passes TikTok's audit, so posting stays manual.
+- [ ] Optional: convert the TikTok account to a Business account and decide whether to apply for the Content Posting API later
 
 **Ideas we've discussed but not built** (don't build without a go-ahead)
 - Two-way Google Calendar sync for booking, and automatic CRM backups (started, then cancelled)

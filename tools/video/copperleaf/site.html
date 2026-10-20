@@ -1,0 +1,57 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Copperleaf SMP</title>
+<link rel="stylesheet" href="../fonts.css">
+<style>
+:root{--night:#0f1630;--deep:#0a0f22;--copper:#e0874d;--leaf:#6ccf4a;--ink:#eef2ff;--muted:#a5b0d6;--panel:#151d3d}
+*{box-sizing:border-box;font-variant-ligatures:none}body{margin:0;background:var(--deep);color:var(--ink);font:400 17px/1.55 IT,system-ui}
+a{color:inherit;text-decoration:none}
+nav{display:flex;align-items:center;gap:28px;padding:18px 40px;position:absolute;inset:0 0 auto;z-index:3}
+.logo{display:flex;align-items:center;gap:10px;font:700 20px SK;letter-spacing:.02em}.logo i{width:26px;height:26px;background:var(--copper);box-shadow:inset -4px -4px 0 #a85a2a,inset 4px 4px 0 #f2a874;display:block}
+nav .links{display:flex;gap:22px;font:500 16px PX;color:var(--muted)}nav .grow{flex:1}
+.btn{display:inline-flex;align-items:center;gap:10px;font:700 15px SK;padding:14px 20px;background:var(--leaf);color:#0b1a07;box-shadow:inset -4px -4px 0 #3f8d27,inset 4px 4px 0 #9ae37b;text-transform:uppercase}
+.btn.alt{background:#2b3566;color:var(--ink);box-shadow:inset -4px -4px 0 #1b2247,inset 4px 4px 0 #46528e}
+.hero{position:relative;height:760px;background:linear-gradient(#0d1430 0%,#1f2f6b 55%,#3d4f9a 100%);overflow:hidden}
+.stars i{position:absolute;width:4px;height:4px;background:#fff}
+.moon{position:absolute;right:140px;top:110px;width:72px;height:72px;background:#f4f1d6;box-shadow:inset -10px -10px 0 #d9d4ae}
+#isl{position:absolute;right:-40px;bottom:-40px;image-rendering:pixelated}
+.copy{position:absolute;left:64px;top:190px;max-width:560px;z-index:2}
+.tag{font:500 18px PX;color:var(--leaf);letter-spacing:.06em}
+h1{font:700 64px/1.02 SK;margin:12px 0 18px;text-shadow:5px 5px 0 #0a0f22}
+.copy p{color:#d5dcf7;font-size:19px;max-width:46ch;margin:0 0 26px}
+.ip{display:flex;gap:0;margin:0 0 18px}.ip span{font:500 17px JB;padding:14px 18px;background:#0a0f22;border:3px solid #2b3566;border-right:0}.ip b{font:700 14px SK;padding:16px 16px;background:var(--copper);color:#2a1307}
+.row{display:flex;gap:14px;flex-wrap:wrap}
+.status{display:inline-flex;align-items:center;gap:8px;font:500 15px PX;color:var(--muted);margin-top:18px}.status i{width:10px;height:10px;background:var(--leaf)}
+section{padding:80px 64px;max-width:1240px;margin:0 auto}
+h2{font:700 36px SK;margin:0 0 30px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.card{background:var(--panel);padding:26px;border:3px solid #26306a;box-shadow:6px 6px 0 #070a18}
+.card h3{font:700 22px PX;margin:12px 0 6px}.card p{color:var(--muted);margin:0}
+.ico{width:46px;height:46px;image-rendering:pixelated}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;counter-reset:s}
+.steps div{padding:24px;border:3px dashed #2b3566}.steps b{font:700 40px SK;color:var(--copper)}.steps h3{font:700 20px PX;margin:6px 0}.steps p{margin:0;color:var(--muted)}
+.band{background:var(--leaf);color:#0b1a07;text-align:center;padding:60px 20px}.band h2{margin:0 0 10px}.band p{margin:0 0 24px;font-size:19px}
+.band .btn{background:#0b1a07;color:var(--leaf);box-shadow:inset -4px -4px 0 #000,inset 4px 4px 0 #23401a}
+footer{padding:30px 64px;color:var(--muted);font:500 14px PX;display:flex;justify-content:space-between}
+@media(max-width:700px){nav{padding:16px 18px}nav .links{display:none}.hero{height:820px}.copy{left:20px;right:20px;top:110px}h1{font-size:40px}#isl{width:620px;right:-130px;bottom:-60px}section{padding:56px 20px}.grid,.steps{grid-template-columns:1fr}footer{flex-direction:column;gap:8px;padding:24px 20px}}
+</style>
+<nav><a class="logo" href="#"><i></i>Copperleaf</a><div class="links"><a>Play</a><a>Wiki</a><a>Rules</a><a>Events</a><a>Map</a></div><div class="grow"></div><a class="btn alt">Discord</a></nav>
+<div class="hero"><div class="stars" id="stars"></div><div class="moon"></div><canvas id="isl" width="880" height="720"></canvas>
+<div class="copy"><div class="tag">SURVIVAL · SEASON 3 · JAVA &amp; BEDROCK</div><h1>Build slow.<br>Stay a while.</h1><p>A friendly survival SMP with land claims, player shops and a big build event every month. No pay-to-win, ever.</p>
+<div class="ip"><span>play.copperleaf.example</span><b>COPY IP</b></div><div class="row"><a class="btn">How to join</a><a class="btn alt">Read the wiki</a></div>
+<div class="status"><i></i>Server online · Season 3 starts Friday, 7 PM ET</div></div></div>
+<section><h2>What's on the server</h2><div class="grid">
+<div class="card"><canvas class="ico" data-b="grass" width="46" height="46"></canvas><h3>Land claims</h3><p>Claim your base with a golden shovel. No griefing, no worries.</p></div>
+<div class="card"><canvas class="ico" data-b="copper" width="46" height="46"></canvas><h3>Player shops</h3><p>Sell your farms' output at the market district. Prices set by players.</p></div>
+<div class="card"><canvas class="ico" data-b="glow" width="46" height="46"></canvas><h3>Monthly events</h3><p>Build battles, boat races and a big end-of-season party at spawn.</p></div></div></section>
+<section><h2>Join in three steps</h2><div class="steps">
+<div><b>1</b><h3>Copy the IP</h3><p>play.copperleaf.example on Java or Bedrock.</p></div>
+<div><b>2</b><h3>Read the rules</h3><p>Short and fair. Takes two minutes.</p></div>
+<div><b>3</b><h3>Say hi in Discord</h3><p>Get your role and find a build buddy.</p></div></div></section>
+<div class="band"><h2>Season 3 starts Friday</h2><p>Fresh map, new spawn town, same friendly crew.</p><a class="btn">Join the Discord</a></div>
+<footer><span>Copperleaf SMP · a fictional demo server by Syndicate Marketing</span><span>Not affiliated with Mojang or Microsoft</span></footer>
+<script src="../vox.js"></script><script src="../scene.js"></script>
+<script>
+const st=document.getElementById('stars'),r=VOX.rng(4);for(let i=0;i<60;i++){const s=document.createElement('i');s.style.left=r()*100+'%';s.style.top=r()*60+'%';s.style.opacity=.3+r()*.7;st.appendChild(s)}
+const c=document.getElementById('isl'),g=c.getContext('2d');g.imageSmoothingEnabled=false;SCENE.draw(g,440,170,32,1,0);
+document.querySelectorAll('.ico').forEach(cv=>{const x=cv.getContext('2d');VOX.cube(x,cv.dataset.b,23,2,21)});
+</script>

@@ -1,0 +1,18 @@
+{
+  "theme": "blocks",
+  "bpm": 150,
+  "seed": 33,
+  "audience": "minecraft-servers",
+  "format": "problem-fix",
+  "hook": "Your players keep asking the same questions.",
+  "scenes": [
+    {"type": "world", "beats": 10, "pal": 1, "lines": ["SAME QUESTIONS"], "textY": -640, "chat": [["Kai", "how do i claim land?"], ["Ash", "what are the rules??"], ["Juniper", "is there a wiki"]], "tail": "*GIVE THEM A WIKI.*"},
+    {"type": "shot", "beats": 8, "pal": 5, "shot": "copperleaf-wiki", "spots": ["overview", "table"], "lines": ["RULES", "COMMANDS"], "border": "plank", "chips": ["Server wiki · quoted"]},
+    {"type": "phone", "beats": 7, "pal": 0, "shot": "copperleaf-site-phone", "lines": ["*SITE*"], "scroll": [0, 0.5], "chips": ["From $350"]},
+    {"type": "prices", "beats": 9, "pal": 3, "lines": ["LEVEL UP"], "items": [["One-page site", "$350"], ["Starter site", "$850"], ["Server wiki", "QUOTE"], ["Discord setup", "$300"], ["Discord mod", "$350/MO"]]},
+    {"type": "end", "beats": 10, "pal": 1, "tagline": "WEBSITES · WIKIS · DISCORD", "sub": "FOR MINECRAFT SERVERS & SMPS"}
+  ],
+  "caption": "If players keep asking how to claim land or what the rules are, your server needs a wiki. We build websites, wikis and Discord servers for SMPs. Copperleaf SMP is a fictional demo server. Not affiliated with Mojang or Microsoft.",
+  "hashtags": ["#minecraft", "#minecraftserver", "#smp", "#discordserver", "#minecraftsmp"],
+  "firstComment": "What’s the question your players ask the most? Drop it below."
+}

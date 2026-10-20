@@ -1,0 +1,19 @@
+{
+  "theme": "hype",
+  "bpm": 150,
+  "seed": 22,
+  "audience": "any-small-business",
+  "format": "what-you-get",
+  "hook": "What $350 actually gets you.",
+  "scenes": [
+    {"type": "words", "beats": 4, "words": ["$350.", "What", "you", "get."]},
+    {"type": "list", "beats": 8, "lines": ["One-page website"], "items": ["One long page, built for phones", "Contact form to your inbox", "Titles, descriptions, sitemap", "*Site Stats* dashboard", "Two rounds of changes"]},
+    {"type": "phone", "beats": 6, "shot": "demo-hearth-phone", "lines": ["Live in about", "two weeks."], "scroll": [0, 0.5]},
+    {"type": "montage", "beats": 4, "shots": ["demo-ridgeline", "demo-pinestreet", "demo-hearth", "demo-loom", "crm-site", "crm-care-site", "booking", "sm-pricing"], "word": "Built here."},
+    {"type": "prices", "beats": 4, "items": [["One-page website", "$350"], ["Starter website", "$850"], ["Business website", "$1,600"], ["Online store", "$2,500"]]},
+    {"type": "end", "beats": 10, "tagline": "Websites, ads and care for small businesses."}
+  ],
+  "caption": "Here’s exactly what $350 gets you: one long page built for phones, a contact form to your inbox, the SEO basics, a Site Stats dashboard and two rounds of changes. Every price is on our site. (Sites shown are concept work for fictional businesses.)",
+  "hashtags": ["#smallbusiness", "#webdesign", "#websitedesign", "#smallbusinessowner", "#entrepreneur"],
+  "firstComment": "Want to see the full list for the bigger packages? It’s all on the pricing page, link in bio."
+}

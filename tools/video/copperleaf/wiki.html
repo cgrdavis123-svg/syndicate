@@ -1,0 +1,41 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Land claims · Copperleaf Wiki</title><link rel="stylesheet" href="../fonts.css">
+<style>
+:root{--bg:#f3efe4;--ink:#1d1a14;--muted:#6b6455;--line:#d9d1bd;--copper:#c46a33;--leaf:#3f8d27;--panel:#fffaf0}
+*{box-sizing:border-box;font-variant-ligatures:none}body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 IT,system-ui}
+header{display:flex;align-items:center;gap:20px;padding:16px 36px;background:#1d1a14;color:#f3efe4}
+.logo{display:flex;gap:10px;align-items:center;font:700 19px SK}.logo i{width:24px;height:24px;background:#e0874d;box-shadow:inset -4px -4px 0 #a85a2a,inset 4px 4px 0 #f2a874}
+.logo small{font:500 15px PX;color:#c9bfa6;margin-left:6px}
+.search{flex:1;max-width:520px;margin-left:30px;background:#2c2820;border:2px solid #4a4334;padding:10px 14px;font:500 15px PX;color:#a99f88}
+.wrap{display:grid;grid-template-columns:260px 1fr 240px;gap:40px;max-width:1280px;margin:0 auto;padding:36px}
+aside h4{font:700 13px SK;letter-spacing:.06em;color:var(--muted);margin:22px 0 8px}
+aside a{display:flex;gap:10px;align-items:center;padding:7px 10px;font:500 16px PX;color:#3a352a}
+aside a.on{background:#1d1a14;color:#f3efe4}aside canvas{image-rendering:pixelated}
+.crumb{font:500 14px PX;color:var(--muted)}
+h1{font:700 44px SK;margin:6px 0 10px}.lede{font-size:19px;color:#3a352a;max-width:60ch}
+h2{font:700 26px PX;margin:34px 0 10px;padding-bottom:6px;border-bottom:3px solid var(--line)}
+table{width:100%;border-collapse:collapse;background:var(--panel);border:3px solid #1d1a14;box-shadow:6px 6px 0 #1d1a14}
+th{font:700 13px SK;text-align:left;background:#1d1a14;color:#f3efe4;padding:12px 14px;letter-spacing:.05em}
+td{padding:12px 14px;border-top:2px solid var(--line);vertical-align:top}td code{font:500 15px JB;background:#efe6cf;padding:2px 6px}
+.call{margin:26px 0;padding:18px 20px;background:#e3f2d6;border-left:6px solid var(--leaf);font-size:16px}.call b{font:700 14px SK;color:var(--leaf);display:block;margin-bottom:4px}
+.toc{position:sticky;top:20px;font:500 15px PX}.toc h4{font:700 13px SK;color:var(--muted);margin:0 0 10px}.toc a{display:block;padding:5px 0;color:#3a352a}.toc a.on{color:var(--copper)}
+.meta{margin-top:28px;font:500 14px PX;color:var(--muted)}
+@media(max-width:700px){.wrap{grid-template-columns:1fr;padding:20px}aside,.toc{display:none}header{padding:14px 18px}.search{display:none}h1{font-size:32px}}
+</style>
+<header><span class="logo"><i></i>Copperleaf <small>Wiki</small></span><div class="search">Search the wiki: commands, shops, events…</div></header>
+<div class="wrap"><aside>
+<h4>GETTING STARTED</h4><a><canvas data-b="grass" width="22" height="22"></canvas>How to join</a><a><canvas data-b="plank" width="22" height="22"></canvas>Server rules</a>
+<h4>PLAYING</h4><a class="on"><canvas data-b="copper" width="22" height="22"></canvas>Land claims</a><a><canvas data-b="glow" width="22" height="22"></canvas>Shops &amp; economy</a><a><canvas data-b="stone" width="22" height="22"></canvas>Commands</a><a><canvas data-b="leaves" width="22" height="22"></canvas>Farms that are allowed</a>
+<h4>COMMUNITY</h4><a><canvas data-b="brick" width="22" height="22"></canvas>Events calendar</a><a><canvas data-b="log" width="22" height="22"></canvas>Season 3 changes</a></aside>
+<main><div class="crumb">Wiki › Playing › Land claims</div><h1>Land claims</h1><p class="lede">Protect your base so only you and the players you trust can build or open chests there. Claims cost nothing and grow as you play.</p>
+<h2>Claiming your first area</h2><p>Hold a golden shovel and right-click two opposite corners of the area you want. Your first claim can be up to 100 blocks across.</p>
+<table><tr><th>COMMAND</th><th>WHAT IT DOES</th></tr>
+<tr><td><code>/claim</code></td><td>Claims a square around where you stand.</td></tr>
+<tr><td><code>/trust &lt;player&gt;</code></td><td>Lets a friend build in your claim.</td></tr>
+<tr><td><code>/untrust &lt;player&gt;</code></td><td>Takes that permission away.</td></tr>
+<tr><td><code>/claimslist</code></td><td>Shows all your claims and blocks left.</td></tr></table>
+<div class="call"><b>TIP</b>You earn more claim blocks every hour you play. Check how many you have with /claimslist.</div>
+<h2>Abandoned claims</h2><p>Claims from players who haven't logged in for 60 days are cleared before each new season.</p>
+<div class="meta">Edited by the Copperleaf staff team · Fictional demo wiki by Syndicate Marketing</div></main>
+<nav class="toc"><h4>ON THIS PAGE</h4><a class="on">Claiming your first area</a><a>Commands</a><a>Abandoned claims</a></nav></div>
+<script src="../vox.js"></script><script>document.querySelectorAll('canvas').forEach(cv=>VOX.cube(cv.getContext('2d'),cv.dataset.b,11,1,10))</script>

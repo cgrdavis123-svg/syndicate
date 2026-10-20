@@ -1,0 +1,10 @@
+All fonts in this folder are licensed under the SIL Open Font License 1.1 (https://openfontlicense.org).
+They come from Google Fonts via the @fontsource packages.
+
+Anton: https://github.com/googlefonts/AntonFont
+Press Start 2P: https://github.com/codeman38/PressStart2P (CodeMan38)
+Silkscreen: https://github.com/googlefonts/silkscreen (Jason Kottke)
+Pixelify Sans: https://github.com/eifetx/Pixelify-Sans
+Instrument Serif: https://github.com/Instrument/instrument-serif
+Inter Tight: https://github.com/googlefonts/inter-tight
+JetBrains Mono: https://github.com/JetBrains/JetBrainsMono

@@ -22,3 +22,7 @@ __pycache__/
 *.pyc
 /*.png
 .DS_Store
+
+# Video engine output and dated briefs (tools/video)
+tools/video/out/
+tools/video/briefs/20*.json
