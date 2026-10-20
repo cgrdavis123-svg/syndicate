@@ -769,7 +769,7 @@ It prints a one-line summary (cPanel can email it to you; set the cron email to 
 ## 17. Databases and migrations
 
 ### CRM: `crm/storage/crm.sqlite`
-Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v22**.
+Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v23**.
 
 | Version | Adds |
 |---|---|
@@ -793,6 +793,7 @@ Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_versi
 | v19 | Outreach: `outreach_prospects`, `outreach_log`, `outreach_optout`; settings `outreach_on`, `outreach_mailbox`, `outreach_from_name`, `outreach_address`, `outreach_start`, `outreach_cap`, `outreach_api_hash`, `outreach_last_email`, `outreach_paused` |
 | v20 | The `add-domain-setup` add-on (Namecheap domain, hosting & email setup), from `catalog.json` |
 | v21 | `products.free_with` (SKUs that make a product free in the same order); domain setup free with `web-business` and `web-store`, plus the perk on those packages' feature lists |
+| v22 | `users.passkeys` (JSON list of passkey public keys for two-step sign-in) |
 | v18 | Community products (`com-discord-setup`, `com-audit`, `com-manage`, `com-manage-plus`, after the care plans) and the `add-presskit` add-on, from `catalog.json` |
 
 ### Site Stats: `crm/storage/analytics.sqlite`
@@ -818,6 +819,7 @@ Separate file so heavy analytics writes never slow down the CRM.
 - Secrets encrypted at rest (`mail_encrypt()` with `storage/mail.key`).
 - Stripe webhook signature verified; events deduped.
 - Honeypots on public forms.
+- **Passkeys** as a second sign-in step for CRM staff (Settings → Two-step sign-in → Add a passkey; Face ID / Touch ID, Windows Hello, Android, security keys). `app/passkey.php` is plain WebAuthn with no libraries (CBOR reader, ES256 + RS256 via `openssl_verify`, attestation `none`); `assets/js/passkey.js` runs the browser side and `passkey.php` (plus `ads/`, `wiki/` copies) answers it. The relying party is `stusyn.com` (`pk_rp_id()`, override with `passkey_rp_id` in config), so one passkey works on crm., ads. and wiki.stusyn.com; the origin must match the page's own host. Public keys only, stored in `users.passkeys`. Two-step is on when a user has the app **or** a passkey (`tfa_on()`); adding the first one makes recovery codes. Removing a passkey needs the password. `2fa-off` in `app/cli.php` clears passkeys too.
 - **Two-step sign-in (TOTP)** for CRM users (Settings → Two-step sign-in) and Hiring HQ admins (Account): any authenticator app, QR via `assets/js/qrcode.js` (qrcode-generator, MIT), ±30 s drift, codes can't be reused, 10 one-time recovery codes (stored hashed). Secrets are encrypted with `storage/totp.key` (back it up with `mail.key`; excluded from zips and git). `app/totp.php` is identical in both apps. Lost phone and codes: on the server run `php app/cli.php 2fa-off you@example.com` (CLI only). The CRM dashboard nudges until it's on.
 - **Bot check (Cloudflare Turnstile)** on the public forms: stusyn.com contact (`contact.php`) and job applications (`job.php`), syndicatemarketing.co contact (`shop-api.php?a=lead`), and CRM bookings (`book.php`). Free, no Cloudflare DNS needed, one widget for all three domains. Keys: the public site key goes in `turnstile_site` (both `config.php` files) and in the builds (`TURNSTILE_SITE` env or `turnstileSite` in `build.mjs` / `build-marketing.mjs`); the secret goes only in `turnstile_secret` in both `config.php` files. Empty = off. Helpers in both bootstraps: `captcha_widget()`, `captcha_script()`, `captcha_ok()`. Missing or bad token = refused; Cloudflare unreachable = let through and logged. **Turn it on in this order:** rebuild and deploy the static sites with the site key first, then add the secrets, or the static contact forms will be refused. Test keys: site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA` (always pass).
 - The marketing contact auto-reply contains none of the visitor's words and goes to each address at most once a day, so the form can't relay spam.
@@ -1027,7 +1029,7 @@ All setup items below were done by October 18, 2026, except the ones still open.
 | Consulting rate | $150/hour |
 | Exclude own visits | `?syn_ignore=1` |
 | Cart storage | `localStorage.sm_cart`, `sessionStorage.sm_src`, `sm_checkout`, `sm_order` |
-| CRM DB version | v21 (next: v22) |
+| CRM DB version | v22 (next: v23) |
 | Gaming campaign | `syndicatemarketing.co/gaming-communities.html?t=studio\|creator\|esports\|business&b=Name&n=First` |
 | Outreach | CRM → Outreach; sends from outreach@syndicatemarketing.co; agent API `crm.stusyn.com/outreach-api.php` |
 | Current offer | `starter-500`: $500 Starter website + 3 months Care Plus free · `syndicatemarketing.co/starter-website-offer.html?b=Business+Name&n=First` |

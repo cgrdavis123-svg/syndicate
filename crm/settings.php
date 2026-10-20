@@ -33,21 +33,45 @@ if (is_post()) {
         elseif (post('new') !== post('new2')) $error = 'The new passwords don’t match.';
         else { $hash = password_hash(post('new'), PASSWORD_DEFAULT); q('UPDATE users SET password_hash = ? WHERE id = ?', [$hash, $user['id']]); sign_in_user(['id' => $user['id'], 'password_hash' => $hash]); flash('Password updated.'); redirect('settings.php'); }
     }
-    if (in_array($a, ['tfa_start', 'tfa_confirm', 'tfa_off', 'tfa_codes'], true)) {
+    if (in_array($a, ['tfa_start', 'tfa_confirm', 'tfa_off', 'tfa_codes', 'pk_remove'], true)) {
         require_once __DIR__ . '/app/totp.php';
+        require_once __DIR__ . '/app/passkey.php';
         $me = one('SELECT * FROM users WHERE id = ?', [$user['id']]);
+        $hasCodes = count(json_decode($me['recovery_codes'] ?: '[]', true) ?: []) > 0;
         if ($a === 'tfa_start') { $_SESSION['tfa_setup'] = totp_new_secret(); redirect('settings.php#tfa'); }
         if (too_many('tfa_settings', 10, 15)) $error = 'Too many tries. Wait 15 minutes and try again.';
         elseif ($a === 'tfa_confirm') {
             $sec = (string)($_SESSION['tfa_setup'] ?? '');
             if ($sec === '' || !($st = totp_check($sec, post('code')))) { record_attempt('tfa_settings'); $error = 'That code didn’t match. Check the time on your phone is set automatically, and try the newest code.'; }
-            else { [$plain, $hashes] = totp_recovery_codes(); q('UPDATE users SET totp_secret = ?, totp_last = ?, recovery_codes = ? WHERE id = ?', [totp_seal($sec), $st, $hashes, $user['id']]); unset($_SESSION['tfa_setup']); $_SESSION['tfa_codes'] = $plain; flash('Two-step sign-in is on.'); redirect('settings.php#tfa'); }
+            else {
+                q('UPDATE users SET totp_secret = ?, totp_last = ? WHERE id = ?', [totp_seal($sec), $st, $user['id']]);
+                // Passkey users already have recovery codes; keep those.
+                if (!$hasCodes) { [$plain, $hashes] = totp_recovery_codes(); q('UPDATE users SET recovery_codes = ? WHERE id = ?', [$hashes, $user['id']]); $_SESSION['tfa_codes'] = $plain; }
+                unset($_SESSION['tfa_setup']); flash('Authenticator app added.'); redirect('settings.php#tfa');
+            }
+        } elseif ($a === 'pk_remove') {
+            if (!password_verify(post('current'), $me['password_hash'])) { record_attempt('tfa_settings'); $error = 'Your password isn’t right.'; }
+            else {
+                $list = array_values(array_filter(pk_list($me), function ($p) { return !hash_equals((string)$p['id'], post('id')); }));
+                q('UPDATE users SET passkeys = ? WHERE id = ?', [json_encode($list), $user['id']]);
+                if (!$list && $me['totp_secret'] === '') { q("UPDATE users SET recovery_codes = '[]' WHERE id = ?", [$user['id']]); flash('Passkey removed. Two-step sign-in is off.'); }
+                else flash('Passkey removed.');
+                redirect('settings.php#tfa');
+            }
+        } elseif ($a === 'tfa_codes' && $me['totp_secret'] === '') {
+            // Passkeys only: confirm with the password instead of an app code.
+            if (!pk_list($me) || !password_verify(post('current'), $me['password_hash'])) { record_attempt('tfa_settings'); $error = 'Your password isn’t right.'; }
+            else { [$plain, $hashes] = totp_recovery_codes(); q('UPDATE users SET recovery_codes = ? WHERE id = ?', [$hashes, $user['id']]); $_SESSION['tfa_codes'] = $plain; flash('New recovery codes made. The old ones no longer work.'); redirect('settings.php#tfa'); }
         } else {
             $st = $me['totp_secret'] !== '' ? totp_check(totp_open($me['totp_secret']), post('code'), (int)$me['totp_last']) : 0;
             if (!$st) { record_attempt('tfa_settings'); $error = 'That code didn’t match.'; }
             elseif ($a === 'tfa_off') {
                 if (!password_verify(post('current'), $me['password_hash'])) { record_attempt('tfa_settings'); $error = 'Your password isn’t right.'; }
-                else { q("UPDATE users SET totp_secret = '', totp_last = 0, recovery_codes = '[]' WHERE id = ?", [$user['id']]); flash('Two-step sign-in is off.'); redirect('settings.php#tfa'); }
+                else {
+                    $keep = pk_list($me) !== [];
+                    q('UPDATE users SET totp_secret = \'\', totp_last = 0' . ($keep ? '' : ", recovery_codes = '[]'") . ' WHERE id = ?', [$user['id']]);
+                    flash($keep ? 'Authenticator app removed. Your passkeys still work.' : 'Two-step sign-in is off.'); redirect('settings.php#tfa');
+                }
             } else { [$plain, $hashes] = totp_recovery_codes(); q('UPDATE users SET totp_last = ?, recovery_codes = ? WHERE id = ?', [$st, $hashes, $user['id']]); $_SESSION['tfa_codes'] = $plain; flash('New recovery codes made. The old ones no longer work.'); redirect('settings.php#tfa'); }
         }
     }
@@ -126,16 +150,29 @@ layout_top('Settings', 'settings', $user);
       <label class="f"><span>Confirm new password</span><input name="new2" type="password" required minlength="10" autocomplete="new-password"></label>
       <button class="btn ghost sm" type="submit">Update password</button>
     </form>
-    <?php $me = one('SELECT totp_secret, recovery_codes FROM users WHERE id = ?', [$user['id']]); $setup = (string)($_SESSION['tfa_setup'] ?? ''); $codes = $_SESSION['tfa_codes'] ?? null; unset($_SESSION['tfa_codes']); ?>
-    <section class="card" id="tfa"><div class="card-h"><h2>Two-step sign-in</h2><?= $me['totp_secret'] !== '' ? '<span class="tag lime">On</span>' : '<span class="tag red">Off</span>' ?></div>
+    <?php require_once __DIR__ . '/app/passkey.php'; $me = one('SELECT totp_secret, recovery_codes, passkeys FROM users WHERE id = ?', [$user['id']]); $keys = pk_list($me); $app = $me['totp_secret'] !== ''; $setup = (string)($_SESSION['tfa_setup'] ?? ''); $codes = $_SESSION['tfa_codes'] ?? null; unset($_SESSION['tfa_codes']); $left = count(json_decode($me['recovery_codes'] ?: '[]', true) ?: []); ?>
+    <section class="card" id="tfa"><div class="card-h"><h2>Two-step sign-in</h2><?= tfa_on($me) ? '<span class="tag lime">On</span>' : '<span class="tag red">Off</span>' ?></div>
       <?php if ($codes): ?>
         <p class="notice">Save these recovery codes somewhere safe, like your password manager. Each one works once if you lose your phone. They won’t be shown again.</p>
         <pre class="code-sm num"><?= e(implode("\n", $codes)) ?></pre>
       <?php endif; ?>
-      <?php if ($me['totp_secret'] !== ''): ?>
-        <p class="muted small">Signing in asks for a code from your authenticator app. <?= count(json_decode($me['recovery_codes'] ?: '[]', true) ?: []) ?> recovery codes left.</p>
+      <p class="muted small">After your password, the CRM, ads and wiki ask for a passkey or a code from your phone, so a stolen password isn’t enough to get in.<?= tfa_on($me) ? ' ' . $left . ' recovery codes left.' : '' ?></p>
+
+      <h3 class="tfa-sub">Passkeys</h3>
+      <?php if ($keys): ?><ul class="pk-list">
+        <?php foreach ($keys as $p): ?><li><span><b><?= e($p['name']) ?></b><span class="muted small"><?= e(pk_when($p)) ?></span></span>
+          <details><summary class="muted small">Remove</summary><form method="post" class="row" style="flex-wrap:wrap;gap:8px;margin-top:8px"><?= csrf_field() ?><input type="hidden" name="action" value="pk_remove"><input type="hidden" name="id" value="<?= e($p['id']) ?>"><input name="current" type="password" placeholder="Password" aria-label="Password" required autocomplete="current-password"><button class="link-danger" type="submit">Remove passkey</button></form></details></li>
+        <?php endforeach; ?></ul>
+      <?php else: ?><p class="muted small">Sign in with Face ID or Touch ID on your iPhone, iPad or Mac (or Windows Hello, an Android phone or a security key). Your iPhone keeps it in iCloud Keychain, so it works on your other Apple devices too.</p><?php endif; ?>
+      <p class="notice bad" data-passkey-msg role="alert" hidden></p>
+      <div class="row" style="flex-wrap:wrap;gap:10px"><input data-passkey-name maxlength="60" placeholder="Name it, e.g. Grady’s iPhone" aria-label="Passkey name" style="flex:1;min-width:180px"><button class="btn <?= $keys ? 'ghost' : 'primary' ?> sm" type="button" data-passkey-add data-endpoint="passkey.php" data-csrf="<?= e(csrf_token()) ?>">Add a passkey</button></div>
+      <script src="assets/js/passkey.js" defer></script>
+
+      <h3 class="tfa-sub">Authenticator app</h3>
+      <?php if ($app): ?>
+        <p class="muted small">On. Signing in can use a 6-digit code from your app.</p>
         <form method="post" class="row" style="flex-wrap:wrap;gap:10px"><?= csrf_field() ?><input type="hidden" name="action" value="tfa_codes"><input name="code" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit code" aria-label="Code from your app" required style="width:140px"><button class="btn ghost sm" type="submit">New recovery codes</button></form>
-        <details style="margin-top:12px"><summary class="muted small">Turn it off</summary><form method="post" class="row" style="flex-wrap:wrap;gap:10px;margin-top:10px"><?= csrf_field() ?><input type="hidden" name="action" value="tfa_off"><input name="current" type="password" placeholder="Password" aria-label="Password" required autocomplete="current-password"><input name="code" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit code" aria-label="Code from your app" required style="width:140px"><button class="link-danger" type="submit">Turn off two-step sign-in</button></form></details>
+        <details><summary class="muted small">Remove the authenticator app</summary><form method="post" class="row" style="flex-wrap:wrap;gap:10px;margin-top:10px"><?= csrf_field() ?><input type="hidden" name="action" value="tfa_off"><input name="current" type="password" placeholder="Password" aria-label="Password" required autocomplete="current-password"><input name="code" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit code" aria-label="Code from your app" required style="width:140px"><button class="link-danger" type="submit"><?= $keys ? 'Remove app' : 'Turn off two-step sign-in' ?></button></form></details>
       <?php elseif ($setup !== ''): require_once __DIR__ . '/app/totp.php'; ?>
         <p>1. Open an authenticator app (1Password, Bitwarden, Google Authenticator, Authy) and scan this code.</p>
         <div class="qr" data-qr="<?= e(totp_uri($setup, $user['email'], 'Syndicate CRM')) ?>" role="img" aria-label="QR code for your authenticator app"></div>
@@ -143,8 +180,10 @@ layout_top('Settings', 'settings', $user);
         <form method="post" class="row" style="flex-wrap:wrap;gap:10px"><?= csrf_field() ?><input type="hidden" name="action" value="tfa_confirm"><label class="f grow"><span>2. Enter the 6-digit code it shows</span><input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" required></label><button class="btn primary sm" type="submit" style="align-self:end">Turn on</button></form>
         <script src="assets/js/qrcode.js" defer></script>
       <?php else: ?>
-        <p class="muted small">Adds a code from your phone to every sign-in, so a stolen password isn’t enough to get into the CRM.</p>
-        <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="tfa_start"><button class="btn primary sm" type="submit">Set up two-step sign-in</button></form>
+        <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="tfa_start"><button class="btn ghost sm" type="submit">Set up an authenticator app</button></form>
+      <?php endif; ?>
+      <?php if (!$app && $keys): ?>
+        <details><summary class="muted small">New recovery codes</summary><form method="post" class="row" style="flex-wrap:wrap;gap:10px;margin-top:10px"><?= csrf_field() ?><input type="hidden" name="action" value="tfa_codes"><input name="current" type="password" placeholder="Password" aria-label="Password" required autocomplete="current-password"><button class="btn ghost sm" type="submit">Make new codes</button></form></details>
       <?php endif; ?>
     </section>
     <section class="card"><div class="card-h"><h2>Your data</h2></div>

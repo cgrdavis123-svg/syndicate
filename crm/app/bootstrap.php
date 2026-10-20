@@ -533,6 +533,11 @@ function migrate(PDO $pdo): void {
         }
         $pdo->exec('PRAGMA user_version = 21');
     }
+    if ($v < 22) {
+        // v22: passkeys (Face ID, Touch ID, security keys) as a second sign-in step, as a JSON list of public keys.
+        $pdo->exec("ALTER TABLE users ADD COLUMN passkeys TEXT NOT NULL DEFAULT '[]'");
+        $pdo->exec('PRAGMA user_version = 22');
+    }
 }
 function migrate_v1(PDO $pdo): void {
     $pdo->exec("

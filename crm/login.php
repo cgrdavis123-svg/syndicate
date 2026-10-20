@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/app/bootstrap.php';
+require __DIR__ . '/app/passkey.php';
 if ((int)val('SELECT COUNT(*) FROM users') === 0) redirect('setup.php');
 if (current_user()) redirect('./');
 $error = ''; $email = post('email');
@@ -9,7 +10,7 @@ if (is_post()) {
     else {
         $u = one('SELECT * FROM users WHERE email = ?', [$email]);
         if ($u && password_verify(post('password'), $u['password_hash'])) {
-            if ($u['totp_secret'] !== '') { session_regenerate_id(true); $_SESSION['tfa_uid'] = (int)$u['id']; $_SESSION['tfa_at'] = time(); redirect('login-2fa.php'); }
+            if (tfa_on($u)) { session_regenerate_id(true); $_SESSION['tfa_uid'] = (int)$u['id']; $_SESSION['tfa_at'] = time(); redirect('login-2fa.php'); }
             sign_in_user($u);
             q('UPDATE users SET last_login_at = ? WHERE id = ?', [now(), $u['id']]);
             redirect('./');

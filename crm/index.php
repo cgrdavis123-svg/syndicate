@@ -35,7 +35,7 @@ $upcoming = all("SELECT co.*, c.first_name, c.last_name FROM consultations co LE
 layout_top('Dashboard', 'dashboard', $user);
 $hour = (int)date('G');
 ?>
-<?php if (val('SELECT totp_secret FROM users WHERE id = ?', [$user['id']]) === ''): ?><p class="notice">Protect the CRM with two-step sign-in: a code from your phone at each sign-in. <a href="settings.php#tfa">Set it up in Settings</a> (about a minute).</p><?php endif; ?>
+<?php require_once __DIR__ . '/app/passkey.php'; if (!tfa_on(one('SELECT totp_secret, passkeys FROM users WHERE id = ?', [$user['id']]))): ?><p class="notice">Protect the CRM with two-step sign-in: Face ID or Touch ID with a passkey, or a code from your phone. <a href="settings.php#tfa">Set it up in Settings</a> (about a minute).</p><?php endif; ?>
 <div class="page-head">
   <div><p class="eyebrow"><?= e(date('l, F j')) ?></p><h1>Good <?= $hour < 12 ? 'morning' : ($hour < 17 ? 'afternoon' : 'evening') ?>, <?= e(explode(' ', $user['name'])[0]) ?>.</h1></div>
   <form method="post" class="sync"><?= csrf_field() ?><input type="hidden" name="action" value="sync">
