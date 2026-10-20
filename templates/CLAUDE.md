@@ -161,7 +161,43 @@ Every site that collects anything gets a **privacy policy**. Sites that sell get
 
 ---
 
-## 11. Delivering
+## 11. Code that reads hand-built
+
+The client, their next developer, or a curious visitor will open the source. It should read like a careful person wrote it for this one business, not like generated boilerplate. Sections 3 and 4 cover how the site looks and reads; this covers the code under it.
+
+**Comments**
+- Comment only the why the code can't show: a browser quirk, a business rule, a workaround and what it works around. One line is usually enough.
+- Don't narrate the code (`// Initialize the menu`, `// Loop through the items`, `// This function handles the form`).
+- No section banners or bookends: `<!-- Hero Section -->`, `<!-- End Header -->`, `/* ===== BUTTONS ===== */`, `// ---- Helpers ----`. Class names and headings already say what a block is.
+- No docblocks on small, obvious functions. No chatty or instructional comments ("Note:", "Feel free to…", "You can customize this…", "Replace with your…", "Updated to fix…").
+- No emoji in code, comments, console output, file names or commit messages.
+
+**Nothing left over**
+- No placeholders in a live site: lorem ipsum, "Your Company", "John Doe", `YOUR_API_KEY`, `href="#"`, "Coming soon" sections. Content still waiting on the client uses `class="fill"` (section 1) and never ships.
+- No dead code: commented-out blocks, unused functions, CSS rules or tokens nothing uses, libraries nothing calls.
+- No `console.log`, `alert()` or debug output in shipped files.
+- No scaffold or version file names: `script.js`, `styles.css`, `index-new.html`, `final-v2.css`, `test.html`, `old/`. Name files for what they hold (`menu.js`, `quote-form.js`, `site.css`).
+- No generator meta tags or "Built with…" credits, other than a footer credit the client has agreed to.
+
+**How it's written**
+- Write the smallest code that does the job. No `try/catch` that only logs `Error:`, no checks for things that can't happen, no config objects, wrappers or helpers for something used once.
+- Name things after this business's content (`.menu-board`, `.service-area`, `.bake-schedule`), not a generic kit (`.hero-section`, `.feature-card`, `.cta-button` on every site we make).
+- One naming style per project, used everywhere. Related CSS rules sit together; no empty rules or duplicate declarations.
+- Messages a visitor sees are plain and specific ("That didn't send. Call us at …"), never "Oops! Something went wrong 😅".
+
+**READMEs and hand-off notes**
+- Plain headings and plain words: what the site is, how to edit it, where things live, how to deploy, who to contact. No emoji headings ("✨ Features", "🚀 Getting started") and no sales tone.
+
+**Before delivery, search for tells.** Every hit is removed or is a deliberate choice you can explain:
+
+```
+grep -rniE "lorem|your company|john doe|replace with|your_api|todo|fixme|console\.log|alert\(|href=\"#\"|<!-- *(end|hero|section|header|footer)|[=-]{5,}|elevate|unlock|seamless|cutting-edge|delve|look no further" --include=*.{html,css,js,php,md} src
+LC_ALL=C.UTF-8 grep -rnP "[\x{1F300}-\x{1FAFF}\x{2705}\x{2728}\x{26A0}]" --include=*.{html,css,js,php,md} src
+```
+
+---
+
+## 12. Delivering
 
 - Commit in small, clear steps on a feature branch. Commit messages say what changed and why. Don't push to `main` or open a PR unless asked.
 - Package the zip and say exactly where to upload it (which cPanel folder) and what to set afterwards (domain, SSL, Stripe keys and webhook, cron job, Site Stats key, SPF/DKIM).
@@ -188,4 +224,5 @@ Every site that collects anything gets a **privacy policy**. Sites that sell get
 - [ ] `.htaccess` with security headers and CSP; private folders blocked
 - [ ] Privacy policy (and terms of sale if selling)
 - [ ] Zero console errors; screenshots reviewed at desktop and mobile
+- [ ] Code reads hand-built: section 11 search is clean, no banners, leftovers or debug output
 - [ ] Zip packaged; upload and setup steps written; items to confirm listed
