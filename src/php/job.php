@@ -123,7 +123,7 @@ if (!$isOpenApp && $job['status'] === 'published'):
         'title' => $job['title'], 'description' => $desc,
         'datePosted' => date('Y-m-d', strtotime($job['published_at'] ?: $job['created_at'])),
         'validThrough' => date('Y-m-d\TH:i:sP', strtotime(($job['published_at'] ?: $job['created_at']) . ' +120 days')),
-        'employmentType' => strtoupper(str_replace('-', '_', $job['employment_type'])),
+        'employmentType' => $job['employment_type'] === 'Contract' ? 'CONTRACTOR' : strtoupper(str_replace('-', '_', $job['employment_type'])),
         'hiringOrganization' => ['@type' => 'Organization', 'name' => $job['company'] === 'Syndicate Holdings Group' ? 'Syndicate Holdings Group LLC' : $job['company'], 'sameAs' => config('site_url')],
         'directApply' => true,
     ];

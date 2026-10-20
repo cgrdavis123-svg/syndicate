@@ -272,6 +272,7 @@ Legal (`src/legal/`): `privacy.html`, `cookies.html`, `terms.html` (section 7 co
 ### PHP (`src/php/`)
 - `careers.php`: careers hub with open roles. `job.php`: role page plus application form (resume upload up to **8 MB**; PDF/DOC/DOCX).
 - Seeded jobs (`app/seed-jobs.php`): **Social Media Manager**, **Paid Social Specialist**, **Open application**.
+- **Commissioned Sales Rep** (Syndicate Marketing, remote US, 1099 contractor, added by migration v3 on October 20, 2026): finds small businesses in our niches (local trades and services; gaming studios, creators, esports, gaming businesses) and sends them to packages, discovery calls or quotes. Pay: **10%** of what each client they bring in pays us: one-off purchases in full, monthly plans for the client's first 12 months; ad spend and refunds excluded. No base pay, quota or fee. Must follow our outreach rules (honest claims, real prices, opt-outs, CAN-SPAM). Payout timing and how referrals are tracked aren't set yet.
 - `contact.php`: contact form handler (rate-limited by `attempts`, honeypot, saves to `messages`, emails hello@). The CRM imports these messages as leads (see §8, "Website sync").
 - `sitemap.php`: dynamic sitemap including open jobs.
 - **Removed:** `order.php` (the old $500 Stripe payment link flow). `.htaccess` 301-redirects it to `/one-page-website.html#order`.
@@ -803,7 +804,7 @@ Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_versi
 Separate file so heavy analytics writes never slow down the CRM.
 
 ### Main site: `src/php/storage/` (on the server, `public_html/storage/`)
-`admins`, `jobs`, `applications`, `messages`, `attempts`. Resumes in `storage/resumes/`. Schema version v2 (two-step sign-in columns on `admins`).
+`admins`, `jobs`, `applications`, `messages`, `attempts`. Resumes in `storage/resumes/`. Schema version v3 (v2: two-step sign-in columns on `admins`; v3: the Commissioned Sales Rep job).
 
 ### Backups
 - Download `crm/storage/` (especially `crm.sqlite`, `analytics.sqlite`, `mail.key`, `portal/`) and the main site's `storage/` regularly (cPanel → Backup, or File Manager → Compress).

@@ -187,6 +187,28 @@ function migrate(PDO $pdo): void {
             ALTER TABLE admins ADD COLUMN recovery_codes TEXT NOT NULL DEFAULT '[]';");
         $pdo->exec('PRAGMA user_version = 2');
     }
+    if ($v < 3) {
+        // v3: Commissioned Sales Rep for Syndicate Marketing (1099, 10% commission), unless a job with that slug exists.
+        $job = [
+            'slug' => 'commissioned-sales-rep', 'title' => 'Commissioned Sales Rep', 'company' => 'Syndicate Marketing', 'team' => 'Sales',
+            'location' => 'United States', 'workplace' => 'Remote', 'employment_type' => 'Contract',
+            'compensation' => '10% commission (independent contractor, 1099)',
+            'summary' => 'Find small businesses in the niches we serve, introduce them to Syndicate Marketing, and earn 10% of what they buy.',
+            'about' => "Syndicate Marketing builds websites, runs paid ads, and sets up and manages Discord communities for small businesses, with fixed prices published on our site. We're looking for people who like finding businesses that need help and starting honest conversations with them.\n\nYou'll find small businesses in the niches we serve (local trades and service businesses, and gaming studios, creators, esports teams and gaming businesses), reach out, and send interested owners to our packages, a free discovery call or a quote. We handle the sale from there and do all the work.\n\nHow you're paid: 10% of what each client you bring in pays us. One-off packages and add-ons count in full. Monthly plans (ads management, website care, community management) count for the client's first 12 months. Ad spend is paid by clients straight to the ad platforms, so it isn't included, and payments that are refunded don't earn commission.\n\nThis is a commission-only, independent contractor (1099) role. You set your own hours, use your own phone and computer, and handle your own taxes. There's no base pay, no quota and no fee to join.",
+            'responsibilities' => "Research small businesses in our niches that could use a better website, ads or a community\nReach out by email, phone or in person with an honest, personal pitch\nSend interested owners to the right package, a free discovery call or a quote request\nLog who you've contacted so the same business isn't contacted twice\nFollow our outreach rules: no made-up claims or results, real prices only, opt-outs honored right away, and commercial emails that follow CAN-SPAM",
+            'requirements' => "18 or older and based in the US\nComfortable starting conversations with business owners\nClear, friendly writing and follow-through\nAble to work independently as a contractor",
+            'nice_to_have' => "Sales experience, especially with local businesses or agencies\nKnowing the gaming or creator world, or local trades in your area\nYour own network of small business owners",
+            'status' => 'published',
+        ];
+        $exists = $pdo->prepare('SELECT 1 FROM jobs WHERE slug = ?'); $exists->execute([$job['slug']]);
+        if (!$exists->fetchColumn()) {
+            $t = date('Y-m-d H:i:s');
+            $pdo->prepare('INSERT INTO jobs (slug,title,company,team,location,workplace,employment_type,compensation,summary,about,responsibilities,requirements,nice_to_have,status,published_at,created_at,updated_at)
+                VALUES (:slug,:title,:company,:team,:location,:workplace,:employment_type,:compensation,:summary,:about,:responsibilities,:requirements,:nice_to_have,:status,:p,:c,:u)')
+                ->execute($job + ['p' => $t, 'c' => $t, 'u' => $t]);
+        }
+        $pdo->exec('PRAGMA user_version = 3');
+    }
 }
 
 /* ---------- Jobs ---------- */
