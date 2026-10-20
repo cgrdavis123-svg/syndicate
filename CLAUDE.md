@@ -968,7 +968,7 @@ All setup items below were done by October 18, 2026, except the ones still open.
 - [ ] Google Search Console: add Domain properties for stusyn.com and syndicatemarketing.co (DNS TXT verification), submit the three sitemaps (stusyn.com, syndicatemarketing.co, wiki.stusyn.com), request indexing of the home pages, and link Search Console in Google Business Profile if you have one. The CRM, ads and portal subdomains stay out of Google on purpose (`X-Robots-Tag: noindex`); the wiki drops that header in `wiki/.htaccess` because it sits inside the CRM folder
 - [x] Read through the help center (especially Billing & plans and Policies) and the Team → Promises article; edit anything that isn't how you work
 - [x] Confirm the `starter-500` offer limits: 10 spots, ends November 30, 2026 (confirmed October 20, 2026; change both in CRM → Store → Offers; the page and checkout follow)
-- [ ] Read Grady's note on `starter-website-offer.html` and edit it if it doesn't sound like you
+- [x] Read Grady's note on `starter-website-offer.html` (kept as written, October 20, 2026)
 - [x] Confirm the community prices ($300 setup, $125 audit, $350/mo, $650/mo, $150 press kit; confirmed October 19, 2026) and promises as written (weekday check-ins on Community management, daily on Plus; reports within one business day; one event a month, two on Plus; volunteer mods and a monthly strategy call on Plus; confirmed October 20, 2026). Change prices in CRM → Store → Products and `catalog.json`
 - [x] Read Grady's note on `gaming-communities.html` (kept as written, October 20, 2026)
 - [x] Write the Discord staff guide template the setup promises (done October 20, 2026: the doc “Discord Staff Guide — [Server name]”; copy it per client and fill the brackets)
