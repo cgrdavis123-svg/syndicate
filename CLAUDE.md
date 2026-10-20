@@ -970,7 +970,7 @@ All setup items below were done by October 18, 2026, except the ones still open.
 - [x] Confirm the `starter-500` offer limits: 10 spots, ends November 30, 2026 (confirmed October 20, 2026; change both in CRM → Store → Offers; the page and checkout follow)
 - [ ] Read Grady's note on `starter-website-offer.html` and edit it if it doesn't sound like you
 - [x] Confirm the community prices ($300 setup, $125 audit, $350/mo, $650/mo, $150 press kit; confirmed October 19, 2026) and promises as written (weekday check-ins on Community management, daily on Plus; reports within one business day; one event a month, two on Plus; volunteer mods and a monthly strategy call on Plus; confirmed October 20, 2026). Change prices in CRM → Store → Products and `catalog.json`
-- [ ] Read Grady's note on `gaming-communities.html` and edit it if it doesn't sound like you
+- [x] Read Grady's note on `gaming-communities.html` (kept as written, October 20, 2026)
 - [x] Write the Discord staff guide template the setup promises (done October 20, 2026: the doc “Discord Staff Guide — [Server name]”; copy it per client and fill the brackets)
 - [ ] Set up a Discord account for Syndicate Marketing (with two-factor on) to use for client servers
 - [x] Outreach setup (done October 19, 2026): create outreach@syndicatemarketing.co in cPanel (SPF, DKIM and DMARC valid for syndicatemarketing.co), connect it in Inbox → Mailboxes, choose it and enter the postal address in CRM → Outreach, make an agent key and add it as a network secret for crm.stusyn.com on the scheduled tasks' cloud environment (network access must include crm.stusyn.com), then switch outreach on. Steps in the Team article `team-outreach`
