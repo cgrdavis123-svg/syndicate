@@ -90,6 +90,7 @@ for (const [srcPath, file] of pages) {
     description: fill(meta.description, site),
     path: name === 'index' ? '' : file,
     bodyClass: meta.bodyClass || '',
+    image: meta.image || 'share.jpg',
     ddCurrent: PORTFOLIO.includes(nav) ? ' current' : '',
     content: fill(meta.heading ? legalPage(meta, raw.slice(m[0].length)) : raw.slice(m[0].length), site),
   });
@@ -111,6 +112,7 @@ let phpLayout = fill(layout, {
   description: "<?= e($page['description']) ?>",
   path: "<?= e($page['path']) ?>",
   bodyClass: '',
+  image: 'share-careers.jpg',
   ddCurrent: '',
   content: SPLIT,
 });

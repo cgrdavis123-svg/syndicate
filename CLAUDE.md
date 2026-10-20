@@ -294,6 +294,7 @@ Legal (`src/legal/`): `privacy.html`, `cookies.html`, `terms.html` (section 7 co
 - **⌘K / Ctrl+K quick nav** across pages.
 - **Site Stats** loaded through a `syn-stats` meta tag (site key `t4xJf60nIgv4`), respecting consent.
 - The CSP allows `https://crm.stusyn.com` for scripts and connections (Site Stats, booking links).
+- **Share images:** every page has `og:image` / `twitter:image` (1200×630, in `src/assets/share/`). The default is `share.jpg`; a page picks another with `"image"` in its front matter (Creator Ops, Syndicate Marketing, one-page website and Grady have their own; the careers pages use `share-careers.jpg`). They're drawn in the site's style and carry no prices, so they can't go stale. `favicon.ico` and `apple-touch-icon.png` are in `src/static/`.
 
 ---
 

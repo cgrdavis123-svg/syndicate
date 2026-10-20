@@ -174,7 +174,7 @@ if (!$isOpenApp && $job['status'] === 'published'):
           <ul class="job-list"><?php foreach (lines($job[$k]) as $li): ?><li><?= e($li) ?></li><?php endforeach; ?></ul>
         <?php endforeach; ?>
         <h2 class="job-h">About Syndicate</h2>
-        <p>Founded in Spartanburg, SC in 2019, Syndicate Holdings Group is the holding company for our brands. They include Syndicate Marketing, our social media and business marketing group, and Creator Ops Media, a TikTok Shop consultancy built on more than $10M in GMV.</p>
+        <p>Founded in Spartanburg, SC in 2019, Syndicate Holdings Group is the holding company for our brands. They include Syndicate Marketing, which builds websites and runs paid ads for small businesses, and Creator Ops Media, a TikTok Shop consultancy built on more than $10M in GMV.</p>
         <p class="eeo"><strong style="color:var(--text)">Equal opportunity.</strong> Syndicate Holdings Group and its companies are equal opportunity employers. We don&rsquo;t discriminate on the basis of race, color, religion, sex, pregnancy, sexual orientation, gender identity, national origin, age, disability, genetic information, veteran status or any other status protected by law. If you need an accommodation to apply or interview, email <a href="mailto:<?= e(config('careers_to')) ?>?subject=Accommodation%20request"><?= e(config('careers_to')) ?></a>.</p>
       </div>
 

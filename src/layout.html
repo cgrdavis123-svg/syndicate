@@ -14,8 +14,15 @@
 <meta property="og:description" content="{{description}}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://stusyn.com/{{path}}">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://stusyn.com/assets/share/{{image}}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{{title}}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://stusyn.com/assets/share/{{image}}">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preload" href="assets/fonts/inter-tight-normal-latin-1bf6b3.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/css/fonts.css">
 <link rel="stylesheet" href="assets/css/site.css">
@@ -31,8 +38,8 @@
   "foundingDate": "2019",
   "address": { "@type": "PostalAddress", "addressLocality": "Spartanburg", "addressRegion": "SC", "addressCountry": "US" },
   "subOrganization": [
-    { "@type": "Organization", "name": "Creator Ops Media", "description": "TikTok Shop consulting" },
-    { "@type": "Organization", "name": "Syndicate Marketing", "description": "Social media and business marketing group" }
+    { "@type": "Organization", "name": "Creator Ops Media", "url": "https://stusyn.com/creator-ops-media.html", "description": "TikTok Shop consulting" },
+    { "@type": "Organization", "name": "Syndicate Marketing", "url": "{{smSite}}", "description": "Websites, paid ads and analytics for small businesses" }
   ]
 }
 </script>
@@ -108,10 +115,10 @@
         <span class="foot-status"><i></i>Est. 2019 · Remote-first</span>
       </div>
       <div class="foot-links">
-        <div><h5>Company</h5><a href="about.html">Our story</a><a href="grady.html">Grady Davis</a><a href="ideas.html">Ideas</a><a href="careers.php">Careers</a></div>
-        <div><h5>Portfolio</h5><a href="portfolio.html">Overview</a><a href="creator-ops-media.html">Creator Ops Media</a><a href="syndicate-marketing.html">Syndicate Marketing</a><a href="one-page-website.html">One-page website · {{onePagePrice}}</a></div>
-        <div><h5>Contact</h5><a href="contact.html">Get in touch</a><a href="mailto:{{email}}">{{email}}</a><a href="contact.html?topic=idea">Bring us an idea</a></div>
-        <div><h5>Legal</h5><a href="privacy.html" data-nav="privacy">Privacy policy</a><a href="cookies.html" data-nav="cookies">Cookie policy</a><a href="terms.html" data-nav="terms">Terms of use</a><a href="applicant-privacy.html" data-nav="applicant-privacy">Applicant privacy</a><a href="accessibility.html" data-nav="accessibility">Accessibility</a><button type="button" class="foot-btn" data-cookie-settings>Cookie settings</button></div>
+        <div><h2>Company</h2><a href="about.html">Our story</a><a href="grady.html">Grady Davis</a><a href="ideas.html">Ideas</a><a href="careers.php">Careers</a></div>
+        <div><h2>Portfolio</h2><a href="portfolio.html">Overview</a><a href="creator-ops-media.html">Creator Ops Media</a><a href="syndicate-marketing.html">Syndicate Marketing</a><a href="one-page-website.html">One-page website · {{onePagePrice}}</a></div>
+        <div><h2>Contact</h2><a href="contact.html">Get in touch</a><a href="mailto:{{email}}">{{email}}</a><a href="contact.html?topic=idea">Bring us an idea</a></div>
+        <div><h2>Legal</h2><a href="privacy.html" data-nav="privacy">Privacy policy</a><a href="cookies.html" data-nav="cookies">Cookie policy</a><a href="terms.html" data-nav="terms">Terms of use</a><a href="applicant-privacy.html" data-nav="applicant-privacy">Applicant privacy</a><a href="accessibility.html" data-nav="accessibility">Accessibility</a><button type="button" class="foot-btn" data-cookie-settings>Cookie settings</button></div>
       </div>
     </div>
     <div class="wordmark" aria-hidden="true">SYNDICATE</div>
