@@ -112,7 +112,7 @@ function frame(S,shot,t0,w,h,pos,cam,o={}){const m=MAN[shot],url=shotURL(shot);l
   const im=d.querySelector('img'),vw=TH==='blocks'?w-36:w,vh=(TH==='blocks'?h-36:h-(bar?54:0)),ar=m.h/m.w;
   return clip(S.s+t0,S.e+(TH==='calm'?.7:0),d,(n,lt)=>{const c=cam(lt),ih=vw*ar*c.z;let tx=vw/2-c.u*vw*c.z,ty=vh/2-c.v*ih;tx=Math.min(0,Math.max(vw-vw*c.z,tx));ty=Math.min(0,Math.max(vh-ih,ty));im.style.transform=`translate(${tx}px,${ty}px) scale(${c.z})`;
     const e=pos(lt);n.style.transform=tf(e)})}
-function entrance(lt,o){const p=TH==='hype'?e5(seg(lt,0,.3)):TH==='blocks'?back(seg(lt,0,.3)):e5(seg(lt,.15,1.1));
+function entrance(lt,o){const p=TH==='hype'?e5(seg(lt,0,.3)):TH==='blocks'?back(seg(lt,0,.3)):e5(seg(lt,.45,1.4));
   if(TH==='hype')return Object.assign({},o,{z:mix(-900,0,p),rx:mix(55,o.rx||0,p),rz:mix((o.rz||0)-12,o.rz||0,p)});
   if(TH==='blocks')return Object.assign({},o,{s:mix(.3,1,p),rz:mix(-14,o.rz||0,cl(p))});
   return Object.assign({},o,{y:mix(1400,o.y,p),rx:mix(20,o.rx||0,p)})}
