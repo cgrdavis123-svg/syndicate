@@ -8,8 +8,9 @@ $inv = null;
 if (preg_match('/^[a-f0-9]{32}$/', $token) && !too_many('invoice_link', 40, 15)) {
     $inv = one('SELECT i.*, co.name company, co.address, c.first_name, c.last_name, c.email FROM invoices i LEFT JOIN companies co ON co.id = i.company_id LEFT JOIN contacts c ON c.id = i.contact_id WHERE i.share_token = ?', [$token]);
 }
+if (!$inv) demo_miss();
 $staff = current_user();
-if (!$inv || ($inv['status'] === 'draft' && !$staff)) {
+if (!$inv|| ($inv['status'] === 'draft' && !$staff)) {
     if (preg_match('/^[a-f0-9]{32}$/', $token)) record_attempt('invoice_link');
     http_response_code(404);
 }
@@ -32,7 +33,7 @@ $items = $show ? all('SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY 
 <link rel="stylesheet" href="assets/css/fonts.css">
 <link rel="stylesheet" href="assets/css/crm.css">
 </head>
-<body class="public">
+<body class="public"><?= demo_ribbon() ?>
 <main class="public-wrap">
 <?php if (!$show): ?>
   <div class="card" style="max-width:520px;margin:12vh auto 0;text-align:center"><h1 style="font-size:24px">Invoice not found</h1><p class="muted">This link may be mistyped or no longer active. Please contact <a href="mailto:<?= e(setting('business_email')) ?>"><?= e(setting('business_email')) ?></a> for a new link.</p></div>

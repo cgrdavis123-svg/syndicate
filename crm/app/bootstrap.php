@@ -15,6 +15,20 @@ define('BASE', rtrim($CONFIG['base_path'], '/') . '/');
 define('STORAGE', rtrim($CONFIG['storage_dir'], '/'));
 define('DOCROOT', dirname(__DIR__));
 
+// Demo client portal (portal-demo.php): a made-up client in its own databases under storage/demo/, so prospects can
+// look around without touching real data. Only client-facing pages switch over, and only with the demo cookie
+// (or from the CLI with SYN_DEMO=1). Staff pages, cron and the store always use the real data.
+const DEMO_COOKIE = 'syn_demo';
+const DEMO_PAGES = ['portal.php', 'portal-care.php', 'portal-file.php', 'portal-login.php', 'portal-logout.php', 'portal-project.php', 'portal-stats.php', 'portal-plans.php', 'portal-ads.php', 'i.php', 'care-report.php',
+    'ads/portal.php', 'ads/portal-creatives.php', 'ads/portal-setup.php', 'ads/portal-login.php', 'ads/portal-logout.php', 'ads/file.php', 'ads/report.php'];
+(function () {
+    if (PHP_SAPI === 'cli') { define('DEMO', getenv('SYN_DEMO') === '1'); return; }
+    $script = ltrim(str_replace('\\', '/', substr((string)realpath((string)($_SERVER['SCRIPT_FILENAME'] ?? '')), strlen((string)realpath(DOCROOT)))), '/');
+    define('DEMO', in_array($script, ['portal-demo.php', 'ads/portal-demo.php'], true) || (($_COOKIE[DEMO_COOKIE] ?? '') === '1' && in_array($script, DEMO_PAGES, true)));
+})();
+// Where the data lives: the real databases and uploads, or the demo's.
+define('DATA', DEMO ? STORAGE . '/demo' : STORAGE);
+
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 if (is_dir(STORAGE) || @mkdir(STORAGE, 0755, true)) ini_set('error_log', STORAGE . '/php-errors.log');
@@ -98,7 +112,8 @@ function db(): PDO {
     if ($pdo) return $pdo;
     if (!extension_loaded('pdo_sqlite')) { http_response_code(500); exit('Turn on the "pdo_sqlite" PHP extension in cPanel under "Select PHP Version" → Extensions.'); }
     if (!is_dir(STORAGE . '/backups')) @mkdir(STORAGE . '/backups', 0755, true);
-    $pdo = new PDO('sqlite:' . STORAGE . '/crm.sqlite', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);
+    if (DEMO && !is_dir(DATA)) @mkdir(DATA, 0700, true);
+    $pdo = new PDO('sqlite:' . DATA . '/crm.sqlite', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);
     $pdo->exec('PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
     migrate($pdo);
     return $pdo;
@@ -534,6 +549,7 @@ function migrate_v1(PDO $pdo): void {
 
 /* ---------- Email ---------- */
 function send_mail(string $to, string $subject, string $body, string $replyTo = '', string $fromName = ''): bool {
+    if (DEMO) return true; // the demo never sends email
     $from = setting('mail_from') ?: 'hello@stusyn.com';
     $name = '=?UTF-8?B?' . base64_encode($fromName !== '' ? $fromName : setting('business_name')) . '?=';
     $headers = ['From: ' . $name . ' <' . $from . '>', 'MIME-Version: 1.0', 'Content-Type: text/plain; charset=UTF-8', 'Content-Transfer-Encoding: 8bit'];
@@ -547,6 +563,24 @@ function send_mail(string $to, string $subject, string $body, string $replyTo = 
 function ads_url(string $p = ''): string { return rtrim((string)(config('ads_url') ?: 'https://ads.stusyn.com'), '/') . '/' . ltrim($p, '/'); }
 function wiki_url(string $p = ''): string { return rtrim((string)(config('wiki_url') ?: 'https://wiki.stusyn.com'), '/') . '/' . ltrim($p, '/'); }
 function abs_url(string $p = ''): string { return rtrim((string)config('app_url'), '/') . url($p); }
+
+/* ---------- Demo client portal (see DEMO at the top) ---------- */
+function demo_cookie(bool $on): void {
+    $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+    setcookie(DEMO_COOKIE, $on ? '1' : '', ['expires' => $on ? 0 : time() - 3600, 'path' => BASE, 'secure' => $secure, 'httponly' => true, 'samesite' => 'Lax']);
+}
+// A real link opened while the demo cookie is still set (an invoice, report or sign-in link): leave the demo and open it for real.
+function demo_miss(): void {
+    if (!DEMO || PHP_SAPI === 'cli' || ($_COOKIE[DEMO_COOKIE] ?? '') !== '1') return;
+    demo_cookie(false);
+    header('Location: ' . (string)($_SERVER['REQUEST_URI'] ?? url('portal-login.php')), true, 303);
+    exit;
+}
+// Label for the stand-alone documents (invoice, care report, ads report) when they're opened from the demo.
+function demo_ribbon(): string {
+    if (!DEMO) return '';
+    return '<div style="position:sticky;top:0;z-index:50;background:#c6ff3d;color:#0d0f0c;font:600 14px/1.4 system-ui,sans-serif;padding:9px 16px;text-align:center">Demo: sample data for a made-up business, Ridgeline Heating &amp; Air.</div>';
+}
 function invoice_link(array $inv): string { return abs_url('i.php?t=' . $inv['share_token']); }
 function setting(string $k, ?string $set = null): string {
     if ($set !== null) { q('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value', [$k, $set]); return $set; }

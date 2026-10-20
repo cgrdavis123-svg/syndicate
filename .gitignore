@@ -16,6 +16,7 @@ src/php/storage/*.key
 src/php/storage/reset-link.json
 src/php/storage/*.sqlite*
 crm/storage/ads/
+crm/storage/demo/
 crm/ads/assets/
 crm/wiki/assets/
 __pycache__/

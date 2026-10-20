@@ -390,6 +390,7 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 | `u.php` | Unsubscribe from outreach emails (`?t=` token; one-click POST from mail apps) |
 | `portal-ads.php` | One-click hop from the client portal into the ads portal (2-minute one-time link) |
 | `portal.php`, `portal-care.php`, `portal-login.php`, `portal-logout.php`, `portal-project.php`, `portal-file.php`, `portal-stats.php`, `portal-plans.php` | Client portal (magic-link login); `portal-login.php?to=plans` opens Plans & billing |
+| `portal-demo.php` (and `ads/portal-demo.php`) | Demo client portal with sample data for prospects (see “Demo client portal” in §14) |
 | `api.php` | Internal JSON helpers |
 | `cron.php` | CLI only (404 on the web) |
 
@@ -647,6 +648,13 @@ Privacy-first, cookieless analytics built into the CRM; it replaces Google Analy
   - their Site Stats dashboard and tracking snippet,
   - their invoices.
 - Portal uploads are stored in `crm/storage/portal/` (web-blocked, served through `portal-file.php` / `project-file.php` after an access check).
+
+### Demo client portal (for showing prospects)
+- **Links:** `crm.stusyn.com/portal-demo.php` (client portal) and `ads.stusyn.com/portal-demo.php` (ads portal). Anyone who opens one is signed in as **Dana Reyes at Ridgeline Heating & Air**, the fictional HVAC concept from the portfolio (`ridgelineair.example`, (864) 555-0142). The portal login page also links to it (“Look around a demo account”).
+- **What it shows:** every portal page filled in: three projects (finished website with approved designs and files, finished ads setup, and a new page **waiting for approval**), an unpaid invoice and paid renewals, Plans & billing, Care Plus (90-day uptime with one outage, scan, PageSpeed, edit minutes, requests, work log, monthly care reports), Site Stats (120 days of visits, goals, campaigns), and the ads portal (four campaigns, daily results, two ads to approve, setup checklist, work log, messages, monthly reports).
+- **Separate data:** `app/demo.php` builds it in `crm/storage/demo/` (its own `crm.sqlite`, `analytics.sqlite`, portal and ad files from `app/demo-files/`), rebuilt on the first visit each day so dates stay current. `DEMO` (top of `bootstrap.php`) is on only for `portal-demo.php`, or for client-facing pages (`DEMO_PAGES`) when the `syn_demo` cookie is set; then `DATA` points at the demo folder. Staff pages, cron, the store and webhooks always use the real data. The demo uses its own portal session cookie.
+- **Look-only:** every form on it (approve, request changes, messages, care requests, ad approvals, cancel plan) saves and sends nothing and says what would happen for a real client (`demo_read_only()`); `send_mail()` is a no-op. A lime bar on every page says it’s a demo with “Book a free discovery call” and “Exit demo”; invoices and reports opened from it carry a demo ribbon. A real sign-in link, invoice or report link opened with the demo cookie still set drops the cookie and opens the real thing (`demo_miss()`).
+- **Honesty:** all sample data is labelled as a made-up business on every page. Don’t add real names, reviews or results to it. Change the sample data in `app/demo.php` (bump `DEMO_VERSION` to rebuild right away).
 
 ---
 
@@ -1009,6 +1017,7 @@ All setup items below were done by October 18, 2026, except the ones still open.
 | Gaming campaign | `syndicatemarketing.co/gaming-communities.html?t=studio\|creator\|esports\|business&b=Name&n=First` |
 | Outreach | CRM → Outreach; sends from outreach@syndicatemarketing.co; agent API `crm.stusyn.com/outreach-api.php` |
 | Current offer | `starter-500`: $500 Starter website + 3 months Care Plus free · `syndicatemarketing.co/starter-website-offer.html?b=Business+Name&n=First` |
+| Demo client portal | https://crm.stusyn.com/portal-demo.php (ads: https://ads.stusyn.com/portal-demo.php) |
 | Help center | https://wiki.stusyn.com (CRM's `wiki/` folder); Team docs at /team.php |
 | Ads app | https://ads.stusyn.com (CRM's `ads/` folder) |
 | Client site rules | `templates/CLAUDE.md` |

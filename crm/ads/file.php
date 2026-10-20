@@ -8,6 +8,7 @@ if ($r && $r['file'] !== '') {
     else $ok = (bool)current_user();
 }
 $path = $ok ? ads_storage() . '/' . basename($r['file']) : '';
+if (!$r) demo_miss();
 if (!$ok || !is_file($path)) { http_response_code(404); exit('Not found'); }
 $types = array_flip(AD_FILE_TYPES); $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 $size = filesize($path); $start = 0; $end = $size - 1;

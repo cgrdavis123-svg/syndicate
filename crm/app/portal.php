@@ -11,7 +11,7 @@ const PORTAL_FILE_TYPES = ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'heic', '
 function portal_session(): void {
     if (session_status() === PHP_SESSION_ACTIVE) return;
     $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
-    session_name('syn_portal');
+    session_name(DEMO ? 'syn_portal_demo' : 'syn_portal'); // the demo never touches a real client's sign-in
     session_set_cookie_params(['lifetime' => 2592000, 'path' => BASE, 'secure' => $secure, 'httponly' => true, 'samesite' => 'Lax']);
     $dir = STORAGE . '/portal-sessions';
     if (is_dir($dir) || @mkdir($dir, 0700, true)) session_save_path($dir);
@@ -30,8 +30,27 @@ function require_portal(): array {
     $c = portal_contact();
     if (!$c) redirect('portal-login.php');
     if (is_post() && !csrf_ok()) { http_response_code(400); exit('Your session expired. Go back, refresh the page and try again.'); }
+    demo_read_only();
     if (!$c['portal_seen_at'] || strtotime($c['portal_seen_at']) < time() - 600) q('UPDATE contacts SET portal_seen_at = ? WHERE id = ?', [now(), $c['id']]);
     return $c;
+}
+// The demo is look-only: a form sent from it saves and sends nothing, and says what would have happened.
+function demo_read_only(): void {
+    if (!DEMO || !is_post()) return;
+    $a = post('action') ?: (post('decision') !== '' ? 'decision' : '');
+    $what = [
+        'approve' => 'your approval goes straight to our team, and we get to work on the next step.',
+        'changes' => 'your notes go straight to our team, and we post the changes here.',
+        'decision' => 'your answer reaches us right away. Nothing goes live until you approve it.',
+        'message' => 'your message and any files reach us right away, and we reply within one business day.',
+        'request' => 'we’d get your request right away and start on it within the time your plan promises.',
+        'review' => 'you’d see the exact date your plan ends, then confirm with one more click.',
+        'cancel' => 'your plan would be cancelled and you’d get an email confirming the end date.',
+    ][$a] ?? 'this would be sent to our team.';
+    flash('This is the demo, so nothing was saved or sent. In your own portal, ' . $what);
+    $back = (string)($_SERVER['REQUEST_URI'] ?? '');
+    header('Location: ' . ($back !== '' ? $back : url('portal.php')), true, 303);
+    exit;
 }
 function portal_sign_in(array $c): void {
     portal_session();
@@ -111,11 +130,11 @@ function save_project_files(int $projectId, string $field, string $author, ?int 
         if ($err !== UPLOAD_ERR_OK) { $errors[] = '“' . $name . '” didn’t upload' . (in_array($err, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true) ? ' because it’s larger than ' . fmt_bytes(upload_limit()) . '.' : '. Try again.'); continue; }
         $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
         if (!in_array($ext, PORTAL_FILE_TYPES, true)) { $errors[] = '“' . $name . '” isn’t a file type we accept here. Zip it, or email it instead.'; continue; }
-        $dir = STORAGE . '/portal/' . $projectId;
+        $dir = DATA . '/portal/' . $projectId;
         if (!is_dir($dir)) @mkdir($dir, 0700, true);
         $rel = $projectId . '/' . bin2hex(random_bytes(16));
-        if (!@move_uploaded_file($_FILES[$field]['tmp_name'][$i], STORAGE . '/portal/' . $rel)) { $errors[] = '“' . $name . '” couldn’t be saved.'; continue; }
-        $type = function_exists('mime_content_type') ? (string)@mime_content_type(STORAGE . '/portal/' . $rel) : '';
+        if (!@move_uploaded_file($_FILES[$field]['tmp_name'][$i], DATA . '/portal/' . $rel)) { $errors[] = '“' . $name . '” couldn’t be saved.'; continue; }
+        $type = function_exists('mime_content_type') ? (string)@mime_content_type(DATA . '/portal/' . $rel) : '';
         q('INSERT INTO project_files (project_id, post_id, author, contact_id, name, type, size, path, created_at) VALUES (?,?,?,?,?,?,?,?,?)',
             [$projectId, $postId, $author, $contactId, $name, $type, (int)$_FILES[$field]['size'][$i], $rel, now()]);
         $saved++;
@@ -124,7 +143,7 @@ function save_project_files(int $projectId, string $field, string $author, ?int 
     return [$saved, $errors];
 }
 function send_project_file(array $f): void {
-    $path = STORAGE . '/portal/' . $f['path'];
+    $path = DATA . '/portal/' . $f['path'];
     if (!is_file($path)) { http_response_code(404); exit('That file is no longer available.'); }
     $img = in_array($f['type'], ['image/png', 'image/jpeg', 'image/gif', 'image/webp'], true) && get('view') === '1';
     header('Content-Type: ' . ($img ? $f['type'] : 'application/octet-stream'));
@@ -231,8 +250,9 @@ function portal_top(string $title, ?array $c): void {
 <body class="public portal">
 <header class="portal-bar">
   <a class="logo" href="portal.php"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect x=".5" y=".5" width="31" height="31" rx="8.5" fill="#0f1216" stroke="rgba(255,255,255,.14)"/><path d="M22 9h-9a4 4 0 0 0 0 8h6a4 4 0 0 1 0 8h-9" fill="none" stroke="#c6ff3d" stroke-width="2.6" stroke-linecap="round"/></svg><span><?= e($brand) ?><small><?= defined('ADS_APP') ? 'ADS PORTAL' : 'CLIENT PORTAL' ?></small></span></a>
-  <?php if ($c): ?><nav class="row"><span class="muted small hide-sm"><?= e(person_name($c)) ?><?= $c['company'] ? ' · ' . e($c['company']) : '' ?></span><?php if (defined('ADS_APP')): ?><a class="btn ghost xs" href="portal.php">Results</a><a class="btn ghost xs" href="portal-creatives.php">Approvals</a><a class="btn ghost xs" href="portal-setup.php">Setup</a><a class="btn ghost xs hide-sm" href="<?= e(rtrim((string)config('app_url'), '/')) ?>/portal.php">Client portal ↗</a><?php else: ?><a class="btn ghost xs" href="portal-plans.php">Plans &amp; billing</a><?php endif; ?><a class="btn ghost xs" href="portal-logout.php?t=<?= e(csrf_token()) ?>">Sign out</a></nav><?php endif; ?>
+  <?php if ($c): ?><nav class="row"><span class="muted small hide-sm"><?= e(person_name($c)) ?><?= $c['company'] ? ' · ' . e($c['company']) : '' ?></span><?php if (defined('ADS_APP')): ?><a class="btn ghost xs" href="portal.php">Results</a><a class="btn ghost xs" href="portal-creatives.php">Approvals</a><a class="btn ghost xs" href="portal-setup.php">Setup</a><a class="btn ghost xs hide-sm" href="<?= e(rtrim((string)config('app_url'), '/')) ?>/<?= DEMO ? 'portal-demo.php' : 'portal.php' ?>">Client portal ↗</a><?php else: ?><a class="btn ghost xs" href="portal-plans.php">Plans &amp; billing</a><?php endif; ?><a class="btn ghost xs" href="portal-logout.php?t=<?= e(csrf_token()) ?>">Sign out</a></nav><?php endif; ?>
 </header>
+<?php if (DEMO && $c): ?><div class="demo-bar" role="note"><p><b>Demo account.</b> Ridgeline Heating &amp; Air is a made-up business and everything here is sample data, so look around freely. Buttons that would send or save something are turned off.</p><span class="row"><a class="btn primary xs" href="<?= e(abs_url('book.php?type=discovery-call')) ?>">Book a free discovery call</a><a class="btn ghost xs" href="portal-logout.php">Exit demo</a></span></div><?php endif; ?>
 <main class="public-wrap portal-wrap" id="main">
 <?php if ($m = flash()): ?><div class="toast" role="status"><?= e($m) ?></div><?php endif;
 }

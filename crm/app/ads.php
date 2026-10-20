@@ -25,7 +25,7 @@ const AD_STEPS = [
 
 function ads_platform(string $k): string { return AD_PLATFORM_NAMES[$k] ?? ucfirst($k); }
 function ads_staff_email(): string { return setting('shop_notify') ?: setting('business_email'); }
-function ads_storage(): string { $d = STORAGE . '/ads'; if (!is_dir($d)) @mkdir($d, 0700, true); return $d; }
+function ads_storage(): string { $d = DATA . '/ads'; if (!is_dir($d)) @mkdir($d, 0700, true); return $d; }
 function ads_client(int $id): ?array { return one('SELECT a.*, co.name company, co.brand FROM ad_clients a JOIN companies co ON co.id = a.company_id WHERE a.id = ?', [$id]); }
 function ads_platforms(array $a): array { return array_values(array_filter(explode(',', (string)$a['platforms']))); }
 function ads_people(array $a): array { return all("SELECT * FROM contacts WHERE company_id = ? AND portal_access = 1 AND email != ''", [(int)$a['company_id']]); }

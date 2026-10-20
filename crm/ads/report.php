@@ -7,6 +7,7 @@ $a = ads_client((int)get('c'));
 $month = preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', get('m')) ? get('m') : '';
 $ok = $a && $month !== '' && $a['report_key'] !== '' && preg_match('/^[a-f0-9]{32}$/', get('k')) && !too_many('ads_report', 60, 15)
     && hash_equals(ads_report_sig($a, $month), get('k')) && $month <= date('Y-m');
+if (!$ok) demo_miss();
 if (!$ok) { if (get('k') !== '') record_attempt('ads_report'); http_response_code(404); }
 ?><!doctype html>
 <html lang="en">
@@ -19,7 +20,7 @@ if (!$ok) { if (get('k') !== '') record_attempt('ads_report'); http_response_cod
 <link rel="stylesheet" href="assets/css/fonts.css">
 <link rel="stylesheet" href="assets/css/crm.css">
 </head>
-<body class="public">
+<body class="public"><?= demo_ribbon() ?>
 <main class="public-wrap">
 <?php if (!$ok): ?>
   <div class="card" style="max-width:520px;margin:12vh auto 0;text-align:center"><h1 style="font-size:24px">Report not found</h1><p class="muted">This link may be mistyped. Your reports are also in your <a href="portal.php">ads portal</a>, or email <a href="mailto:<?= e(setting('business_email')) ?>"><?= e(setting('business_email')) ?></a>.</p></div>

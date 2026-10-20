@@ -4,6 +4,8 @@ require __DIR__ . '/app/bootstrap.php';
 require __DIR__ . '/app/portal.php';
 header('Cache-Control: no-store');
 portal_session();
+if (get('k') !== '' || get('t') !== '') demo_miss(); // a real sign-in link always signs in for real
+elseif (DEMO) redirect('portal-demo.php'); // signed out of the demo: sign back in to it
 $dest = get('to') === 'plans' || post('to') === 'plans' ? 'portal-plans.php' : 'portal.php';
 if (portal_contact()) redirect($dest);
 $sent = false; $error = ''; $email = strtolower(post('email'));
@@ -39,5 +41,6 @@ portal_top('Sign in', null);
     <button class="btn primary" type="submit">Email me a sign-in link <?= ARROW ?></button>
   <?php else: ?><a class="btn ghost" href="portal-login.php">Use a different email</a><?php endif; ?>
   <p class="muted small">Don’t have access yet? Email <a href="mailto:<?= e(setting('business_email')) ?>"><?= e(setting('business_email')) ?></a>.</p>
+  <?php if (!defined('ADS_APP')): ?><p class="muted small">Not a client yet? <a href="portal-demo.php">Look around a demo account</a> to see how it works.</p><?php endif; ?>
 </form>
 <?php portal_bottom(); ?>

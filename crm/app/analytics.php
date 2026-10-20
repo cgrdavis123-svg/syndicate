@@ -14,7 +14,7 @@ const AN_RANGES = ['today' => 'Today', 'yesterday' => 'Yesterday', '7d' => 'Last
 function an_db(): PDO {
     static $pdo;
     if ($pdo) return $pdo;
-    $pdo = new PDO('sqlite:' . STORAGE . '/analytics.sqlite', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);
+    $pdo = new PDO('sqlite:' . DATA . '/analytics.sqlite', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);
     $pdo->exec('PRAGMA busy_timeout = 4000; PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL;');
     if ((int)$pdo->query('PRAGMA user_version')->fetchColumn() < 1) {
         $pdo->exec("
