@@ -1,0 +1,572 @@
+{
+  "_note": "Starting catalog for the Syndicate Marketing store. The CRM copies it into its database the first time it runs; after that, edit products in the CRM under Store → Products. The marketing site build reads it for the prices shown before the live catalog loads.",
+  "products": [
+    {
+      "sku": "web-one-page",
+      "category": "website",
+      "name": "One-page website",
+      "price": 350,
+      "interval": "",
+      "featured": false,
+      "badge": "Fastest",
+      "timeline_days": 14,
+      "site": true,
+      "blurb": "A single, scroll-through page that explains what you do and turns visitors into calls and form leads.",
+      "features": [
+        "One long-scroll page, designed mobile-first",
+        "Contact or quote form sent to your inbox",
+        "Basic SEO: titles, descriptions, sitemap",
+        "Site Stats analytics with a live dashboard",
+        "Two rounds of changes",
+        "Live in about 2 weeks"
+      ],
+      "steps": [
+        "Kickoff call",
+        "Logo, photos and text collected",
+        "First draft shared in your portal",
+        "Changes (2 rounds)",
+        "Launch on your domain",
+        "Site Stats live"
+      ]
+    },
+    {
+      "sku": "web-starter",
+      "category": "website",
+      "name": "Starter website",
+      "price": 850,
+      "interval": "",
+      "featured": true,
+      "badge": "Most popular",
+      "timeline_days": 21,
+      "site": true,
+      "blurb": "Up to five pages for a local business or service company that needs to look established and get found.",
+      "features": [
+        "Up to 5 pages (Home, About, Services, Contact and one more)",
+        "Copy polish on the text you send us",
+        "Lead forms, click-to-call and map",
+        "On-page SEO and Google Business Profile link",
+        "Site Stats analytics with goals",
+        "Two rounds of changes",
+        "Live in about 3 weeks"
+      ],
+      "steps": [
+        "Kickoff call",
+        "Sitemap and page outline approved",
+        "Logo, photos and text collected",
+        "Homepage design shared in your portal",
+        "Remaining pages built",
+        "Changes (2 rounds)",
+        "Launch on your domain",
+        "Site Stats and goals live"
+      ]
+    },
+    {
+      "sku": "web-business",
+      "category": "website",
+      "name": "Business website",
+      "price": 1600,
+      "interval": "",
+      "featured": false,
+      "badge": "",
+      "timeline_days": 30,
+      "site": true,
+      "blurb": "Up to ten pages with a blog and easy editing, for businesses that run campaigns and publish often.",
+      "features": [
+        "Up to 10 pages plus a blog",
+        "Edit text and posts yourself",
+        "Landing page built for your ads",
+        "Full on-page SEO and speed tuning",
+        "Site Stats analytics with goals and campaigns",
+        "Three rounds of changes",
+        "Live in about 4–5 weeks"
+      ],
+      "steps": [
+        "Kickoff call",
+        "Sitemap and page outline approved",
+        "Logo, photos and text collected",
+        "Homepage design shared in your portal",
+        "Inner pages and blog built",
+        "Ads landing page built",
+        "Changes (3 rounds)",
+        "Editing walkthrough",
+        "Launch on your domain",
+        "Site Stats, goals and campaigns live"
+      ]
+    },
+    {
+      "sku": "web-store",
+      "category": "website",
+      "name": "Online store",
+      "price": 2500,
+      "interval": "",
+      "featured": false,
+      "badge": "E-commerce",
+      "timeline_days": 45,
+      "site": true,
+      "blurb": "A store that takes card, Apple Pay and Google Pay, with your first 25 products loaded for you.",
+      "features": [
+        "Store design and up to 6 content pages",
+        "First 25 products loaded with photos",
+        "Checkout with card, Apple Pay and Google Pay",
+        "Shipping, tax and order emails set up",
+        "Site Stats with sales and checkout tracking",
+        "Three rounds of changes",
+        "Live in about 6 weeks"
+      ],
+      "steps": [
+        "Kickoff call",
+        "Store plan and products list approved",
+        "Logo, product photos and text collected",
+        "Store design shared in your portal",
+        "Products loaded",
+        "Checkout, shipping and tax set up",
+        "Test orders",
+        "Changes (3 rounds)",
+        "Launch on your domain",
+        "Site Stats and sales tracking live"
+      ]
+    },
+    {
+      "sku": "ads-one",
+      "category": "ads",
+      "name": "Ads management — one platform",
+      "price": 300,
+      "interval": "month",
+      "featured": false,
+      "badge": "",
+      "timeline_days": 14,
+      "site": true,
+      "blurb": "We run your Google, Meta (Facebook & Instagram) or TikTok ads every month. Pick the platform at checkout.",
+      "features": [
+        "Google, Meta or TikTok — your choice",
+        "Campaign setup, targeting and budgets",
+        "New ad creative every month",
+        "Conversion tracking on your site",
+        "Live results in your Site Stats dashboard",
+        "Monthly report and check-in call",
+        "Cancel online any time (30 days’ notice)"
+      ],
+      "steps": [
+        "Kickoff call",
+        "Ad account access granted",
+        "Conversion tracking installed",
+        "Campaign plan approved",
+        "First ads live",
+        "First monthly report"
+      ]
+    },
+    {
+      "sku": "ads-two",
+      "category": "ads",
+      "name": "Ads management — two platforms",
+      "price": 550,
+      "interval": "month",
+      "featured": true,
+      "badge": "Best value",
+      "timeline_days": 14,
+      "site": true,
+      "blurb": "Two platforms working together, like Google search for people ready to buy and Meta for people who don’t know you yet.",
+      "features": [
+        "Any two of Google, Meta and TikTok",
+        "Campaign setup, targeting and budgets",
+        "New ad creative every month",
+        "Retargeting between platforms",
+        "Conversion tracking on your site",
+        "Live results in your Site Stats dashboard",
+        "Monthly report and check-in call",
+        "Cancel online any time (30 days’ notice)"
+      ],
+      "steps": [
+        "Kickoff call",
+        "Ad account access granted",
+        "Conversion tracking installed",
+        "Campaign plan approved",
+        "First ads live",
+        "First monthly report"
+      ]
+    },
+    {
+      "sku": "ads-all",
+      "category": "ads",
+      "name": "Ads management — Google, Meta & TikTok",
+      "price": 800,
+      "interval": "month",
+      "featured": false,
+      "badge": "",
+      "timeline_days": 21,
+      "site": true,
+      "blurb": "Every major platform, managed as one plan, with budget moved to whatever is bringing in customers.",
+      "features": [
+        "Google, Meta and TikTok",
+        "Campaign setup, targeting and budgets",
+        "New ad creative every month, including short video",
+        "Retargeting across platforms",
+        "Budget shifted to what’s working",
+        "Live results in your Site Stats dashboard",
+        "Monthly report and check-in call",
+        "Cancel online any time (30 days’ notice)"
+      ],
+      "steps": [
+        "Kickoff call",
+        "Ad account access granted",
+        "Conversion tracking installed",
+        "Campaign plan approved",
+        "First ads live on all platforms",
+        "First monthly report"
+      ]
+    },
+    {
+      "sku": "care-plan",
+      "category": "care",
+      "name": "Website care plan",
+      "price": 49,
+      "interval": "month",
+      "featured": false,
+      "badge": "",
+      "timeline_days": 0,
+      "site": true,
+      "blurb": "We watch your site around the clock, keep it updated, secure and backed up, and make your small changes, with a monthly report so you can see it all.",
+      "features": [
+        "Uptime checks every 15 minutes, with alerts if it goes down",
+        "SSL certificate and domain renewal watch",
+        "Weekly security and broken-link scan",
+        "Updates and weekly backups, logged where you can see them",
+        "Up to 1 hour of edits a month, requested from your portal",
+        "Monthly care report: uptime, speed, security, visitors and work done",
+        "Cancel online any time"
+      ],
+      "steps": []
+    },
+    {
+      "sku": "care-plus",
+      "category": "care",
+      "name": "Care Plus",
+      "price": 99,
+      "interval": "month",
+      "featured": false,
+      "badge": "",
+      "timeline_days": 0,
+      "site": true,
+      "blurb": "Everything in the care plan, plus twice the edit time, faster turnaround, a speed and search tune-up every quarter and a yearly review call.",
+      "features": [
+        "Everything in the website care plan",
+        "Up to 2 hours of edits a month",
+        "Changes started within one business day",
+        "Speed and search tune-up every quarter, guided by your Google PageSpeed scores",
+        "A yearly 30-minute review call to plan what’s next",
+        "Cancel online any time"
+      ],
+      "steps": []
+    },
+    {
+      "sku": "com-discord-setup",
+      "category": "community",
+      "name": "Discord server setup",
+      "price": 300,
+      "interval": "",
+      "featured": false,
+      "badge": "",
+      "timeline_days": 7,
+      "blurb": "A Discord server built properly from day one: channels, roles, onboarding, moderation and bots, set up around your game, stream or team.",
+      "features": [
+        "Channels and categories planned around your game, stream or team",
+        "Roles and permissions set up safely, so nobody gets more access than they should",
+        "Welcome screen, onboarding questions and member verification",
+        "Rules, AutoMod filters and a moderation log",
+        "Bots for moderation, welcome messages, self-assigned roles, support tickets and stream or video alerts",
+        "Server icon and welcome graphics from your artwork",
+        "A short staff guide for you and your moderators",
+        "One round of changes",
+        "Live in about 1 week"
+      ],
+      "steps": [
+        "Kickoff call",
+        "Server plan approved (channels, roles, rules)",
+        "Server built and bots set up",
+        "Walkthrough with you and your moderators",
+        "Changes (1 round)",
+        "Handover and staff guide"
+      ]
+    },
+    {
+      "sku": "com-audit",
+      "category": "community",
+      "name": "Community audit",
+      "price": 125,
+      "interval": "",
+      "featured": false,
+      "badge": "",
+      "timeline_days": 7,
+      "blurb": "A clear review of your existing Discord server, with what to fix first and how to get members talking.",
+      "features": [
+        "Permissions and security check, including raid and spam protection",
+        "Onboarding and the first-hour experience for new members",
+        "Channel layout, bots and AutoMod review",
+        "Engagement: what’s active, what’s quiet and what to try",
+        "Recorded video walkthrough and written plan ranked by impact",
+        "Delivered within 7 days"
+      ],
+      "steps": [
+        "Server access confirmed",
+        "Audit video and action plan delivered"
+      ]
+    },
+    {
+      "sku": "com-manage",
+      "category": "community",
+      "name": "Community management",
+      "price": 350,
+      "interval": "month",
+      "featured": true,
+      "badge": "Most popular",
+      "timeline_days": 0,
+      "blurb": "We run your Discord day to day: moderation, announcements, a monthly event and a report, so your community stays active and safe.",
+      "features": [
+        "Moderation check-ins every weekday, with AutoMod and bots covering the rest",
+        "Reports and member issues handled within one business day",
+        "Announcements and posts for your updates, streams or matches",
+        "One community event a month, like a game night, Q&A or watch party",
+        "Bots, roles and channels kept tidy as you grow",
+        "Monthly report: members, activity, what worked and what’s next",
+        "Cancel online any time"
+      ],
+      "steps": [
+        "Server access and staff role confirmed",
+        "Community plan agreed (tone, rules, calendar)",
+        "First event scheduled",
+        "First monthly report"
+      ]
+    },
+    {
+      "sku": "com-manage-plus",
+      "category": "community",
+      "name": "Community management Plus",
+      "price": 650,
+      "interval": "month",
+      "featured": false,
+      "badge": "",
+      "timeline_days": 0,
+      "blurb": "Everything in Community management, with daily coverage, two events a month, a volunteer mod team and a monthly strategy call.",
+      "features": [
+        "Everything in Community management",
+        "Moderation check-ins every day, weekends included",
+        "Two community events a month",
+        "We recruit, train and coordinate volunteer moderators",
+        "A monthly round-up of what your community is asking for",
+        "A monthly 30-minute strategy call",
+        "Cancel online any time"
+      ],
+      "steps": [
+        "Server access and staff role confirmed",
+        "Community plan agreed (tone, rules, calendar)",
+        "Volunteer moderator plan agreed",
+        "First event scheduled",
+        "First monthly report and strategy call"
+      ]
+    },
+    {
+      "sku": "add-ads-setup",
+      "category": "addon",
+      "name": "Ad account setup",
+      "price": 150,
+      "interval": "",
+      "requires": [
+        "ads"
+      ],
+      "blurb": "New ad accounts, pixels and conversion events set up properly before your first campaign.",
+      "features": [
+        "Ad accounts created or cleaned up",
+        "Meta pixel, Google tag and TikTok pixel",
+        "Conversions for calls, forms and sales"
+      ],
+      "steps": [
+        "Ad accounts and pixels set up"
+      ]
+    },
+    {
+      "sku": "add-page",
+      "category": "addon",
+      "name": "Extra page",
+      "price": 75,
+      "interval": "",
+      "unit": "per page",
+      "max_qty": 20,
+      "requires": [
+        "website"
+      ],
+      "blurb": "Add more pages to any website package, like a page for each service or location.",
+      "features": [],
+      "steps": []
+    },
+    {
+      "sku": "add-copy",
+      "category": "addon",
+      "name": "Copywriting",
+      "price": 50,
+      "interval": "",
+      "unit": "per page",
+      "max_qty": 30,
+      "requires": [
+        "website"
+      ],
+      "blurb": "We write the words for you, based on a short interview, so you don’t have to.",
+      "features": [],
+      "steps": [
+        "Copywriting interview",
+        "Page copy approved"
+      ]
+    },
+    {
+      "sku": "add-logo",
+      "category": "addon",
+      "name": "Logo design",
+      "price": 200,
+      "interval": "",
+      "blurb": "A clean logo with three starting concepts, two rounds of changes, and every file format you’ll need.",
+      "features": [],
+      "steps": [
+        "Logo concepts shared",
+        "Logo approved and files delivered"
+      ]
+    },
+    {
+      "sku": "add-gbp",
+      "category": "addon",
+      "name": "Google Business Profile setup",
+      "price": 100,
+      "interval": "",
+      "blurb": "Your profile on Google Maps and Search set up or cleaned up, with photos, hours and services.",
+      "features": [],
+      "steps": [
+        "Google Business Profile updated"
+      ]
+    },
+    {
+      "sku": "add-rush",
+      "category": "addon",
+      "name": "Rush delivery",
+      "price": 150,
+      "interval": "",
+      "requires": [
+        "website"
+      ],
+      "blurb": "Moves your website to the front of the line and launches it in about half the usual time.",
+      "features": [],
+      "steps": []
+    },
+    {
+      "sku": "svc-ads-audit",
+      "category": "service",
+      "name": "Paid ads audit",
+      "price": 150,
+      "interval": "",
+      "timeline_days": 7,
+      "blurb": "We review your Google, Meta or TikTok ad accounts and show you exactly where money is being wasted.",
+      "features": [
+        "Up to two ad accounts reviewed",
+        "Recorded video walkthrough",
+        "Written action plan, ranked by impact",
+        "Delivered within 7 days"
+      ],
+      "steps": [
+        "Ad account access granted",
+        "Audit video and action plan delivered"
+      ]
+    },
+    {
+      "sku": "svc-site-audit",
+      "category": "service",
+      "name": "Website & SEO audit",
+      "price": 150,
+      "interval": "",
+      "timeline_days": 7,
+      "blurb": "A clear review of your current site’s speed, SEO, design and lead capture, with fixes ranked by impact.",
+      "features": [
+        "Speed and Core Web Vitals check",
+        "SEO and Google visibility review",
+        "Design and conversion review",
+        "Recorded video walkthrough and written plan",
+        "Delivered within 7 days"
+      ],
+      "steps": [
+        "Audit video and action plan delivered"
+      ]
+    },
+    {
+      "sku": "svc-analytics",
+      "category": "service",
+      "name": "Analytics setup",
+      "price": 125,
+      "interval": "",
+      "timeline_days": 5,
+      "site": true,
+      "blurb": "Site Stats installed on the website you already have, with goals for calls, forms and sales.",
+      "features": [
+        "Works with WordPress, Shopify, Squarespace, Wix and more",
+        "Goals for calls, forms and sales",
+        "Live dashboard in your client portal",
+        "Monthly email report",
+        "30-day review call"
+      ],
+      "steps": [
+        "Site Stats installed",
+        "Goals set up",
+        "30-day review call"
+      ]
+    },
+    {
+      "sku": "svc-strategy",
+      "category": "service",
+      "name": "Marketing strategy session",
+      "price": 75,
+      "interval": "",
+      "timeline_days": 7,
+      "blurb": "A one-hour call to plan your website, ads and budget, with written notes and next steps afterwards.",
+      "features": [
+        "One-hour video call",
+        "Written notes and next steps",
+        "Price credited if you buy a package within 30 days"
+      ],
+      "steps": [
+        "Strategy call",
+        "Notes and next steps sent"
+      ]
+    },
+    {
+      "sku": "add-presskit",
+      "category": "addon",
+      "name": "Press kit page",
+      "price": 150,
+      "interval": "",
+      "unit": "",
+      "requires": [
+        "website"
+      ],
+      "blurb": "A press kit page on your website for press and creators: fact sheet, description, screenshots, trailer, logos and contact.",
+      "features": [],
+      "steps": [
+        "Press kit page built"
+      ]
+    }
+  ],
+  "offers": [
+    {
+      "slug": "starter-500",
+      "name": "Starter website for $500 + 3 months of Care Plus free",
+      "note": "Email campaign offer. Landing page: syndicatemarketing.co/starter-website-offer.html (not in the menu or sitemap).",
+      "items": [
+        {
+          "sku": "web-starter",
+          "price": 500
+        },
+        {
+          "sku": "care-plus",
+          "trial_months": 3
+        }
+      ],
+      "ends_on": "2026-11-30",
+      "max_uses": 10,
+      "active": 1
+    }
+  ]
+}

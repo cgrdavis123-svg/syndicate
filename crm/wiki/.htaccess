@@ -1,0 +1,54 @@
+# Syndicate Help (wiki.stusyn.com). In cPanel, point the wiki.stusyn.com subdomain's document root at this folder.
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} !^/\.well-known/
+  RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301,NE]
+  RewriteCond %{HTTP_HOST} ^crm\. [NC]
+  RewriteRule ^(.*)$ https://wiki.stusyn.com/$1 [L,R=301]
+  # Pretty addresses: /c/websites and /how-long-does-a-website-take
+  RewriteRule ^sitemap\.xml$ sitemap.php [L]
+  RewriteRule ^c/([a-z0-9-]+)/?$ category.php?c=$1 [L,QSA]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^([a-z0-9-]+)/?$ article.php?s=$1 [L,QSA]
+</IfModule>
+
+<FilesMatch "^\.|\.(sqlite|log|ini|md|key)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+<IfModule mod_headers.c>
+  # This folder sits inside the CRM folder, whose .htaccess adds "noindex" for every page.
+  # The help center must be in Google, so drop that here. Team pages, drafts and search
+  # still send their own noindex (meta tag + header from app/wiki.php).
+  Header always unset X-Robots-Tag
+  Header always set X-Frame-Options "DENY"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set Strict-Transport-Security "max-age=31536000"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
+</IfModule>
+
+ErrorDocument 404 /article.php?s=not-found
+AddType font/woff2 .woff2
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml application/xml
+</IfModule>
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>

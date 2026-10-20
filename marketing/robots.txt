@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /checkout.html
+Disallow: /thank-you.html
+
+Sitemap: https://syndicatemarketing.co/sitemap.xml

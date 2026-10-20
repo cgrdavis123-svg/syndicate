@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Hearth &amp; Grain — Concept site by Syndicate Marketing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,800&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root { --flour: #f3e6d3; --flour-2: #ead8bf; --crust: #2b1a10; --crust-2: #5c3a24; --tomato: #c2452d; --butter: #f2c46d; --sage: #7d8b5a; --display: "Fraunces", Georgia, serif; --body: "Karla", system-ui, sans-serif; }
+  * { box-sizing: border-box; } body { margin: 0; background: var(--flour); color: var(--crust); font: 17px/1.55 var(--body); } a { color: inherit; }
+  .demo-bar { background: var(--crust); color: var(--flour); font: 500 13px/1.3 var(--body); padding: 9px 16px; text-align: center; } .demo-bar a { color: var(--butter); font-weight: 700; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+  header { display: flex; align-items: center; gap: 24px; padding: 22px 0; }
+  .logo { display: flex; align-items: center; gap: 10px; font: 800 22px/1 var(--display); letter-spacing: -.02em; text-decoration: none; }
+  .logo svg { width: 38px; height: 38px; }
+  nav { display: flex; gap: 22px; margin-left: auto; font-weight: 500; } nav a { text-decoration: none; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 52px; padding: 0 24px; border-radius: 999px; background: var(--tomato); color: #fff6ea; font-weight: 700; text-decoration: none; border: 0; cursor: pointer; font-size: 16px; white-space: nowrap; box-shadow: 0 6px 0 #8f2f1d; transition: transform .15s, box-shadow .15s; }
+  .btn:hover { transform: translateY(2px); box-shadow: 0 4px 0 #8f2f1d; } .btn.ghost { background: transparent; color: var(--crust); box-shadow: inset 0 0 0 2px var(--crust); }
+  .hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; padding: 40px 0 80px; }
+  .stamp { display: inline-flex; align-items: center; gap: 8px; background: var(--butter); padding: 7px 14px; border-radius: 999px; font-weight: 700; font-size: 14px; }
+  .stamp i { width: 9px; height: 9px; border-radius: 50%; background: var(--sage); box-shadow: 0 0 0 3px rgba(125,139,90,.25); }
+  h1 { font: 800 clamp(52px, 8vw, 108px)/.92 var(--display); letter-spacing: -.035em; margin: 22px 0 22px; }
+  h1 em { font-style: italic; font-weight: 500; color: var(--tomato); padding-right: .1em; }
+  .lede { font-size: 20px; max-width: 520px; color: var(--crust-2); } .row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 30px; }
+  .loaf { position: relative; aspect-ratio: 1; }
+  .loaf .board { position: absolute; inset: 8% 0 0 6%; background: var(--crust-2); border-radius: 46% 46% 40% 40% / 30% 30% 60% 60%; transform: rotate(-6deg); }
+  .loaf .bread { position: absolute; inset: 14% 10% 22% 14%; border-radius: 50% 50% 44% 44% / 58% 58% 42% 42%; background: radial-gradient(circle at 40% 30%, #f6c784, #d98b43 55%, #9c5a26); box-shadow: inset -20px -30px 50px rgba(80,40,10,.35); }
+  .loaf .score { position: absolute; left: 30%; right: 26%; height: 9%; border-radius: 50%; background: linear-gradient(#f9e2b5, #e7b46e); transform: rotate(-14deg); box-shadow: inset 0 3px 6px rgba(120,60,20,.35); }
+  .loaf .s1 { top: 30%; } .loaf .s2 { top: 44%; left: 26%; } .loaf .s3 { top: 58%; left: 30%; right: 32%; }
+  .price-tag { position: absolute; right: 2%; top: 4%; width: 140px; height: 140px; border-radius: 50%; background: var(--tomato); color: #fff6ea; display: grid; place-items: center; text-align: center; transform: rotate(10deg); font: 800 34px/1 var(--display); }
+  .price-tag small { display: block; font: 700 12px/1.2 var(--body); letter-spacing: .08em; text-transform: uppercase; margin-top: 6px; }
+  section { padding: 80px 0; } .alt { background: var(--flour-2); }
+  h2 { font: 800 clamp(38px, 5vw, 64px)/1 var(--display); letter-spacing: -.03em; margin: 0 0 14px; } .sub { color: var(--crust-2); max-width: 560px; margin: 0 0 40px; }
+  .menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 56px; }
+  .item { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 18px 0; border-bottom: 2px dotted rgba(43,26,16,.25); }
+  .item b { font: 700 22px/1.2 var(--display); } .item span { font: 700 20px/1 var(--display); color: var(--tomato); } .item p { margin: 0; grid-column: 1 / -1; color: var(--crust-2); font-size: 15px; }
+  .sold { font: 700 11px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; background: var(--crust); color: var(--flour); padding: 4px 7px; border-radius: 5px; margin-left: 8px; vertical-align: 3px; }
+  .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .card { background: #fffaf2; border-radius: 22px; padding: 28px; box-shadow: 0 2px 0 rgba(43,26,16,.08); }
+  .card .n { font: 800 44px/1 var(--display); color: var(--tomato); } .card h3 { font: 700 24px/1.15 var(--display); margin: 12px 0 8px; } .card p { margin: 0; color: var(--crust-2); }
+  .visit { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: stretch; }
+  .hours { list-style: none; padding: 0; margin: 0; font-size: 18px; } .hours li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(43,26,16,.15); } .hours .closed { color: var(--crust-2); opacity: .7; }
+  .map { border-radius: 22px; background: repeating-linear-gradient(90deg, transparent 0 58px, rgba(43,26,16,.08) 58px 60px), repeating-linear-gradient(0deg, transparent 0 58px, rgba(43,26,16,.08) 58px 60px), #e4d2b6; position: relative; min-height: 320px; overflow: hidden; }
+  .map::before { content: ""; position: absolute; left: -10%; right: -10%; top: 46%; height: 26px; background: #f7ecdb; transform: rotate(-8deg); }
+  .map::after { content: ""; position: absolute; top: -10%; bottom: -10%; left: 54%; width: 22px; background: #f7ecdb; transform: rotate(10deg); }
+  .pin { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -100%); z-index: 2; background: var(--tomato); color: #fff6ea; padding: 10px 14px; border-radius: 14px; font-weight: 700; white-space: nowrap; box-shadow: 0 10px 20px rgba(43,26,16,.25); }
+  .pin::after { content: ""; position: absolute; left: 50%; bottom: -8px; border: 8px solid transparent; border-top-color: var(--tomato); border-bottom: 0; transform: translateX(-50%); }
+  form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; background: #fffaf2; padding: 30px; border-radius: 22px; }
+  label { display: grid; gap: 6px; font-weight: 700; font-size: 14px; } input, select, textarea { font: inherit; padding: 13px 14px; border-radius: 12px; border: 2px solid rgba(43,26,16,.2); background: var(--flour); color: var(--crust); }
+  textarea, .full { grid-column: 1 / -1; } .note { grid-column: 1 / -1; font-size: 14px; color: var(--sage); font-weight: 700; min-height: 1em; }
+  footer { background: var(--crust); color: var(--flour); padding: 50px 0; } footer .wrap { display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; } footer b { font: 800 26px/1 var(--display); }
+  .mobile-order { display: none; }
+  @media (max-width: 820px) {
+    nav, header > .btn { display: none; } .hero, .visit, .menu { grid-template-columns: 1fr; } .three { grid-template-columns: 1fr; } .loaf { max-width: 420px; }
+    form { grid-template-columns: 1fr; } section { padding: 60px 0; } .wrap { padding: 0 18px; }
+    .mobile-order { display: flex; position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 5; justify-content: center; }
+    body { padding-bottom: 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="demo-bar">Concept site by <a href="../../work-hearth-and-grain.html">Syndicate Marketing</a> · Hearth &amp; Grain is a fictional business made for our portfolio.</div>
+<div class="wrap">
+  <header>
+    <a class="logo" href="#"><svg viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="19" fill="#c2452d"/><path d="M9 23c0-6 4.5-10 10-10s10 4 10 10c0 1.5-1 2.5-2.5 2.5h-15C10 25.5 9 24.5 9 23Z" fill="#f2c46d"/><path d="M14 18.5l2 3M19 17v4M24 18.5l-2 3" stroke="#c2452d" stroke-width="1.8" stroke-linecap="round"/></svg>Hearth &amp; Grain</a>
+    <nav aria-label="Main"><a href="#menu">Menu</a><a href="#order">Order ahead</a><a href="#catering">Catering</a><a href="#visit">Visit</a></nav>
+    <a class="btn" href="#order" style="height:44px;padding:0 18px">Order ahead</a>
+  </header>
+  <div class="hero">
+    <div>
+      <span class="stamp"><i></i>Open now · baking since 5am</span>
+      <h1>Bread worth <em>waking up</em> for.</h1>
+      <p class="lede">Naturally leavened sourdough, buttery croissants and cinnamon knots, baked every morning. Order tonight and pick it up warm at 7.</p>
+      <div class="row"><a class="btn" href="#order">Order for pickup →</a><a class="btn ghost" href="#menu">See today’s menu</a></div>
+    </div>
+    <div class="loaf" aria-hidden="true"><div class="board"></div><div class="bread"><span class="score s1"></span><span class="score s2"></span><span class="score s3"></span></div><div class="price-tag"><span>$9<small>country<br>sourdough</small></span></div></div>
+  </div>
+</div>
+
+<section class="alt" id="menu">
+  <div class="wrap">
+    <h2>Today’s bake</h2>
+    <p class="sub">Small batches, so things sell out. Order ahead to make sure yours is waiting.</p>
+    <div class="menu">
+      <div class="item"><b>Country sourdough</b><span>$9</span><p>48-hour ferment, crackly crust, open crumb.</p></div>
+      <div class="item"><b>Butter croissant</b><span>$4</span><p>Laminated by hand with European-style butter.</p></div>
+      <div class="item"><b>Cinnamon knot <span class="sold">Sold out</span></b><span>$4.50</span><p>Brown sugar, cardamom, orange glaze.</p></div>
+      <div class="item"><b>Seeded rye</b><span>$10</span><p>Sunflower, flax and caraway. Great for sandwiches.</p></div>
+      <div class="item"><b>Ham &amp; gruyère croissant</b><span>$6.50</span><p>Our most-ordered breakfast.</p></div>
+      <div class="item"><b>Seasonal galette</b><span>$7</span><p>Whatever fruit came in this week.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="order">
+  <div class="wrap">
+    <h2>Order ahead in three steps</h2>
+    <p class="sub">Orders close at 8pm for next-morning pickup.</p>
+    <div class="three">
+      <div class="card"><div class="n">1</div><h3>Pick your bakes</h3><p>Choose from tomorrow’s menu. We bake to order.</p></div>
+      <div class="card"><div class="n">2</div><h3>Choose a time</h3><p>Pickup any time from 7am. We’ll hold it until noon.</p></div>
+      <div class="card"><div class="n">3</div><h3>Skip the line</h3><p>Your name is on the shelf by the door.</p></div>
+    </div>
+    <div class="row"><a class="btn" href="#order" data-demo>Start an order →</a></div>
+  </div>
+</section>
+
+<section class="alt" id="catering">
+  <div class="wrap visit">
+    <div>
+      <h2>Catering for offices &amp; events</h2>
+      <p class="sub">Pastry boxes, bread for the table, and breakfast for 10 to 200. Tell us the date and we’ll reply within a day.</p>
+    </div>
+    <form data-demo-form>
+      <label>Name<input required></label>
+      <label>Email<input type="email" required></label>
+      <label>Date<input type="date"></label>
+      <label>Guests<select><option>10–25</option><option>25–50</option><option>50–100</option><option>100+</option></select></label>
+      <label class="full">What are you planning?<textarea rows="3"></textarea></label>
+      <button class="btn full" type="submit">Request a quote</button>
+      <p class="note" role="status"></p>
+    </form>
+  </div>
+</section>
+
+<section id="visit">
+  <div class="wrap visit">
+    <div>
+      <h2>Come say hi</h2>
+      <ul class="hours">
+        <li><span>Tuesday – Friday</span><b>7am – 2pm</b></li>
+        <li><span>Saturday</span><b>7am – 1pm</b></li>
+        <li><span>Sunday</span><b>8am – 12pm</b></li>
+        <li class="closed"><span>Monday</span><b>Closed</b></li>
+      </ul>
+      <div class="row"><a class="btn ghost" href="#visit" data-demo>Get directions</a><a class="btn ghost" href="#visit" data-demo>(864) 555-0110</a></div>
+    </div>
+    <div class="map" aria-hidden="true"><span class="pin">Hearth &amp; Grain</span></div>
+  </div>
+</section>
+
+<footer><div class="wrap"><b>Hearth &amp; Grain</b><span>Fresh bread, baked before you wake up.</span><span>A concept by <a href="../../work-hearth-and-grain.html" style="color:var(--butter)">Syndicate Marketing</a></span></div></footer>
+<a class="btn mobile-order" href="#order">Order for pickup →</a>
+<script>
+  document.querySelectorAll('[data-demo-form]').forEach(function (f) { f.addEventListener('submit', function (e) { e.preventDefault(); f.querySelector('.note').textContent = 'This is a demo, so nothing was sent. On a live site this lands in the bakery’s inbox and Site Stats counts it as a goal.'; }); });
+  document.querySelectorAll('[data-demo]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); a.textContent = 'Demo only'; }); });
+</script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+Built from 9dc50b1 (2026-10-20 14:03 UTC)
+Build every push into a deploy branch for cPanel Git deploys

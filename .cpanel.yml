@@ -1,0 +1,6 @@
+---
+# Becomes .cpanel.yml at the top of the deploy branch. cPanel runs it when you press
+# "Deploy HEAD Commit" in Git Version Control. All the work is in deploy.sh.
+deployment:
+  tasks:
+    - /bin/bash deploy.sh
