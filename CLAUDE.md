@@ -228,7 +228,8 @@ No frameworks, no npm dependencies. Node 18+ locally.
   - `email` hello@stusyn.com
   - `bookDiscovery` / `bookKickoff` (CRM `book.php?type=discovery-call` / `kickoff`)
   - `statsSite` (`SM_STATS`, default `UIOdnDz160w8`)
-  - `legalUpdated` ('October 18, 2026'), `arrow`, `check`
+  - `legalUpdated` ('October 22, 2026'), `arrow`, `check`
+  - `refRate` (5), `refMonths` (12), `refHoldDays` (30), `refLinkDays` (60), `refMinCash` (25): the referral numbers shown on the site; keep them in step with CRM → Referrals settings
 - Reads `crm/app/catalog.json` (prices and products) and `marketing/work.json` (portfolio), and renders product cards with `marketing/assets/js/cards.js` (the same code the browser uses, loaded through `new Function`), so the build and the live cart always agree.
 - **Template tags:**
 
@@ -238,6 +239,7 @@ No frameworks, no npm dependencies. Node 18+ locally.
 | `{{products:sku:a,b:mini}}` | Specific SKUs, optional `mini` style |
 | `{{price:sku}}` | Formatted price, e.g. `$850` or `$300/mo` |
 | `{{amount:sku}}` | Raw number |
+| `{{earn:sku}}` / `{{earn:sku:12}}` | What a referrer earns (`refRate`) on one purchase, or on 12 months of a monthly plan |
 | `{{work:grid}}` / `{{work:grid:2}}` | Portfolio grid (all, or the first N) |
 | `{{features:sku}}` | The product's feature list as `<li>` items with checkmarks |
 | `{{icon:name}}` / `{{icon:name\|Label}}` / `{{icon:name\|Label\|fallback}}` | Inline SVG from `icons/ui/` or `icons/brands/` (also works on stusyn.com). Decorative, or labelled with `Label`. A brand file not added yet shows the label (or the fallback HTML) instead, and the build lists what's missing |
@@ -275,7 +277,7 @@ Legal (`src/legal/`): `privacy.html`, `cookies.html`, `terms.html` (section 7 co
 ### PHP (`src/php/`)
 - `careers.php`: careers hub with open roles. `job.php`: role page plus application form (resume upload up to **8 MB**; PDF/DOC/DOCX).
 - Seeded jobs (`app/seed-jobs.php`): **Social Media Manager**, **Paid Social Specialist**, **Open application**.
-- **Commissioned Sales Rep** (Syndicate Marketing, remote US, 1099 contractor, added by migration v3 on October 20, 2026): finds small businesses in our niches (local trades and services; gaming studios, creators, esports, gaming businesses) and sends them to packages, discovery calls or quotes. Pay: **10%** of what each client they bring in pays us: one-off purchases in full, monthly plans for the client's first 12 months; ad spend and refunds excluded. No base pay, quota or fee. Must follow our outreach rules (honest claims, real prices, opt-outs, CAN-SPAM). Payout timing and how referrals are tracked aren't set yet.
+- **Commissioned Sales Rep** (Syndicate Marketing, remote US, 1099 contractor, added by migration v3 on October 20, 2026): finds small businesses in our niches (local trades and services; gaming studios, creators, esports, gaming businesses) and sends them to packages, discovery calls or quotes. Pay: **10%** of what each client they bring in pays us: one-off purchases in full, monthly plans for the client's first 12 months; ad spend and refunds excluded. No base pay, quota or fee. Must follow our outreach rules (honest claims, real prices, opt-outs, CAN-SPAM). Tracked and paid through the referral program (see “Referral program” in §14): add each rep in CRM → Referrals as a Commissioned sales rep (10%, cash).
 - `contact.php`: contact form handler (rate-limited by `attempts`, honeypot, saves to `messages`, emails hello@). The CRM imports these messages as leads (see §8, "Website sync").
 - `sitemap.php`: dynamic sitemap including open jobs.
 - **Removed:** `order.php` (the old $500 Stripe payment link flow). `.htaccess` 301-redirects it to `/one-page-website.html#order`.
@@ -324,6 +326,7 @@ Legal (`src/legal/`): `privacy.html`, `cookies.html`, `terms.html` (section 7 co
 | `checkout.html` | 4-step checkout (see below) |
 | `thank-you.html` | Polls the order API until Stripe confirms, then shows next steps and fires the `Purchase` goal once |
 | `starter-website-offer.html` | **Email-campaign landing page** for the `starter-500` offer (see “Special offers” in §10). `noindex`, not in the menu or sitemap; the header shows only the logo and cart. Personalize the link with `?b=Business+Name&n=FirstName` (shown as plain text). Prices, spots left and the end date refresh live from the CRM; when the offer ends or fills, the page says so and the buttons go to the regular packages. Styles `assets/css/offer.css`, script `assets/js/offer.js` (front matter `styles` / `scripts`) |
+| `referrals.html` | **Referral program**: how it works, earnings table from catalog prices (`{{earn:sku}}`), sign-up form (→ `shop-api.php?a=refer`, script `assets/js/referrals.js`), and the referral rules (`#terms`). In the footer as “Refer a business, earn 5%” |
 | `404.html` | Not found |
 
 Legal (`marketing/legal/`): `terms.html` (terms of sale) and `privacy.html`.
@@ -331,6 +334,7 @@ Legal (`marketing/legal/`): `terms.html` (terms of sale) and `privacy.html`.
 ### Cart and checkout (`assets/js/sm.js`, `checkout.js`, `cards.js`)
 - Cart lives in `localStorage` key **`sm_cart`**. Any link with `?add=<sku>` starts or adds to the cart (this is how stusyn.com's one-page button works).
 - **Rules:** one website package per order, one ads plan per order, one care plan per order. Add-ons with `requires` need their parent (e.g. `add-page` needs a website, `add-ads-setup` needs an ads plan). Per-page add-ons have a quantity.
+- A referral link (`?ref=code` on any page) is kept in `localStorage` **`sm_ref`** for 60 days (first link wins) and sent with checkout, the contact form and discovery-call booking links (`book.php?…&ref=`).
 - Visit source and UTM data are kept in `sessionStorage` **`sm_src`** and sent with the order (the CRM records the deal source, e.g. `Marketing site — checkout`).
 - Checkout steps: **1 Cart → 2 Your details → 3 Project details → 4 Review & pay**. Pay sends the customer to Stripe Checkout (hosted). The in-progress form is kept in `sessionStorage` `sm_checkout`; the order reference is kept in `sm_order`.
 - After paying, Stripe returns them to `thank-you.html?ref=…&k=…&session_id=…`, which polls `shop-api.php?a=order` and shows paid, processing (bank payments) or still waiting.
@@ -374,6 +378,7 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 | Projects | `projects.php`, `project.php`, `project-edit.php`, `project-file.php` | Client projects with steps, updates and files, shared with the client portal |
 | Outreach | `outreach.php` | Prospects the outreach agent found and emailed, replies waiting on you, settings (mailbox, postal address, warm-up), agent key, do-not-contact list; see “Outreach (cold email)” |
 | Store | `store.php`, `store-order.php`, `store-products.php`, `store-product.php`, `store-offers.php`, `store-settings.php` | Orders from syndicatemarketing.co, product/price editor, special offers, Stripe keys, promo/tax/notify settings |
+| Referrals | `referrals.php`, `referrer.php` | Everyone with a referral link (referrers and sales reps), what they brought in, earnings waiting/ready/paid, payouts, adding people by hand, tying a client who named a referrer, program settings; see “Referral program” |
 | Quotes | `quotes.php`, `quote-edit.php`, `quote.php` | Proposals with optional items and deposits, paid online |
 | Bookings | `bookings.php`, `booking.php`, `booking-setup.php`, `booking-type.php` | Online scheduling: meeting types, hours, blocks, bookings |
 | Consultations | `consultations.php`, `consultation-edit.php` | Creator Ops consults: date, length, rate ($150 default), status, billable, invoice link |
@@ -393,7 +398,7 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 | Endpoint | Used by |
 |---|---|
 | `a.js`, `t.php` | Site Stats tracker script and collector |
-| `shop-api.php?a=catalog` / `offer` / `checkout` / `order` / `lead` | syndicatemarketing.co cart, offers, checkout, thank-you page and contact form (CORS limited to the shop site; `catalog` and `offer` are public) |
+| `shop-api.php?a=catalog` / `offer` / `checkout` / `order` / `lead` / `refer` | syndicatemarketing.co cart, offers, checkout, thank-you page, contact form and referral sign-up (CORS limited to the shop site; `catalog` and `offer` are public) |
 | `stripe-webhook.php` | Stripe events (store orders, quotes, paid bookings, renewals, refunds) |
 | `i.php` | Public invoice view/pay link (`?k=` token) |
 | `q.php` | Public proposal: view, choose options, accept, pay deposit, decline |
@@ -401,6 +406,7 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 | `care-report.php` | Monthly care report web page (signed link) |
 | `outreach-api.php` | Outreach agent API (key-protected: `Authorization: Bearer <key>` or `X-Api-Key`): `status`, `check`, `add`, `pending`, `respond` |
 | `u.php` | Unsubscribe from outreach emails (`?t=` token; one-click POST from mail apps) |
+| `refer.php` | Referral partner's page (emailed one-time sign-in link, own `syn_ref` session): their link, referrals, earnings, payouts, payout choice |
 | `portal-ads.php` | One-click hop from the client portal into the ads portal (2-minute one-time link) |
 | `portal.php`, `portal-care.php`, `portal-login.php`, `portal-logout.php`, `portal-project.php`, `portal-file.php`, `portal-stats.php`, `portal-plans.php` | Client portal (magic-link login); `portal-login.php?to=plans` opens Plans & billing |
 | `portal-demo.php` (and `ads/portal-demo.php`) | Demo client portal with sample data for prospects (see “Demo client portal” in §14) |
@@ -705,7 +711,7 @@ A public help center for clients and staff-only Team docs, in the CRM's `wiki/` 
 - **Staff pages**: `team.php` (Team docs by topic, recent changes), `articles.php` (views and helpful %), `edit.php` (editor with preview, live tags help, every save keeps the previous version with one-click restore, reader comments), `insights.php` (questions to answer, searches with no answer, unhelpful articles, most read, top searches).
 - **Topics** (`WIKI_CATEGORIES` / `WIKI_TEAM_CATEGORIES`): Getting started, Websites, Paid ads, Community management, Website care, Site Stats, Client portal, Billing & plans, Audits & consulting, Policies & privacy, Glossary; Team: Running the business, Client work, Systems & setup, Rules & voice, When something breaks.
 - **Linked from**: the marketing site footer, the client portal and ads portal footers, and the CRM menu (“Wiki ↗”).
-- **Keep it true:** when a promise, process or feature changes, update the matching help article (search the wiki) in the same change. 70 public and 25 team articles shipped on October 18, 2026; `offers-and-free-months` added the same day, then a **Community management** topic with `community-plans-compared`, `discord-server-setup`, `discord-access` and `community-moderation` (75 public). Team article `team-outreach` added October 19, 2026 (26 team); `team-logins` October 20, 2026 (27 team).
+- **Keep it true:** when a promise, process or feature changes, update the matching help article (search the wiki) in the same change. 70 public and 25 team articles shipped on October 18, 2026; `offers-and-free-months` added the same day, then a **Community management** topic with `community-plans-compared`, `discord-server-setup`, `discord-access` and `community-moderation` (75 public). Team article `team-outreach` added October 19, 2026 (26 team); `team-logins` October 20, 2026 (27 team); `referral-program` and `team-referrals` October 22, 2026 (76 public, 28 team).
 
 ### Outreach (cold email)
 The outreach agent finds prospects and the CRM emails them. Engine `app/outreach.php`, admin `outreach.php`, agent API `outreach-api.php`, unsubscribe page `u.php`, Team article `team-outreach`.
@@ -716,6 +722,13 @@ The outreach agent finds prospects and the CRM emails them. Engine `app/outreach
 - **Agent answers** (`out_respond()`): `reply` (send, → `talking`), `interested` (optional reply; creates the contact, a `qualified` deal with source “Cold outreach” valued at the `sku` price, a task, and emails Grady), `decline` (do-not-contact), `handoff` (→ `needs_you`, task + email with the suggested reply), `resume` (not a real reply). Only conversations in `replied` can be answered, once.
 - **Campaigns** (scheduled tasks, all queue through the same API and share the daily limit): **Syndicate prospecting** (Mon + Thu 7:54 AM, local trades in Upstate SC, rotating niche, mostly the starter-500 offer); **Gaming outreach prospecting** (Tue 7:47 AM, rotating weekly through indie studios, streamers and creators, esports teams, and gaming businesses; links to `gaming-communities.html?t=…`; skips anyone who appears under 18 or anything aimed at kids; business emails only, never Discord or social DMs; batch and niche `gaming-<audience>`); **Outreach replies** (weekdays 10:52 AM and 3:52 PM). All run in the **Syndicate CRM** cloud environment, which holds the agent key as a network secret for crm.stusyn.com.
 - **Statuses:** queued, active (in sequence), replied (agent to answer), talking, interested, needs_you, finished (no reply), declined, unsubscribed, bounced, paused, cancelled. The nav badge counts `needs_you`. The Monday summary lists “Outreach: your turn” and the week's numbers.
+
+### Referral program
+Anyone 18+ can join; new clients they send earn them a share of what those clients pay. Engine `app/referrals.php`, staff `referrals.php` / `referrer.php`, referrer page `refer.php`, sign-up `shop-api.php?a=refer` from `referrals.html`, help article `referral-program`, Team article `team-referrals`.
+- **Terms (October 2026):** **5%** (`ref_rate`, stored per person in `referrers.rate`, so reps get 10%) of what the client pays us in the **12 months** (`ref_months`) from their first payment; invoice totals minus sales tax, so ad spend (paid to the platforms) never counts. Each earning is held **30 days** (`ref_hold_days`), then ready. Payout is the referrer's choice: **account credit** (any amount; a Stripe customer-balance credit when they have a live monthly plan, otherwise taken off their next invoice by hand) or **cash** (from **$25**, `ref_min_cash`; W-9 required first, `referrers.w9`; 1099-NEC at $600+/year). Referrers agree to the rules (18+, honest claims, FTC commission disclosure when posting publicly, no spam or paid search on our name) at sign-up (`agreed_at`).
+- **Attribution:** `?ref=code` → `sm_ref` (60 days) → `orders.ref_code` / `bookings.ref_code` / the lead form → `ref_attach()` when the contact is created (store fulfilment, discovery-call confirmation, contact form). Only **new** contacts count: not the referrer or their business (same email, contact, company or business email domain), not anyone already referred, already paid, or with a deal older than a day. Staff can tie a client who named a referrer (“Tie to …”, `how = manual`); the deal source becomes “Referral”.
+- **Earnings:** `ref_sweep()` (each cron run, `ref_cron()`) records one `referral_earnings` row per paid invoice of a referred client (unique `invoice_id`), sets `referrals.first_paid_at` / `ends_at`, emails the referrer and `shop_notify` on the first one, releases holds, and voids earnings on voided invoices. `charge.refunded` calls `ref_refund()` (shrinks or voids; after payout, a negative earning comes off the next payout). On days 1–5, one task “Pay referral earnings” when anything is ready. `ref_payout()` pays everything ready, records `referral_payouts` and emails a receipt.
+- **Statuses:** referrer active / paused (no new referrals) / closed (no new earnings, can't sign in); referral lead / client / void (“Not counted”, reason private); earning held / ready / paid / void.
 
 ### Plans & billing (online cancellation)
 Clients see their monthly plans (store orders and won quotes with a live Stripe subscription) at `portal-plans.php` and cancel in two steps. `plan_cancel()` in `app/shop.php` sets `cancel_at` (ads, with notice, `proration_behavior=none`) or `cancel_at_period_end` in Stripe, stores `cancel_at`, logs it and sends both emails. The webhook also records `cancel_at` when a plan is cancelled from the Stripe dashboard.
@@ -766,7 +779,8 @@ Each run:
 9. `care_cron()`: uptime checks every run; SSL daily; domain, security scan and PageSpeed weekly; backup-due, Care Plus tune-up and review-call tasks; monthly care reports on days 1–5
 10. `ads_cron()`: monthly ads report notes tasks and emails (days 1–5), one approval reminder after 2 days
 11. `outreach_cron()` (`app/outreach.php`): reads replies, bounces and opt-outs in the outreach mailbox, then sends what's due (weekdays 9–5, within the warm-up limit)
-12. `pipeline_digest_send()` (`app/digest.php`): the **weekly summary**, emailed to `shop_notify` once a week on Monday from 7 AM (setting `digest_week` stops repeats). It lists tasks due or overdue, open deals with no activity in 14+ days, quotes waiting on the client (flags those expiring within 7 days), overdue invoices, unpaid checkouts from the last 7 days, calls booked this week, and the last 7 days in numbers (new leads, deals won, money in, visitors to the two campaign pages). Also includes outreach (conversations waiting on Grady, and the week's sends, replies and bounces). Sent on demand from the dashboard (“Email me this week’s summary”) or `php app/cli.php digest [send]` (without `send` it just prints).
+12. `ref_cron()` (`app/referrals.php`): records referral earnings from new paid invoices, releases 30-day holds, and on days 1–5 adds one “Pay referral earnings” task
+13. `pipeline_digest_send()` (`app/digest.php`): the **weekly summary**, emailed to `shop_notify` once a week on Monday from 7 AM (setting `digest_week` stops repeats). It lists tasks due or overdue, open deals with no activity in 14+ days, quotes waiting on the client (flags those expiring within 7 days), overdue invoices, unpaid checkouts from the last 7 days, calls booked this week, and the last 7 days in numbers (new leads, deals won, money in, visitors to the two campaign pages). Also includes outreach (conversations waiting on Grady, and the week's sends, replies and bounces). Sent on demand from the dashboard (“Email me this week’s summary”) or `php app/cli.php digest [send]` (without `send` it just prints).
 
 It prints a one-line summary (cPanel can email it to you; set the cron email to blank to silence it).
 
@@ -775,7 +789,7 @@ It prints a one-line summary (cPanel can email it to you; set the cron email to 
 ## 17. Databases and migrations
 
 ### CRM: `crm/storage/crm.sqlite`
-Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v24**.
+Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v25**.
 
 | Version | Adds |
 |---|---|
@@ -801,6 +815,7 @@ Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_versi
 | v21 | `products.free_with` (SKUs that make a product free in the same order); domain setup free with `web-business` and `web-store`, plus the perk on those packages' feature lists |
 | v23 | Multiple staff logins: `users.role` (existing users become owners), `user_invites`, setting `require_2fa` |
 | v22 | `users.passkeys` (JSON list of passkey public keys for two-step sign-in) |
+| v24 | Referral program: `referrers`, `referrer_links`, `referrals`, `referral_earnings`, `referral_payouts`; `orders.ref_code`, `bookings.ref_code`; settings `ref_on`, `ref_rate` (5), `ref_months` (12), `ref_hold_days` (30), `ref_min_cash` (25), `ref_task_month` |
 | v18 | Community products (`com-discord-setup`, `com-audit`, `com-manage`, `com-manage-plus`, after the care plans) and the `add-presskit` add-on, from `catalog.json` |
 
 ### Site Stats: `crm/storage/analytics.sqlite`
@@ -828,7 +843,7 @@ Separate file so heavy analytics writes never slow down the CRM.
 - Honeypots on public forms.
 - **Passkeys** as a second sign-in step for CRM staff (Settings → Two-step sign-in → Add a passkey; Face ID / Touch ID, Windows Hello, Android, security keys). `app/passkey.php` is plain WebAuthn with no libraries (CBOR reader, ES256 + RS256 via `openssl_verify`, attestation `none`); `assets/js/passkey.js` runs the browser side and `passkey.php` (plus `ads/`, `wiki/` copies) answers it. The relying party is `stusyn.com` (`pk_rp_id()`, override with `passkey_rp_id` in config), so one passkey works on crm., ads. and wiki.stusyn.com; the origin must match the page's own host. Public keys only, stored in `users.passkeys`. Two-step is on when a user has the app **or** a passkey (`tfa_on()`); adding the first one makes recovery codes. Removing a passkey needs the password. `2fa-off` in `app/cli.php` clears passkeys too.
 - **Two-step sign-in (TOTP)** for CRM users (Settings → Two-step sign-in) and Hiring HQ admins (Account): any authenticator app, QR via `assets/js/qrcode.js` (qrcode-generator, MIT), ±30 s drift, codes can't be reused, 10 one-time recovery codes (stored hashed). Secrets are encrypted with `storage/totp.key` (back it up with `mail.key`; excluded from zips and git). `app/totp.php` is identical in both apps. Lost phone and codes: on the server run `php app/cli.php 2fa-off you@example.com` (CLI only). The CRM dashboard nudges until it's on.
-- **Bot check (Cloudflare Turnstile)** on the public forms: stusyn.com contact (`contact.php`) and job applications (`job.php`), syndicatemarketing.co contact (`shop-api.php?a=lead`), and CRM bookings (`book.php`). Free, no Cloudflare DNS needed, one widget for all three domains. Keys: the public site key goes in `turnstile_site` (both `config.php` files) and in the builds (`TURNSTILE_SITE` env or `turnstileSite` in `build.mjs` / `build-marketing.mjs`); the secret goes only in `turnstile_secret` in both `config.php` files. Empty = off. Helpers in both bootstraps: `captcha_widget()`, `captcha_script()`, `captcha_ok()`. Missing or bad token = refused; Cloudflare unreachable = let through and logged. **Turn it on in this order:** rebuild and deploy the static sites with the site key first, then add the secrets, or the static contact forms will be refused. Test keys: site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA` (always pass).
+- **Bot check (Cloudflare Turnstile)** on the public forms: stusyn.com contact (`contact.php`) and job applications (`job.php`), syndicatemarketing.co contact (`shop-api.php?a=lead`) and referral sign-up (`a=refer`), and CRM bookings (`book.php`). Free, no Cloudflare DNS needed, one widget for all three domains. Keys: the public site key goes in `turnstile_site` (both `config.php` files) and in the builds (`TURNSTILE_SITE` env or `turnstileSite` in `build.mjs` / `build-marketing.mjs`); the secret goes only in `turnstile_secret` in both `config.php` files. Empty = off. Helpers in both bootstraps: `captcha_widget()`, `captcha_script()`, `captcha_ok()`. Missing or bad token = refused; Cloudflare unreachable = let through and logged. **Turn it on in this order:** rebuild and deploy the static sites with the site key first, then add the secrets, or the static contact forms will be refused. Test keys: site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA` (always pass).
 - The marketing contact auto-reply contains none of the visitor's words and goes to each address at most once a day, so the form can't relay spam.
 
 ### .htaccess
@@ -1036,8 +1051,9 @@ All setup items below were done by October 18, 2026, except the ones still open.
 | Quote numbers | Q-1001… |
 | Consulting rate | $150/hour |
 | Exclude own visits | `?syn_ignore=1` |
-| Cart storage | `localStorage.sm_cart`, `sessionStorage.sm_src`, `sm_checkout`, `sm_order` |
-| CRM DB version | v23 (next: v24) |
+| Cart storage | `localStorage.sm_cart`, `sm_ref`, `sessionStorage.sm_src`, `sm_checkout`, `sm_order` |
+| CRM DB version | v24 (next: v25) |
+| Referral program | 5% for 12 months, 30-day hold, credit or cash ($25+, W-9) · sign-up `syndicatemarketing.co/referrals.html` · referrer page `crm.stusyn.com/refer.php` · CRM → Referrals |
 | Gaming campaign | `syndicatemarketing.co/gaming-communities.html?t=studio\|creator\|esports\|business&b=Name&n=First` |
 | Outreach | CRM → Outreach; sends from outreach@syndicatemarketing.co; agent API `crm.stusyn.com/outreach-api.php` |
 | Current offer | `starter-500`: $500 Starter website + 3 months Care Plus free · `syndicatemarketing.co/starter-website-offer.html?b=Business+Name&n=First` |

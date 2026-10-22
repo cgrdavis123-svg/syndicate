@@ -10,6 +10,7 @@ $counts = $user ? [
     'store' => (int)val("SELECT COUNT(*) FROM orders WHERE status = 'paid' AND seen_at IS NULL"),
     'bookings' => (int)val("SELECT COUNT(*) FROM bookings WHERE status = 'confirmed' AND seen_at IS NULL"),
     'outreach' => (int)val("SELECT COUNT(*) FROM outreach_prospects WHERE status = 'needs_you'"),
+    'referrals' => (int)val("SELECT COUNT(*) FROM referrers WHERE created_at > ?", [date('Y-m-d H:i:s', time() - 3 * 86400)]),
     'care' => (int)val("SELECT COUNT(*) FROM sites WHERE monitor = 1 AND status = 'down'") + (int)val("SELECT COUNT(*) FROM care_requests WHERE status = 'open'"),
 ] : [];
 $mailDue = !defined('ADS_APP') && !defined('WIKI_APP') && $user && val('SELECT 1 FROM mailboxes LIMIT 1') && (setting('mail_last_sync') === '' || strtotime(setting('mail_last_sync')) < time() - 120);
@@ -29,6 +30,7 @@ $nav = [
     'tasks' => ['tasks.php', 'Tasks', '<path d="M4 10l3 3 6-7"/><rect x="2.5" y="2.5" width="15" height="15" rx="3"/>', $counts['tasks'] ?? 0],
     'bookings' => ['bookings.php', 'Bookings', '<rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2.5v3M13 2.5v3M7 11.5h2M11 11.5h2M7 14h2"/>', $counts['bookings'] ?? 0],
     'consultations' => ['consultations.php', 'Consultations', '<circle cx="10" cy="10" r="7.5"/><path d="M10 6v4l3 2"/>'],
+    'referrals' => ['referrals.php', 'Referrals', '<circle cx="6" cy="6.5" r="2.5"/><circle cx="14" cy="13.5" r="2.5"/><path d="M8.2 7.8 11.8 12.2M2.5 16c.4-2 1.8-3.3 3.5-3.6M17.5 4c-.4 2-1.8 3.3-3.5 3.6"/>', $counts['referrals'] ?? 0],
     'quotes' => ['quotes.php', 'Quotes', '<path d="M5 2.5h7l3 3v12H5z"/><path d="M12 2.5v3h3M8 9h4M8 12h4M8 15h2"/>'],
     'invoices' => ['invoices.php', 'Invoices', '<path d="M5 2.5h10v15l-2.5-1.5L10 17.5 7.5 16 5 17.5z"/><path d="M8 7h4M8 10h4"/>', $counts['invoices'] ?? 0],
     'users' => ['users.php', 'Team', '<circle cx="7.5" cy="7" r="2.8"/><path d="M2.5 16c.6-2.6 2.6-4 5-4s4.4 1.4 5 4M13 4.5a2.6 2.6 0 0 1 0 5M14.5 12.2c1.6.5 2.6 1.8 3 3.8"/>'],

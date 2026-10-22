@@ -213,7 +213,7 @@
     var btn = $('#payBtn'); btn.classList.add('is-loading'); btn.textContent = 'Opening secure payment…';
     var src = ''; try { src = sessionStorage.getItem('sm_src') || ''; } catch (err) {}
     fetch(SM.API + '?a=checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: SM.cart().items, offer: SM.offer() ? SM.cart().offer : '', customer: customer, brief: brief, agree: true, source: src, website_url: v.website_url || '' }) })
+      body: JSON.stringify({ items: SM.cart().items, offer: SM.offer() ? SM.cart().offer : '', customer: customer, brief: brief, agree: true, source: src, ref: SM.ref ? SM.ref() : '', website_url: v.website_url || '' }) })
       .then(function (r) { return r.json().catch(function () { return { ok: false }; }); })
       .then(function (r) {
         if (r.offer_gone && SM.cart().offer) { try { sessionStorage.removeItem('sm_offer_' + SM.cart().offer); } catch (e2) {} SM.dropOffer(); }

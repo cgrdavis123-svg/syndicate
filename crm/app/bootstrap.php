@@ -550,6 +550,37 @@ function migrate(PDO $pdo): void {
         ");
         $pdo->exec('PRAGMA user_version = 23');
     }
+    if ($v < 24) {
+        // v24: referral program. Anyone can sign up for a link; new clients who arrive through it earn the referrer a share
+        // (5% by default, per person) of what they pay us in their first 12 months, held 30 days for refunds, then paid as
+        // account credit or cash. Sales reps use the same tables with their own rate.
+        $pdo->exec("
+            CREATE TABLE referrers (id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT NOT NULL UNIQUE COLLATE NOCASE, name TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE COLLATE NOCASE, business TEXT NOT NULL DEFAULT '', contact_id INTEGER REFERENCES contacts(id) ON DELETE SET NULL,
+                kind TEXT NOT NULL DEFAULT 'referrer', rate REAL NOT NULL DEFAULT 5, months INTEGER NOT NULL DEFAULT 12,
+                payout TEXT NOT NULL DEFAULT 'credit', payout_details TEXT NOT NULL DEFAULT '', w9 INTEGER NOT NULL DEFAULT 0,
+                status TEXT NOT NULL DEFAULT 'active', notes TEXT NOT NULL DEFAULT '', agreed_at TEXT, ip_hash TEXT NOT NULL DEFAULT '',
+                seen_at TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+            CREATE TABLE referrer_links (token_hash TEXT PRIMARY KEY, referrer_id INTEGER NOT NULL REFERENCES referrers(id) ON DELETE CASCADE, expires_at INTEGER NOT NULL);
+            CREATE TABLE referrals (id INTEGER PRIMARY KEY AUTOINCREMENT, referrer_id INTEGER NOT NULL REFERENCES referrers(id) ON DELETE CASCADE,
+                contact_id INTEGER UNIQUE REFERENCES contacts(id) ON DELETE SET NULL, company_id INTEGER REFERENCES companies(id) ON DELETE SET NULL,
+                name TEXT NOT NULL DEFAULT '', business TEXT NOT NULL DEFAULT '', how TEXT NOT NULL DEFAULT 'link', status TEXT NOT NULL DEFAULT 'lead',
+                first_paid_at TEXT, ends_at TEXT, void_reason TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+            CREATE INDEX idx_referrals_referrer ON referrals(referrer_id);
+            CREATE TABLE referral_earnings (id INTEGER PRIMARY KEY AUTOINCREMENT, referral_id INTEGER REFERENCES referrals(id) ON DELETE SET NULL,
+                referrer_id INTEGER NOT NULL REFERENCES referrers(id) ON DELETE CASCADE, invoice_id INTEGER UNIQUE REFERENCES invoices(id) ON DELETE SET NULL,
+                paid_on TEXT NOT NULL, base REAL NOT NULL DEFAULT 0, rate REAL NOT NULL DEFAULT 0, amount REAL NOT NULL DEFAULT 0,
+                status TEXT NOT NULL DEFAULT 'held', ready_on TEXT NOT NULL, payout_id INTEGER, note TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+            CREATE INDEX idx_ref_earnings_referrer ON referral_earnings(referrer_id, status);
+            CREATE TABLE referral_payouts (id INTEGER PRIMARY KEY AUTOINCREMENT, referrer_id INTEGER NOT NULL REFERENCES referrers(id) ON DELETE CASCADE,
+                method TEXT NOT NULL, amount REAL NOT NULL, reference TEXT NOT NULL DEFAULT '', note TEXT NOT NULL DEFAULT '', stripe_txn TEXT NOT NULL DEFAULT '',
+                created_by TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL);
+            ALTER TABLE orders ADD COLUMN ref_code TEXT NOT NULL DEFAULT '';
+            ALTER TABLE bookings ADD COLUMN ref_code TEXT NOT NULL DEFAULT '';
+            INSERT OR IGNORE INTO settings (key, value) VALUES ('ref_on', '1'), ('ref_rate', '5'), ('ref_months', '12'), ('ref_hold_days', '30'), ('ref_min_cash', '25'), ('ref_task_month', '');
+        ");
+        $pdo->exec('PRAGMA user_version = 24');
+    }
 }
 function migrate_v1(PDO $pdo): void {
     $pdo->exec("

@@ -6,6 +6,7 @@
 //   GET  shop-api.php?a=order&ref=…&k=…[&session_id=…]  order status for the thank-you page
 //   GET  shop-api.php?a=resume&ref=…&k=…           an unpaid order, to finish it from the reminder email
 //   POST shop-api.php?a=lead      {name, email, business, topic, message}  contact form
+//   POST shop-api.php?a=refer     {name, email, business, payout, payout_details, agree}  referral program sign-up
 require __DIR__ . '/app/bootstrap.php';
 require __DIR__ . '/app/shop.php';
 header('Content-Type: application/json; charset=utf-8');
@@ -69,6 +70,14 @@ if ($a === 'lead') {
     if (too_many('lead', 6, 60)) reply(429, ['ok' => false, 'error' => 'Too many messages. Please wait a little, or email ' . setting('business_email') . '.']);
     record_attempt('lead');
     $r = shop_lead($in);
+    reply($r['ok'] ? 200 : 422, $r);
+}
+if ($a === 'refer') {
+    require_once __DIR__ . '/app/referrals.php';
+    if (!captcha_ok((string)($in['cf-turnstile-response'] ?? ''))) reply(422, ['ok' => false, 'error' => CAPTCHA_FAIL, 'captcha' => true]);
+    if (too_many('refer', 5, 60)) reply(429, ['ok' => false, 'error' => 'Too many tries. Please wait a little, or email ' . setting('business_email') . '.']);
+    record_attempt('refer');
+    $r = ref_signup($in);
     reply($r['ok'] ? 200 : 422, $r);
 }
 reply(400, ['ok' => false, 'error' => 'Unknown request.']);

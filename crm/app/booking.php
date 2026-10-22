@@ -95,6 +95,7 @@ function book_create(array $t, array $in): array {
         q('INSERT INTO bookings (token, type_id, type_name, starts_at, minutes, status, name, email, phone, business, answer, guest_tz, price, source, ip_hash, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
             [$token, $t['id'], $t['name'], $ts, (int)$t['minutes'], $paid ? 'pending' : 'confirmed', $name, $email, $phone, $biz, $answer, mb_substr($s('tz', 60), 0, 60), (float)$t['price'], mb_substr($s('source', 120), 0, 120), ip_hash(), now(), now()]);
         $id = (int)$pdo->lastInsertId();
+        if (($rc = strtolower($s('ref', 40))) !== '' && preg_match('/^[a-z0-9][a-z0-9-]{2,39}$/', $rc)) q('UPDATE bookings SET ref_code = ? WHERE id = ?', [$rc, $id]);
         $pdo->exec('COMMIT');
     } catch (Throwable $e) { $pdo->exec('ROLLBACK'); throw $e; }
     $b = one('SELECT * FROM bookings WHERE id = ?', [$id]);
@@ -143,6 +144,7 @@ function book_confirm(array $b, ?array $s): void {
             q("INSERT INTO deals (title, company_id, contact_id, brand, stage, value, source, notes, created_at, updated_at) VALUES (?,?,?,?, 'new', 0, 'Booking', ?, ?, ?)",
                 [$t['name'] . ' — ' . ($b['business'] ?: $b['name']), $contact['company_id'], $contact['id'], $brand, $b['answer'], now(), now()]);
             $dealId = (int)$pdo->lastInsertId();
+            if (($b['ref_code'] ?? '') !== '') { require_once __DIR__ . '/referrals.php'; if (ref_attach($b['ref_code'], $contact, 'link', $t['name'])) q("UPDATE deals SET source = 'Referral' WHERE id = ?", [$dealId]); }
         } else $dealId = $deal ? (int)$deal['id'] : null;
         $paid = $s ? round((float)($s['amount_total'] ?? 0) / 100, 2) : 0;
         q("INSERT INTO consultations (contact_id, company_id, deal_id, date, start_time, minutes, rate, topic, notes, status, billable, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?, 'scheduled', ?, ?, ?)",

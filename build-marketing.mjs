@@ -18,7 +18,9 @@ const site = {
   bookKickoff: (process.env.SM_CRM || 'https://crm.stusyn.com') + '/book.php?type=kickoff',
   // Site Stats for this website (CRM → Site stats → Add a website → install code). Leave empty to turn them off.
   statsSite: process.env.SM_STATS ?? 'UIOdnDz160w8',
-  legalUpdated: 'October 20, 2026',
+  legalUpdated: 'October 22, 2026',
+  // Referral program (CRM → Referrals). Keep these in step with the CRM settings ref_rate, ref_months, ref_hold_days and ref_min_cash.
+  refRate: 5, refMonths: 12, refHoldDays: 30, refLinkDays: 60, refMinCash: 25,
   // Cloudflare Turnstile bot check on the contact form (dash.cloudflare.com → Turnstile → the widget's site key).
   // The site key is public. The secret key goes only in app/config.php on the server. Empty turns the check off.
   turnstileSite: process.env.TURNSTILE_SITE ?? '',
@@ -76,6 +78,8 @@ const productTags = html => html
   .replace(/\{\{features:([a-z0-9-]+)\}\}/g, (m, sku) => { const p = products.find(x => x.sku === sku); if (!p) throw new Error('Unknown product ' + sku); return p.features.map(f => `<li>${site.check}<span>${f.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</span></li>`).join(''); })
   .replace(/\{\{products:([a-z0-9:,-]+?)(?::(pkg|mini))?\}\}/g, (m, spec, kind) => Cards.render(products, spec, kind || 'pkg'))
   .replace(/\{\{price:([a-z0-9-]+)\}\}/g, (m, sku) => { const p = products.find(x => x.sku === sku); if (!p) throw new Error('Unknown product ' + sku); return Cards.short(p); })
+  // {{earn:sku}} → what a referrer earns on one purchase; {{earn:sku:12}} → on 12 months of a monthly plan
+  .replace(/\{\{earn:([a-z0-9-]+)(?::(\d+))?\}\}/g, (m, sku, n) => { const p = products.find(x => x.sku === sku); if (!p) throw new Error('Unknown product ' + sku); return Cards.money(Math.round(p.price * (n ? +n : 1) * site.refRate) / 100); })
   .replace(/\{\{amount:([a-z0-9-]+)\}\}/g, (m, sku) => { const p = products.find(x => x.sku === sku); if (!p) throw new Error('Unknown product ' + sku); return Cards.money(p.price); });
 
 rmSync(OUT, { recursive: true, force: true });

@@ -27,3 +27,4 @@ __pycache__/
 # Video engine output and dated briefs (tools/video)
 tools/video/out/
 tools/video/briefs/20*.json
+crm/storage/ref-sessions/

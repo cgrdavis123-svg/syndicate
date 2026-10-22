@@ -134,7 +134,7 @@ $upcoming = $b && $b['starts_at'] > time();
       <div class="book-cal"><p class="book-muted">Loading open times…</p></div>
       <div class="book-times"></div>
       <form class="book-form" hidden novalidate>
-        <input type="hidden" name="action" value="book"><input type="hidden" name="start"><input type="hidden" name="tz"><input type="hidden" name="source" value="<?= e(mb_substr((string)($_SERVER['HTTP_REFERER'] ?? ''), 0, 120)) ?>">
+        <input type="hidden" name="action" value="book"><input type="hidden" name="start"><input type="hidden" name="tz"><input type="hidden" name="source" value="<?= e(mb_substr((string)($_SERVER['HTTP_REFERER'] ?? ''), 0, 120)) ?>"><input type="hidden" name="ref" value="<?= e(preg_match('/^[a-z0-9][a-z0-9-]{2,39}$/i', get('ref')) ? strtolower(get('ref')) : '') ?>">
         <p class="book-chosen"></p>
         <div class="book-fields">
           <label class="f"><span>Your name</span><input name="name" required autocomplete="name"></label>

@@ -288,6 +288,7 @@ function shop_checkout(array $in): array {
         [$ref, $key, 'pending', $name, $email, $phone, $biz, $site, json_encode($brief, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $cart['one_time'], $cart['monthly'], stripe_live() ? 1 : 0, mb_substr((string)($in['source'] ?? ''), 0, 120), ip_hash(),
          $cart['offer'] ? $cart['offer']['slug'] : '', $trialEnd, now(), now()]);
     $orderId = (int)db()->lastInsertId();
+    if (($rc = strtolower(trim(mb_substr((string)($in['ref'] ?? ''), 0, 40)))) !== '' && preg_match('/^[a-z0-9][a-z0-9-]{2,39}$/', $rc)) q('UPDATE orders SET ref_code = ? WHERE id = ?', [$rc, $orderId]);
     // Proof of what was agreed (California asks for it to be kept for at least three years; orders are never deleted).
     q('UPDATE orders SET consent = ? WHERE id = ?', [json_encode(['at' => now(), 'ip_hash' => ip_hash(), 'terms' => shop_site_url() . '/terms.html', 'text' => 'Agreed to the terms of sale, including the refund terms'
         . ($cart['monthly'] > 0 ? ', and to be charged ' . money($cart['monthly']) . ' every month' . ($trialEnd ? ' starting ' . date('F j, Y', $trialEnd) . ', after ' . $cart['trial_months'] . ' free months,' : '') . ' until cancelled (cancel online in the client portal)' : '') . '.'
@@ -369,6 +370,7 @@ function shop_fulfil(array $o, array $s): void {
         $contact = find_or_create_contact($o['name'], $o['email'], $o['business']);
         if ($phone !== '' && $contact['phone'] === '') q('UPDATE contacts SET phone = ?, updated_at = ? WHERE id = ?', [$phone, now(), $contact['id']]);
         $companyId = $contact['company_id'] ? (int)$contact['company_id'] : null;
+        if (($o['ref_code'] ?? '') !== '') { require_once __DIR__ . '/referrals.php'; ref_attach($o['ref_code'], $contact, 'link', 'order ' . $o['ref']); }
         if ($companyId) {
             q("UPDATE companies SET brand = CASE WHEN brand = '' THEN ? ELSE brand END, website = CASE WHEN website = '' THEN ? ELSE website END, phone = CASE WHEN phone = '' THEN ? ELSE phone END, updated_at = ? WHERE id = ?",
                 [SHOP_BRAND, $o['website'], $phone, now(), $companyId]);
@@ -646,6 +648,7 @@ function shop_handle_event(array $ev): string {
             $amt = money((float)($obj['amount_refunded'] ?? 0) / 100);
             if ($full && $o['table'] === 'orders') q("UPDATE orders SET status = 'refunded', updated_at = ? WHERE id = ?", [now(), $o['id']]);
             if ($o['invoice_id']) q("UPDATE invoices SET notes = notes || ?, updated_at = ? WHERE id = ?", ["\nRefunded $amt on " . date('M j, Y') . '.', now(), $o['invoice_id']]);
+            if ($o['invoice_id']) { require_once __DIR__ . '/referrals.php'; ref_refund((int)$o['invoice_id'], (float)($obj['amount_refunded'] ?? 0) / 100, $full); }
             if ($o['deal_id']) log_activity('deal', (int)$o['deal_id'], 'note', ($full ? 'Fully refunded ' : 'Partly refunded ') . $amt . ' in Stripe.');
             return 'refund recorded';
     }
@@ -812,6 +815,10 @@ function shop_lead(array $in): array {
     q("INSERT INTO deals (title, company_id, contact_id, brand, stage, value, source, notes, created_at, updated_at) VALUES (?,?,?,?, 'new', 0, 'Marketing site', '', ?, ?)",
         [$topic . ' — ' . ($biz ?: person_name($contact)), $contact['company_id'], $contact['id'], SHOP_BRAND, now(), now()]);
     $dealId = (int)db()->lastInsertId();
+    if (($rc = (string)($in['ref'] ?? '')) !== '') {
+        require_once __DIR__ . '/referrals.php';
+        if (($rf = ref_attach($rc, $contact, 'link', 'contact form')) !== null) { q("UPDATE deals SET source = 'Referral' WHERE id = ?", [$dealId]); $body .= "\n\nReferred by: " . (string)val('SELECT name FROM referrers WHERE id = ?', [$rf['referrer_id']]); }
+    }
     log_activity('deal', $dealId, 'email', $body);
     log_activity('contact', (int)$contact['id'], 'email', $body);
     q('INSERT INTO tasks (title, due_date, priority, entity_type, entity_id, created_at) VALUES (?,?,1,?,?,?)', ['Reply to ' . person_name($contact), today(), 'deal', $dealId, now()]);

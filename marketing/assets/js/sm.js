@@ -19,6 +19,24 @@
     }
   } catch (e) {}
 
+  // Referral links (?ref=code): remembered in this browser for 60 days and sent with an order, a message or a
+  // discovery-call booking. The first link someone used is the one that counts.
+  var REF_DAYS = 60;
+  function refCode() { var r = store('sm_ref'); if (r && r.code && r.at > Date.now() - REF_DAYS * 864e5) return r.code; if (r) store('sm_ref', null); return ''; }
+  (function () {
+    try {
+      var qs = new URLSearchParams(location.search), c = (qs.get('ref') || '').toLowerCase();
+      if (!qs.has('ref')) return;
+      if (/^[a-z0-9][a-z0-9-]{2,39}$/.test(c) && !refCode()) store('sm_ref', { code: c, at: Date.now() });
+      qs.delete('ref');
+      history.replaceState(null, '', location.pathname + (qs.toString() ? '?' + qs : '') + location.hash);
+    } catch (e) {}
+  })();
+  (function () {
+    var c = refCode(); if (!c) return;
+    $$('a[href*="book.php"]').forEach(function (a) { try { var u = new URL(a.href); if (!u.searchParams.get('ref')) { u.searchParams.set('ref', c); a.href = u.toString(); } } catch (e) {} });
+  })();
+
   /* ---------- Header ---------- */
   var hdr = $('.hdr');
   function onScroll() { if (hdr) hdr.classList.toggle('scrolled', w.scrollY > 8); }
@@ -268,6 +286,7 @@
       var btn = $('button[type="submit"]', cf), alertEl = $('#contactAlert');
       $$('.field', cf).forEach(function (f) { f.classList.remove('bad'); });
       var data = {}; new FormData(cf).forEach(function (v, k) { data[k] = v; });
+      data.ref = refCode();
       var bad = null;
       if ((data.name || '').trim().length < 2) bad = 'name';
       else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email || '')) bad = 'email';
@@ -310,7 +329,7 @@
     });
   })();
 
-  w.SM = { API: API, CFG: CFG, cart: function () { return cart; }, lines: lines, offer: offerOn, setOffer: setOffer, loadOffer: loadOffer, longDate: longDate,
+  w.SM = { API: API, CFG: CFG, ref: refCode, cart: function () { return cart; }, lines: lines, offer: offerOn, setOffer: setOffer, loadOffer: loadOffer, longDate: longDate,
     dropOffer: function () { delete cart.offer; save(); }, totals: totals, problems: problems, suggestions: suggestions, product: product, onCatalog: onCatalog,
     add: add, setQty: setQty, remove: remove, clear: function () { cart = { items: [] }; save(); }, lineHtml: lineHtml, totalsHtml: totalsHtml, toast: toast, track: track, store: store, openCart: openCart };
   paintCount();

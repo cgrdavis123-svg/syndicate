@@ -1,0 +1,103 @@
+<!-- {
+  "title": "Refer a business, earn {{refRate}}% — Syndicate Marketing referral program",
+  "description": "Send a small business our way. When they become a client, you earn {{refRate}}% of what they pay us in their first {{refMonths}} months, as account credit or cash. Free to join.",
+  "scripts": ["referrals.js"]
+} -->
+
+<section class="page-hero">
+  <div class="wrap">
+    <div class="crumbs reveal"><a href="./">Home</a><span>/</span><span>Referrals</span></div>
+    <h1 class="reveal d1">Send us a business. <span class="serif hl">Earn {{refRate}}%.</span></h1>
+    <p class="lede reveal d2">Know a business that needs a website, ads, website care or a Discord community run properly? Share your link. When they become a client, you earn {{refRate}}% of everything they pay us in their first {{refMonths}} months, as credit on your own account or as cash. It’s free to join, and anyone 18 or older can.</p>
+    <div class="cta-row reveal d3"><a href="#join" class="btn btn-ink">Get your link {{arrow}}</a><a href="#terms" class="btn btn-ghost">Read the rules</a></div>
+  </div>
+</section>
+
+<section class="section tight">
+  <div class="wrap">
+    <div class="sec-head"><div><span class="eyebrow reveal"><span class="dot"></span>How it works</span><h2 class="reveal d1">Four steps, <span class="serif">no selling.</span></h2></div></div>
+    <ol class="how" style="padding:0;margin:0">
+      <li class="reveal"><b>Get your link</b><span>Sign up below and we email you a personal link and a page where you can follow your referrals.</span></li>
+      <li class="reveal d1"><b>Share it</b><span>Send it to a business owner you know, or post it. They can also just mention your name or email when they contact us.</span></li>
+      <li class="reveal d2"><b>They become a client</b><span>Within {{refLinkDays}} days of opening your link, they buy a package, start a plan, or book a call and go on to work with us.</span></li>
+      <li class="reveal d3"><b>You earn {{refRate}}%</b><span>On every payment in their first {{refMonths}} months. Each one is held {{refHoldDays}} days in case of a refund, then paid out.</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="section tight">
+  <div class="wrap split">
+    <div>
+      <span class="eyebrow reveal"><span class="dot"></span>What you could earn</span>
+      <h2 class="reveal d1">Real numbers, from our real prices.</h2>
+      <p class="lede reveal d2">Monthly plans keep earning for their first {{refMonths}} months, so a client on a plan is worth the most. Ad spend goes straight from the client to Google, Meta or TikTok and never passes through us, so it doesn’t count. Neither does sales tax.</p>
+    </div>
+    <div class="cmp-wrap reveal d2">
+      <table class="cmp" style="min-width:0">
+        <thead><tr><th>If they buy</th><th>They pay</th><th class="hi">You earn</th></tr></thead>
+        <tbody>
+          <tr><td>Starter website</td><td>{{price:web-starter}}</td><td class="hi"><b>{{earn:web-starter}}</b></td></tr>
+          <tr><td>Business website</td><td>{{price:web-business}}</td><td class="hi"><b>{{earn:web-business}}</b></td></tr>
+          <tr><td>Online store</td><td>{{price:web-store}}</td><td class="hi"><b>{{earn:web-store}}</b></td></tr>
+          <tr><td>Ads on one platform, {{refMonths}} months</td><td>{{price:ads-one}}</td><td class="hi"><b>{{earn:ads-one:12}}</b></td></tr>
+          <tr><td>Ads on Google, Meta &amp; TikTok, {{refMonths}} months</td><td>{{price:ads-all}}</td><td class="hi"><b>{{earn:ads-all:12}}</b></td></tr>
+          <tr><td>Community management, {{refMonths}} months</td><td>{{price:com-manage}}</td><td class="hi"><b>{{earn:com-manage:12}}</b></td></tr>
+          <tr><td>Care Plus, {{refMonths}} months</td><td>{{price:care-plus}}</td><td class="hi"><b>{{earn:care-plus:12}}</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section tight" id="join">
+  <div class="wrap contact-grid">
+    <div>
+      <span class="eyebrow reveal"><span class="dot"></span>Join</span>
+      <h2 class="reveal d1">Get your referral link.</h2>
+      <p class="lede reveal d2">We’ll email your link and a sign-in link to a page that shows who signed up through you, what you’ve earned, and what’s on its way.</p>
+      <ul class="checks reveal d3">
+        <li>{{check}}<div><b>Account credit</b><span>Comes off your own bill with us. If you’re on a monthly plan, it’s taken off your next payment automatically. Any amount.</span></div></li>
+        <li>{{check}}<div><b>Or cash</b><span>Once you have at least ${{refMinCash}} ready. Before the first cash payout we’ll ask for a W-9, because we report cash payments to the IRS when the law says to.</span></div></li>
+        <li>{{check}}<div><b>Change your mind any time</b><span>Switch between credit and cash from your referrals page.</span></div></li>
+      </ul>
+    </div>
+    <form class="co-panel reveal d2" id="referForm" novalidate>
+      <div class="form-grid">
+        <label class="field"><span>Your name</span><input name="name" autocomplete="name" required><span class="err">Enter your name.</span></label>
+        <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" required><span class="err">Enter a valid email address.</span></label>
+        <label class="field full"><span>Your business <small>(optional)</small></span><input name="business" autocomplete="organization"></label>
+        <fieldset class="field full"><legend>How would you like to be paid?</legend>
+          <div class="opts" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
+            <div class="opt"><input type="radio" name="payout" id="p-credit" value="credit" checked><label for="p-credit">Account credit<small>Off your own bill with us</small></label></div>
+            <div class="opt"><input type="radio" name="payout" id="p-cash" value="cash"><label for="p-cash">Cash<small>From ${{refMinCash}}, W-9 needed</small></label></div>
+          </div>
+        </fieldset>
+        <label class="field full" data-cash hidden><span>Where should cash go? <small>(optional, you can add it later)</small></span><input name="payout_details" maxlength="300" placeholder="PayPal or Venmo, or a mailing address for a check"><span class="fine" style="margin-top:6px">Please don’t send bank account numbers here.</span></label>
+        <div class="hp" aria-hidden="true"><label>Leave this empty <input name="website_url" tabindex="-1" autocomplete="off"></label></div>
+        <label class="agree full"><input type="checkbox" name="agree" value="1"> <span>I’m 18 or older and I agree to the <a href="#terms">referral rules</a>, including telling people I earn a commission when I share my link publicly.</span></label>
+        <div class="full">{{captcha}}</div>
+        <div class="alert bad full" id="referAlert" hidden></div>
+        <div class="full"><button type="submit" class="btn btn-ink btn-block">Email me my link</button><p class="fine" style="margin-top:12px">We use your details to run your referrals and pay you. <a class="link" href="privacy.html#referrals">Privacy policy</a></p></div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="section tight" id="terms">
+  <div class="wrap">
+    <div class="sec-head"><div><span class="eyebrow reveal"><span class="dot"></span>The rules</span><h2 class="reveal d1">Referral terms</h2><p class="lede reveal d2">Short and plain. Syndicate Holdings Group LLC runs the program for its Syndicate Marketing brand. Last updated {{legalUpdated}}.</p></div></div>
+    <div class="faq">
+      <details class="reveal" open><summary>What counts as a referral</summary><p>A business that becomes a new client after opening your link (within {{refLinkDays}} days, in the same browser) or after naming you when they contact us. If both a link and a name point to different people, the first link they used counts. Someone who has already paid us, or who is already talking to us about a project, isn’t a new referral. You can’t refer yourself, your own business or someone who shares your business email domain.</p></details>
+      <details class="reveal"><summary>What you earn</summary><p>{{refRate}}% of what the client pays us in the {{refMonths}} months from their first payment: website packages, add-ons, audits, care plans, ads management and community management fees. Ad spend (paid by the client to the ad platforms), sales tax and anything refunded don’t count. If a payment is refunded after you were paid for it, the difference comes off your next payout.</p></details>
+      <details class="reveal"><summary>When and how you’re paid</summary><p>Each earning is held {{refHoldDays}} days, then it’s ready. We pay what’s ready once a month, as account credit or cash, whichever you chose. Credit has no minimum; cash starts at ${{refMinCash}}. Before your first cash payout we need a W-9 from you, and cash payouts may be reported to the IRS on a Form 1099 as the law requires. You’re responsible for any taxes on what you earn. Credit can’t be turned into cash later, and it doesn’t expire while you’re a client.</p></details>
+      <details class="reveal"><summary>How to share it</summary><p>Be honest. Only say things about us that are true, use the prices on our website, and don’t promise results we don’t promise. When you post your link where others can see it (social media, a blog, a video), say clearly that you earn a commission, for example “I get a referral bonus if you sign up through my link.” That’s the law (FTC rules on endorsements), and it’s fair.</p></details>
+      <details class="reveal"><summary>What’s not allowed</summary><p>No spam: don’t send bulk or cold email, texts or direct messages with your link, and don’t buy lists. Don’t run paid search ads on our name. Don’t pretend to work for us or make deals on our behalf; you’re not our employee or agent. Don’t post fake reviews. Referrals that break these rules don’t earn anything, and we can close the account.</p></details>
+      <details class="reveal"><summary>Changes and ending</summary><p>We may change or end the program, or close an account that breaks the rules, by emailing you. Changes don’t affect what you’ve already earned under the old terms, and earnings from clients you referred before an ending are still paid out on schedule. You can leave any time by emailing <a class="link" href="mailto:{{email}}">{{email}}</a>.</p></details>
+      <details class="reveal"><summary>Privacy</summary><p>Your referrals page shows each business you referred, whether they became a client, and what you earned. It doesn’t show what they bought or their contact details. See our <a class="link" href="privacy.html#referrals">privacy policy</a>.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding:40px 24px">
+  <div class="cta-band reveal"><div><h2>Already signed up?</h2><p>Get a sign-in link to see your referrals, earnings and payouts.</p></div><div class="cta-row"><a href="{{crm}}/refer.php" class="btn btn-ink">See my referrals {{arrow}}</a></div></div>
+</section>

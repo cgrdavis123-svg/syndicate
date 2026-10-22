@@ -22,6 +22,8 @@ require_once __DIR__ . '/app/ads.php';
 try { $ads = ads_cron(); } catch (Throwable $e) { $ads = 'Ads jobs failed: ' . $e->getMessage(); }
 require_once __DIR__ . '/app/outreach.php';
 try { $out = outreach_cron(); if ($out) $ads = trim($ads . ' · ' . $out, ' ·'); } catch (Throwable $e) { $ads = trim($ads . ' · Outreach failed: ' . $e->getMessage(), ' ·'); }
+require_once __DIR__ . '/app/referrals.php';
+try { $refs = ref_cron(); if ($refs) $ads = trim($ads . ' · ' . $refs, ' ·'); } catch (Throwable $e) { $ads = trim($ads . ' · Referrals failed: ' . $e->getMessage(), ' ·'); }
 require_once __DIR__ . '/app/digest.php';
 try { $dig = pipeline_digest_send(); if ($dig) $ads = trim($ads . ' · ' . $dig, ' ·'); } catch (Throwable $e) { $ads = trim($ads . ' · Weekly summary failed: ' . $e->getMessage(), ' ·'); }
 echo date('Y-m-d H:i') . ' · ' . $sync['message'] . ' · ' . (recurring_message($rec) ?: 'No recurring invoices due.') . ' · ' . $mail['new'] . ' new email(s)' . ($mail['errors'] ? ' · Mail errors: ' . implode('; ', $mail['errors']) : '') . ($reports ? " · $reports website report(s) emailed" : '') . ($store ? " · $store" : '') . ($care ? " · $care" : '') . ($ads ? " · $ads" : '') . "\n";
