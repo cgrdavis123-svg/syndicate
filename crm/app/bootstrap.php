@@ -60,7 +60,7 @@ const CARE_TIERS = ['care-plan' => ['name' => 'Care plan', 'minutes' => 60, 'rep
 const CARE_PLATFORMS = ['wordpress' => 'WordPress', 'shopify' => 'Shopify', 'squarespace' => 'Squarespace', 'wix' => 'Wix', 'webflow' => 'Webflow', 'custom' => 'Hand-built or other', 'unsure' => 'Not sure'];
 const CARE_HOSTED = ['shopify', 'squarespace', 'wix', 'webflow'];
 const AD_PLANS_SKUS = ['ads-one' => 1, 'ads-two' => 2, 'ads-all' => 3];
-const SOURCES = ['Website', 'Website — consultation', 'Website — order', 'Marketing site', 'Marketing site — order', 'Marketing site — checkout','Referral', 'TikTok', 'Instagram', 'LinkedIn', 'Email', 'Event', 'Cold outreach', 'Existing client', 'Other'];
+const SOURCES = ['Website', 'Website — consultation', 'Website — order', 'Marketing site', 'Marketing site — order', 'Marketing site — checkout', 'Marketing site — checkup', 'Referral', 'TikTok', 'Instagram', 'LinkedIn', 'Email', 'Event', 'Cold outreach', 'Existing client', 'Other'];
 
 /* ---------- Output helpers ---------- */
 function e($s): string { return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
@@ -580,6 +580,17 @@ function migrate(PDO $pdo): void {
             INSERT OR IGNORE INTO settings (key, value) VALUES ('ref_on', '1'), ('ref_rate', '5'), ('ref_months', '12'), ('ref_hold_days', '30'), ('ref_min_cash', '25'), ('ref_task_month', '');
         ");
         $pdo->exec('PRAGMA user_version = 24');
+    }
+    if ($v < 25) {
+        // v25: free website checkups from syndicatemarketing.co/checkup.html (app/checkup.php)
+        $pdo->exec("
+            CREATE TABLE checkups (id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT NOT NULL UNIQUE, host TEXT NOT NULL, url TEXT NOT NULL DEFAULT '',
+                via TEXT NOT NULL DEFAULT 'site', label TEXT NOT NULL DEFAULT '', score INTEGER, result TEXT NOT NULL DEFAULT '', psi TEXT NOT NULL DEFAULT '',
+                psi_started INTEGER, contact_id INTEGER REFERENCES contacts(id) ON DELETE SET NULL, deal_id INTEGER REFERENCES deals(id) ON DELETE SET NULL,
+                views INTEGER NOT NULL DEFAULT 0, viewed_at INTEGER, seen_at TEXT, created_at INTEGER NOT NULL);
+            CREATE INDEX idx_checkups_host ON checkups(host, created_at);
+        ");
+        $pdo->exec('PRAGMA user_version = 25');
     }
 }
 function migrate_v1(PDO $pdo): void {

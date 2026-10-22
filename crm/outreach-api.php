@@ -5,6 +5,7 @@
 //   POST ?a=add       {batch, prospects: [{business, email, contact_name, website, city, niche, notes, best_fit, sku, priority, subject, body, followup1, followup2}]}
 //   GET  ?a=pending                    replies waiting for the agent, with the conversation so far
 //   POST ?a=respond   {id, action: reply|interested|decline|handoff|resume, body, note}
+//   POST ?a=checkup   {url, business}  free website checkup → report link, score and findings to mention in the email
 require __DIR__ . '/app/bootstrap.php';
 require __DIR__ . '/app/outreach.php';
 header('Content-Type: application/json; charset=utf-8');
@@ -41,5 +42,16 @@ if ($a === 'pending') out_reply(200, ['ok' => true, 'pending' => out_pending()])
 if ($a === 'respond' && is_post()) {
     $r = out_respond((int)($in['id'] ?? 0), (string)($in['action'] ?? ''), (string)($in['body'] ?? ''), (string)($in['note'] ?? ''));
     out_reply($r['ok'] ? 200 : 400, $r);
+}
+if ($a === 'checkup' && is_post()) {
+    require_once __DIR__ . '/app/checkup.php';
+    if (too_many('checkup_agent', 60, 1440)) out_reply(429, ['ok' => false, 'error' => 'The agent has run 60 checkups today. Try again tomorrow.']);
+    record_attempt('checkup_agent');
+    $r = ck_run((string)($in['url'] ?? ''), 'agent', (string)($in['business'] ?? ''));
+    if (!$r['ok']) out_reply(422, $r);
+    $pub = ck_public(ck_row($r['token']));
+    out_reply(200, ['ok' => true, 'report_url' => ck_report_url(ck_row($r['token'])), 'host' => $pub['host'], 'score' => $pub['score'], 'platform' => $pub['platform'],
+        'findings' => array_map(function ($x) { return ['level' => $x['level'], 'area' => $x['area'], 'title' => $x['title']]; }, $pub['findings']), 'fixes' => array_column($pub['fixes'], 'sku'),
+        'note' => 'The report link works as is; add &utm_source=outreach if you like. Mention one or two real findings, never the score alone, and never claim more than the report says.']);
 }
 out_reply(404, ['ok' => false, 'error' => 'Unknown action.']);

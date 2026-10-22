@@ -119,6 +119,10 @@ Monthly plans renew through Stripe; each renewal becomes a paid invoice here. If
 
 **Products:** Store → Products. Change prices, descriptions, what's included, project steps and timelines. The website shows changes within a minute; no rebuild needed. Hide a product to stop selling it.
 
+## Free website checkup
+
+`syndicatemarketing.co/checkup.html` lets anyone check a website's home page: security, Google basics, phone speed (Google PageSpeed), broken links, visitor tracking and the domain renewal date, in plain English, with the products that fix each problem. It only fetches public addresses (private and internal networks are refused, DNS is pinned, redirects are re-checked) and never probes for private files. Anyone who asks for the report by email becomes a deal with source “Marketing site — checkup”. All reports, their scores and views are in **Checkups**, where you can also run one by hand. The outreach agent can run one too (`outreach-api.php?a=checkup`) and link it in a first email; you get a task when the prospect opens it. Code: `app/checkup.php`.
+
 ## Quotes and proposals
 
 For work that doesn't fit a store package. **Quotes → + New quote** (or **Create quote** on a deal).

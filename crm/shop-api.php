@@ -7,6 +7,8 @@
 //   GET  shop-api.php?a=resume&ref=…&k=…           an unpaid order, to finish it from the reminder email
 //   POST shop-api.php?a=lead      {name, email, business, topic, message}  contact form
 //   POST shop-api.php?a=refer     {name, email, business, payout, payout_details, agree}  referral program sign-up
+//   POST shop-api.php?a=checkup   {url}  free website checkup → {token}; GET a=checkup-report&r=… the report
+//   POST shop-api.php?a=checkup-speed {r}  runs the phone speed test for a report (slow); POST a=checkup-lead {r, name, email, business} emails it
 require __DIR__ . '/app/bootstrap.php';
 require __DIR__ . '/app/shop.php';
 header('Content-Type: application/json; charset=utf-8');
@@ -46,6 +48,14 @@ if ($a === 'order') {
         'portal' => abs_url('portal-login.php')]);
 }
 
+if ($a === 'checkup-report') {
+    require __DIR__ . '/app/checkup.php';
+    $row = ck_row(get('r'));
+    if (!$row) reply(404, ['ok' => false, 'error' => 'This report has expired or the link is wrong. Run a new checkup below.']);
+    if (get('nv') !== '1') ck_viewed($row);
+    reply(200, ck_public($row));
+}
+
 if ($a === 'resume') {
     $o = one('SELECT * FROM orders WHERE ref = ?', [get('ref')]);
     if (!$o || !hash_equals($o['access_key'], get('k'))) reply(404, ['ok' => false, 'error' => 'Order not found.']);
@@ -78,6 +88,28 @@ if ($a === 'refer') {
     if (too_many('refer', 5, 60)) reply(429, ['ok' => false, 'error' => 'Too many tries. Please wait a little, or email ' . setting('business_email') . '.']);
     record_attempt('refer');
     $r = ref_signup($in);
+    reply($r['ok'] ? 200 : 422, $r);
+}
+if ($a === 'checkup' || $a === 'checkup-speed' || $a === 'checkup-lead') require __DIR__ . '/app/checkup.php';
+if ($a === 'checkup') {
+    if (!captcha_ok((string)($in['cf-turnstile-response'] ?? ''))) reply(422, ['ok' => false, 'error' => CAPTCHA_FAIL, 'captcha' => true]);
+    if (too_many('checkup', 8, 60)) reply(429, ['ok' => false, 'error' => 'That’s a lot of checkups in a short time. Please wait a little and try again.']);
+    record_attempt('checkup');
+    $r = ck_run((string)($in['url'] ?? ''), 'site');
+    reply($r['ok'] ? 200 : 422, $r);
+}
+if ($a === 'checkup-speed') {
+    $row = ck_row((string)($in['r'] ?? ''));
+    if (!$row) reply(404, ['ok' => false, 'error' => 'Report not found.']);
+    if (too_many('checkup_speed', 12, 60)) reply(429, ['ok' => false, 'error' => 'Too many speed tests. Please wait a little.']);
+    record_attempt('checkup_speed');
+    reply(200, ck_public(ck_speed($row)));
+}
+if ($a === 'checkup-lead') {
+    if (!captcha_ok((string)($in['cf-turnstile-response'] ?? ''))) reply(422, ['ok' => false, 'error' => CAPTCHA_FAIL, 'captcha' => true]);
+    if (too_many('checkup_lead', 6, 60)) reply(429, ['ok' => false, 'error' => 'Too many tries. Please wait a little, or email ' . setting('business_email') . '.']);
+    record_attempt('checkup_lead');
+    $r = ck_lead($in);
     reply($r['ok'] ? 200 : 422, $r);
 }
 reply(400, ['ok' => false, 'error' => 'Unknown request.']);

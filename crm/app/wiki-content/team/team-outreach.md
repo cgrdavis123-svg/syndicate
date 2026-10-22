@@ -14,6 +14,12 @@ The work is split so each part is done by whatever does it reliably:
 - **The agent** (a scheduled task) researches prospects, writes the emails, and reads replies. It talks to the CRM through `outreach-api.php` with the key from CRM → Outreach.
 - **The CRM** does everything with fixed rules: sends on weekdays 9 AM–5 PM, spaces sends through the day, follows up 4 and 10 business days after the first email, stops the moment someone replies, records bounces and opt-outs, and keeps the do-not-contact list.
 
+## The free checkup in emails
+
+The agent can run the [free website checkup](https://syndicatemarketing.co/checkup.html) on a prospect’s site first (`outreach-api.php?a=checkup` with `url` and `business`). It gets back the report link, the score and each finding, so the first email can mention one or two real things on their site and link the report instead of a generic pitch. The report is the same one anyone can run, so it never claims more than the page shows.
+
+When someone opens a report the agent sent, the CRM adds a task (“… opened the website checkup we sent”), since that’s a good moment to reply. Every report is listed in CRM → Checkups with its views.
+
 ## The rules it can’t break
 
 - Every email has your name, the business postal address, a “reply no thanks” line and an unsubscribe link, plus the unsubscribe header mail apps use for their one-click button.

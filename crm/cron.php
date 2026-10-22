@@ -24,6 +24,8 @@ require_once __DIR__ . '/app/outreach.php';
 try { $out = outreach_cron(); if ($out) $ads = trim($ads . ' · ' . $out, ' ·'); } catch (Throwable $e) { $ads = trim($ads . ' · Outreach failed: ' . $e->getMessage(), ' ·'); }
 require_once __DIR__ . '/app/referrals.php';
 try { $refs = ref_cron(); if ($refs) $ads = trim($ads . ' · ' . $refs, ' ·'); } catch (Throwable $e) { $ads = trim($ads . ' · Referrals failed: ' . $e->getMessage(), ' ·'); }
+require_once __DIR__ . '/app/checkup.php';
+try { ck_cleanup(); } catch (Throwable $e) { $ads = trim($ads . ' · Checkup cleanup failed: ' . $e->getMessage(), ' ·'); }
 require_once __DIR__ . '/app/backup.php';
 try { $bk = backup_run(); if ($bk) $ads = trim($ads . ' · ' . $bk, ' ·'); } catch (Throwable $e) { $ads = trim($ads . ' · ' . backup_failed($e->getMessage()), ' ·'); }
 require_once __DIR__ . '/app/digest.php';

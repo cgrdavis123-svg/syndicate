@@ -1,0 +1,63 @@
+<!-- {
+  "title": "Free website checkup — security, Google, speed and broken links — Syndicate Marketing",
+  "description": "Type in your website and get a plain-English report in about a minute: security, what Google sees, phone speed, broken links, visitor tracking and renewal dates. Free, no sign-up.",
+  "styles": ["checkup.css"],
+  "scripts": ["checkup.js"]
+} -->
+
+<section class="page-hero ck-hero">
+  <div class="wrap">
+    <div class="crumbs reveal"><a href="./">Home</a><span>/</span><span>Free website checkup</span></div>
+    <h1 class="reveal d1">Free website checkup. <span class="serif hl">In about a minute.</span></h1>
+    <p class="lede reveal d2">Type in your website and we’ll look at your home page the way Google and your visitors do: security, search basics, phone speed, broken links, visitor tracking and renewal dates. You get a plain-English report with what to fix. No sign-up.</p>
+    <form class="ck-form reveal d3" id="ckForm" novalidate>
+      <label class="ck-url"><span class="sr">Your website address</span><input name="url" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="yourbusiness.com" required maxlength="300"></label>
+      <button type="submit" class="btn btn-ink">Check my site {{arrow}}</button>
+      <div class="hp" aria-hidden="true"><label>Leave this empty <input name="website_url" tabindex="-1" autocomplete="off"></label></div>
+      <div class="ck-captcha">{{captcha}}</div>
+      <p class="fine">We only read public pages, like a visitor would. Nothing is installed or changed on your site.</p>
+      <div class="alert bad" id="ckAlert" role="alert" hidden></div>
+    </form>
+  </div>
+</section>
+
+<section class="section tight" id="ckWorking" hidden aria-live="polite">
+  <div class="wrap">
+    <div class="ck-working">
+      <div class="ck-spin" aria-hidden="true"></div>
+      <div><b>Checking <span data-ck-host></span>…</b>
+        <ol class="ck-steps"><li>Loading your home page</li><li>Checking security and the certificate</li><li>Reading what Google sees</li><li>Testing your links</li><li>Looking up renewal dates</li></ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section tight" id="ckReport" hidden data-book="{{bookDiscovery}}" tabindex="-1" aria-labelledby="ckTitle"></section>
+
+<section class="section tight" id="ckAbout">
+  <div class="wrap">
+    <div class="sec-head"><div><span class="eyebrow reveal"><span class="dot"></span>What we check</span><h2 class="reveal d1">The basics that quietly <span class="serif">cost you customers.</span></h2></div></div>
+    <div class="ck-areas">
+      <div class="reveal"><b>Security</b><span>A secure connection on every visit, a certificate that isn’t about to run out, browser safety settings and insecure images or scripts.</span></div>
+      <div class="reveal d1"><b>Google &amp; search</b><span>Whether Google is allowed to list you, your title and description, main heading, sitemap, business details and the picture shown when someone shares your link.</span></div>
+      <div class="reveal d2"><b>Phones &amp; speed</b><span>Whether the page is set up for phones, how fast it arrives, Google’s own phone speed test, and image descriptions for screen readers.</span></div>
+      <div class="reveal"><b>Leads &amp; tracking</b><span>An easy way to get in touch from the home page, and whether anything is counting your visitors.</span></div>
+      <div class="reveal d1"><b>Links</b><span>Up to 40 links from your home page to your own pages, so you know if any lead nowhere.</span></div>
+      <div class="reveal d2"><b>Renewals</b><span>When your domain is paid up to. If it lapses, your website and email stop working.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section tight">
+  <div class="wrap">
+    <div class="sec-head"><div><span class="eyebrow reveal"><span class="dot"></span>Questions</span><h2 class="reveal d1">Good to know.</h2></div></div>
+    <div class="faq">
+      <details class="reveal"><summary>Is it really free?</summary><p>Yes. There’s no sign-up and no card. If you’d like the report by email, you can leave your name and email under it, and we may follow up once to see if you want help. Every fix the report suggests has a fixed, published price, and plenty of them you can do yourself.</p></details>
+      <details class="reveal"><summary>What does it not check?</summary><p>It’s automated and looks at your home page only. It can’t judge your design, your writing or how well the site sells, and it doesn’t log in or look for private files. For a person to go through the whole site with you, the <a class="link" href="pricing.html#services">website &amp; SEO audit</a> is {{price:svc-site-audit}} and comes with a recorded walkthrough and a written plan.</p></details>
+      <details class="reveal"><summary>Will it slow down or break my site?</summary><p>No. It loads your home page, a couple of standard files (robots.txt and sitemap.xml) and up to 40 of your links, once. That’s less than a few visitors browsing.</p></details>
+      <details class="reveal"><summary>Can I check a site that isn’t mine?</summary><p>You can check any public website, the same way anyone can visit it. The report only shows what any visitor or search engine can already see.</p></details>
+      <details class="reveal"><summary>Who can see my report?</summary><p>Anyone with the report’s link, so share it with your web person if you like. We keep reports for six months unless you ask for yours by email. Reports don’t include your name or email. More in our <a class="link" href="privacy.html#checkup">privacy policy</a>.</p></details>
+      <details class="reveal"><summary>What’s the score?</summary><p>It’s worked out from the checks in the report: each one that passes counts fully, a warning counts half and a problem counts nothing, and the most serious ones (like Google being blocked or no secure connection) count double. It’s a quick way to see progress, not a grade on your business.</p></details>
+    </div>
+  </div>
+</section>

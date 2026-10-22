@@ -11,6 +11,7 @@ $counts = $user ? [
     'bookings' => (int)val("SELECT COUNT(*) FROM bookings WHERE status = 'confirmed' AND seen_at IS NULL"),
     'outreach' => (int)val("SELECT COUNT(*) FROM outreach_prospects WHERE status = 'needs_you'"),
     'referrals' => (int)val("SELECT COUNT(*) FROM referrers WHERE created_at > ?", [date('Y-m-d H:i:s', time() - 3 * 86400)]),
+    'checkups' => (int)val("SELECT COUNT(*) FROM checkups WHERE contact_id IS NOT NULL AND seen_at IS NULL"),
     'care' => (int)val("SELECT COUNT(*) FROM sites WHERE monitor = 1 AND status = 'down'") + (int)val("SELECT COUNT(*) FROM care_requests WHERE status = 'open'"),
 ] : [];
 $mailDue = !defined('ADS_APP') && !defined('WIKI_APP') && $user && val('SELECT 1 FROM mailboxes LIMIT 1') && (setting('mail_last_sync') === '' || strtotime(setting('mail_last_sync')) < time() - 120);
@@ -22,6 +23,7 @@ $nav = [
     'outreach' => ['outreach.php', 'Outreach', '<path d="M2.5 9.5 17 3l-4 14-3.5-5.5z"/><path d="M9.5 11.5 17 3"/>', $counts['outreach'] ?? 0],
     'store' => ['store.php', 'Store', '<path d="M3.5 7.5h13l-1 9.5h-11z"/><path d="M7 7.5V6a3 3 0 0 1 6 0v1.5"/>', $counts['store'] ?? 0],
     'care' => ['care.php', 'Care', '<path d="M10 17s-6.5-3.8-6.5-8.6A3.6 3.6 0 0 1 10 6.2a3.6 3.6 0 0 1 6.5 2.2C16.5 13.2 10 17 10 17z"/><path d="M5.5 10h2l1.2-2 2 4 1.3-2h2.5"/>', $counts['care'] ?? 0],
+    'checkups' => ['checkups.php', 'Checkups', '<circle cx="9" cy="9" r="5.5"/><path d="m13 13 4 4M6.8 9.2l1.6 1.6 3-3.3"/>', $counts['checkups'] ?? 0],
     'wiki' => [wiki_url('team.php'), 'Wiki ↗', '<path d="M4 3.5h9l3 3v10H4z"/><path d="M13 3.5v3h3M7 10h6M7 13h4"/>'],
     'ads' => [ads_url(), 'Ads ↗', '<path d="M3 8v4l9 4V4zM12 6.5h2.5a2.5 2.5 0 0 1 0 5H12M5 12l1 5h2"/>'],
     'analytics' => ['analytics.php', 'Site stats', '<path d="M3 17h14"/><path d="M5 14V9M9 14V5M13 14v-3M17 14V7"/>'],
