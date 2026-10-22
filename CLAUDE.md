@@ -159,7 +159,7 @@ These apply to every change, every page and every email.
 │   ├── a.js, t.php            ← Site Stats tracker + collector
 │   ├── ads/                   ← ads.stusyn.com (document root of that subdomain; see “Ads management”)
 │   ├── wiki/                  ← wiki.stusyn.com (document root; see “Help center & wiki”)
-│   ├── app/                   ← bootstrap.php (DB + migrations + helpers), catalog.json,
+│   ├── app/                   ← bootstrap.php (DB + migrations + helpers), catalog.json, backup.php,
 │   │                            shop.php, quotes.php, booking.php, portal.php, analytics*.php,
 │   │                            imap.php, smtp.php, mail.php, mime.php, ics.php, mmdb.php,
 │   │                            invoice-doc.php, recurring.php, partials.php, views/
@@ -779,8 +779,9 @@ Each run:
 9. `care_cron()`: uptime checks every run; SSL daily; domain, security scan and PageSpeed weekly; backup-due, Care Plus tune-up and review-call tasks; monthly care reports on days 1–5
 10. `ads_cron()`: monthly ads report notes tasks and emails (days 1–5), one approval reminder after 2 days
 11. `outreach_cron()` (`app/outreach.php`): reads replies, bounces and opt-outs in the outreach mailbox, then sends what's due (weekdays 9–5, within the warm-up limit)
-12. `ref_cron()` (`app/referrals.php`): records referral earnings from new paid invoices, releases 30-day holds, and on days 1–5 adds one “Pay referral earnings” task
-13. `pipeline_digest_send()` (`app/digest.php`): the **weekly summary**, emailed to `shop_notify` once a week on Monday from 7 AM (setting `digest_week` stops repeats). It lists tasks due or overdue, open deals with no activity in 14+ days, quotes waiting on the client (flags those expiring within 7 days), overdue invoices, unpaid checkouts from the last 7 days, calls booked this week, and the last 7 days in numbers (new leads, deals won, money in, visitors to the two campaign pages). Also includes outreach (conversations waiting on Grady, and the week's sends, replies and bounces). Sent on demand from the dashboard (“Email me this week’s summary”) or `php app/cli.php digest [send]` (without `send` it just prints).
+12. `backup_run()` (`app/backup.php`): once a day after 2 AM, the **nightly backup** (see “Backups” in §17)
+13. `ref_cron()` (`app/referrals.php`): records referral earnings from new paid invoices, releases 30-day holds, and on days 1–5 adds one “Pay referral earnings” task
+14. `pipeline_digest_send()` (`app/digest.php`): the **weekly summary**, emailed to `shop_notify` once a week on Monday from 7 AM (setting `digest_week` stops repeats). It lists tasks due or overdue, open deals with no activity in 14+ days, quotes waiting on the client (flags those expiring within 7 days), overdue invoices, unpaid checkouts from the last 7 days, calls booked this week, and the last 7 days in numbers (new leads, deals won, money in, visitors to the two campaign pages). Also includes outreach (conversations waiting on Grady, and the week's sends, replies and bounces). Sent on demand from the dashboard (“Email me this week’s summary”) or `php app/cli.php digest [send]` (without `send` it just prints).
 
 It prints a one-line summary (cPanel can email it to you; set the cron email to blank to silence it).
 
@@ -825,8 +826,11 @@ Separate file so heavy analytics writes never slow down the CRM.
 `admins`, `jobs`, `applications`, `messages`, `attempts`. Resumes in `storage/resumes/`. Schema version v3 (v2: two-step sign-in columns on `admins`; v3: the Commissioned Sales Rep job).
 
 ### Backups
-- Download `crm/storage/` (especially `crm.sqlite`, `analytics.sqlite`, `mail.key`, `portal/`) and the main site's `storage/` regularly (cPanel → Backup, or File Manager → Compress).
-- Use the SQLite connection with WAL-safe copies (copy the `-wal` file too, or copy while idle).
+- **Nightly, automatic** (`app/backup.php`, from cron after 2 AM, once a day): `crm.sqlite`, `analytics.sqlite`, `mail.key`, `totp.key`, the stusyn.com database (`site_db_path()`) and its `totp.key` go into `crm/storage/backups/YYYY-MM-DD/` with a `manifest.json` (sizes, SHA-256). Databases are copied with `VACUUM INTO` (WAL-safe; falls back to copy + `-wal` on old SQLite) and must pass `PRAGMA integrity_check`. Built in a temp folder and swapped in, so a failed run never replaces a good one. Keeps `BACKUP_KEEP` (14) days; checks free disk space first.
+- **Alerts:** a failure emails `shop_notify` and adds a task, at most once a day (`backup_alerted`); a “working again” email follows the next good run; the dashboard warns when the last good backup (`backup_ok_at`) is over 2 days old. Settings: `backup_last`, `backup_ok_at`, `backup_status` (`ok` or the reason), `backup_size`.
+- **Controls:** Settings → Nightly backups (status, **Back up now**, owner-only **Download latest backup** as a zip after re-entering the password); `php app/cli.php backup` on the server.
+- Not included (can be large): `portal/`, `ads/` creatives, `mail/`, resumes. **The nightly copies live on the same server**, so also download the latest backup and take a cPanel → Backup off the server regularly.
+- Restore steps are in the Team article `team-keys-and-backups`.
 
 ---
 
@@ -1019,10 +1023,10 @@ All setup items below were done by October 18, 2026, except the ones still open.
 - [ ] Optional: convert the TikTok account to a Business account and decide whether to apply for the Content Posting API later
 
 **Ideas we've discussed but not built** (don't build without a go-ahead)
-- Two-way Google Calendar sync for booking, and automatic CRM backups (started, then cancelled)
+- Two-way Google Calendar sync for booking
 - Review requests after project completion (only real reviews, never seeded)
-- Abandoned-cart follow-up email
-- Monthly ads report automation in the portal
+
+(Automatic CRM backups were built October 22, 2026. The abandoned-cart email and monthly ads reports already exist: `shop_remind_abandoned()` and `ads_cron()`.)
 
 ---
 

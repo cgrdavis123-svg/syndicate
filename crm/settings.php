@@ -76,6 +76,17 @@ if (is_post()) {
         }
     }
     if ($a === 'profile') { if (mb_strlen(post('name')) >= 2) { q('UPDATE users SET name = ? WHERE id = ?', [post('name'), $user['id']]); flash('Name updated.'); } redirect('settings.php'); }
+    if ($a === 'backup_now') {
+        require_once __DIR__ . '/app/backup.php';
+        $r = backup_run(true); flash($r . '.'); redirect('settings.php#backups');
+    }
+    if ($a === 'backup_get') { // the nightly backup holds the keys too, so owners only, with their password
+        require_owner($user);
+        if (!password_verify(post('current'), (string)val('SELECT password_hash FROM users WHERE id = ?', [$user['id']]))) { flash('That password isn\'t right.'); redirect('settings.php#backups'); }
+        require_once __DIR__ . '/app/backup.php';
+        error_log('CRM backup downloaded by ' . $user['email']);
+        backup_download();
+    }
     if ($a === 'backup') {
         $file = STORAGE . '/backups/crm-' . date('Y-m-d-His') . '.sqlite';
         try { db()->exec('VACUUM INTO ' . db()->quote($file)); } catch (Throwable $ex) { copy(STORAGE . '/crm.sqlite', $file); }
@@ -189,6 +200,16 @@ layout_top('Settings', 'settings', $user);
     <section class="card"><div class="card-h"><h2>Your data</h2></div>
       <div class="row wrap"><a class="btn ghost xs" href="export.php?type=contacts">Contacts CSV</a><a class="btn ghost xs" href="export.php?type=companies">Companies CSV</a><a class="btn ghost xs" href="export.php?type=deals">Deals CSV</a><a class="btn ghost xs" href="export.php?type=consultations">Consultations CSV</a><a class="btn ghost xs" href="export.php?type=invoices">Invoices CSV</a></div>
       <form method="post" style="margin-top:12px"><?= csrf_field() ?><input type="hidden" name="action" value="backup"><button class="btn ghost sm" type="submit">Download full backup</button><p class="muted small">A copy of the whole CRM database. Keep it somewhere safe; it includes client details.</p></form>
+    </section>
+    <?php require_once __DIR__ . '/app/backup.php'; $bkOk = setting('backup_ok_at'); $bkStatus = setting('backup_status'); $bkDays = count(backup_list()); ?>
+    <section class="card" id="backups"><div class="card-h"><h2>Nightly backups</h2></div>
+      <p class="small"><?php if ($bkStatus !== '' && $bkStatus !== 'ok'): ?><span class="tag red">Failing</span> <?= e($bkStatus) ?>.<?php elseif ($bkOk !== ''): ?><span class="tag lime">Working</span> Last backup <?= e(date('M j, g:i A', strtotime($bkOk))) ?> (<?= e(fmt_bytes((int)setting('backup_size'))) ?>).<?php else: ?>The first backup runs tonight after <?= BACKUP_HOUR ?> AM.<?php endif; ?>
+        <?= $bkDays ?> of the last <?= BACKUP_KEEP ?> days kept.</p>
+      <p class="muted small">Every night the CRM copies its databases, the stusyn.com database and the keys that unlock saved passwords and two-step sign-in into <code>storage/backups/</code>. If one fails you get an email and a task. These copies live on the same server, so download one now and then and keep it somewhere safe and private: it holds client details and the keys.</p>
+      <div class="row wrap" style="gap:10px">
+        <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="backup_now"><button class="btn ghost sm" type="submit">Back up now</button></form>
+        <?php if ($bkDays && ($user['role'] ?? '') === 'owner'): ?><form method="post" class="row" style="gap:8px;flex-wrap:wrap"><?= csrf_field() ?><input type="hidden" name="action" value="backup_get"><input name="current" type="password" placeholder="Your password" aria-label="Your password" required autocomplete="current-password"><button class="btn ghost sm" type="submit">Download latest backup</button></form><?php endif; ?>
+      </div>
     </section>
   </div>
 </div>

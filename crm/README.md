@@ -196,7 +196,9 @@ Read and answer your @stusyn.com email in the CRM, next to each client's history
 ## Your data
 
 - Everything lives in `storage/crm.sqlite`, which is blocked from the web.
-- **Settings → Download full backup** gives you a copy of the database. Download one regularly and keep it somewhere safe, because it contains client details.
+- **Nightly backups** (cron, after 2 AM): the CRM and Site Stats databases, the stusyn.com database, `mail.key` and `totp.key` go into `storage/backups/YYYY-MM-DD/` (checked copies, last 14 days kept). A failure emails you and adds a task; the dashboard warns after 2 days without one. **Settings → Nightly backups** shows the status, runs one now, and lets an owner download the latest as a zip. `php app/cli.php backup` runs one from the server.
+- These stay on the same server, so download one regularly and keep it somewhere safe: it contains client details and the keys.
+- **Settings → Download full backup** still gives a one-off copy of just the database.
 - CSV exports of contacts, companies, deals, consultations and invoices are under **Settings**.
 - Invoices print cleanly to PDF from your browser with **Print / Save PDF**.
 

@@ -15,4 +15,8 @@ if ($cmd === 'digest') { // php app/cli.php digest   Prints this week's pipeline
     if ($arg === 'send') { echo pipeline_digest_send(true), "\n"; exit(0); }
     $d = pipeline_digest(); echo $d['subject'], "\n\n", $d['body']; exit(0);
 }
-echo "Usage: php app/cli.php 2fa-off you@example.com | digest [send]\n"; exit(1);
+if ($cmd === 'backup') { // php app/cli.php backup   Makes today's backup now (replaces today's if it exists)
+    require __DIR__ . '/backup.php';
+    $r = backup_run(true); echo $r, "\n"; exit(setting('backup_status') === 'ok' ? 0 : 1);
+}
+echo "Usage: php app/cli.php 2fa-off you@example.com | digest [send] | backup\n"; exit(1);
