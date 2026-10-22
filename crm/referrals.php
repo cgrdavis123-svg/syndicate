@@ -49,14 +49,14 @@ layout_top('Referrals', 'referrals', $user);
   <div class="card kpi"><span>Ready to pay</span><b class="num"><?= ref_money($sum('ready')) ?></b><small><?= ref_money($sum('held')) ?> still waiting</small></div>
   <div class="card kpi"><span>Paid out</span><b class="num"><?= ref_money($sum('paid')) ?></b><small>Credit and cash</small></div>
 </div>
-<section class="card"><table class="tbl"><thead><tr><th>Person</th><th>Rate</th><th>Payout</th><th class="r">Clients</th><th class="r">Brought in</th><th class="r">Waiting</th><th class="r">Ready</th><th class="r">Paid</th></tr></thead><tbody>
+<section class="card"><div class="table-wrap"><table class="tbl cards"><thead><tr><th>Person</th><th>Rate</th><th>Payout</th><th class="r">Clients</th><th class="r">Brought in</th><th class="r">Waiting</th><th class="r">Ready</th><th class="r">Paid</th></tr></thead><tbody>
 <?php foreach ($rows as $r): ?>
   <tr><td><a href="referrer.php?id=<?= (int)$r['id'] ?>"><b><?= e($r['name']) ?></b></a><?= $r['kind'] === 'rep' ? ' <span class="tag">Sales rep</span>' : '' ?><?= $r['status'] !== 'active' ? ' <span class="tag">' . e(REF_STATUSES[$r['status']]) . '</span>' : '' ?><br><span class="muted small"><?= e($r['email']) ?> · <span class="mono"><?= e($r['code']) ?></span></span></td>
-    <td class="num"><?= e(ref_pct($r['rate'])) ?></td><td><?= e(REF_PAYOUTS[$r['payout']] ?? $r['payout']) ?><?= $r['payout'] === 'cash' && !(int)$r['w9'] ? '<br><span class="muted small">No W-9 yet</span>' : '' ?></td>
-    <td class="r num"><?= (int)$r['clients'] ?><?= $r['leads'] ? ' <span class="muted small">+' . (int)$r['leads'] . '</span>' : '' ?></td><td class="r num"><?= ref_money($r['brought'], false) ?></td>
-    <td class="r num"><?= ref_money($r['held']) ?></td><td class="r num"><b><?= ref_money($r['ready']) ?></b></td><td class="r num"><?= ref_money($r['paid']) ?></td></tr>
+    <td data-label="Rate" class="num"><?= e(ref_pct($r['rate'])) ?></td><td data-label="Payout"><?= e(REF_PAYOUTS[$r['payout']] ?? $r['payout']) ?><?= $r['payout'] === 'cash' && !(int)$r['w9'] ? '<br><span class="muted small">No W-9 yet</span>' : '' ?></td>
+    <td data-label="Clients" class="r num"><?= (int)$r['clients'] ?><?= $r['leads'] ? ' <span class="muted small">+' . (int)$r['leads'] . '</span>' : '' ?></td><td data-label="Brought in" class="r num"><?= ref_money($r['brought'], false) ?></td>
+    <td data-label="Waiting" class="r num"><?= ref_money($r['held']) ?></td><td data-label="Ready" class="r num"><b><?= ref_money($r['ready']) ?></b></td><td data-label="Paid" class="r num"><?= ref_money($r['paid']) ?></td></tr>
 <?php endforeach; if (!$rows): ?><tr><td colspan="8" class="empty">No one has joined yet. Share the sign-up page with happy clients.</td></tr><?php endif; ?>
-</tbody></table></section>
+</tbody></table></div></section>
 <div class="grid-2">
   <form method="post" class="card form-grid"><?= csrf_field() ?><input type="hidden" name="action" value="add">
     <div class="card-h"><h2>Add someone by hand</h2></div>
@@ -64,12 +64,12 @@ layout_top('Referrals', 'referrals', $user);
     <label class="f"><span>Email</span><input name="email" type="email" required></label>
     <label class="f"><span>Business <small>(optional)</small></span><input name="business"></label>
     <label class="f"><span>Type</span><select name="kind"><option value="referrer">Referrer (<?= e(ref_pct(ref_rate_default())) ?>, credit by default)</option><option value="rep">Commissioned sales rep (10%, cash)</option></select></label>
-    <label class="check"><input type="checkbox" name="invite" value="1" checked> Email them their link and a sign-in link</label>
+    <label class="chk"><input type="checkbox" name="invite" value="1" checked> Email them their link and a sign-in link</label>
     <div><button class="btn primary sm">Add</button></div>
   </form>
   <form method="post" class="card form-grid"><?= csrf_field() ?><input type="hidden" name="action" value="settings">
     <div class="card-h"><h2>Program settings</h2></div>
-    <label class="check"><input type="checkbox" name="ref_on" value="1"<?= ref_on() ? ' checked' : '' ?>> Taking sign-ups and new referrals</label>
+    <label class="chk"><input type="checkbox" name="ref_on" value="1"<?= ref_on() ? ' checked' : '' ?>> Taking sign-ups and new referrals</label>
     <label class="f"><span>Rate for new sign-ups (%)</span><input name="ref_rate" type="number" step="0.5" min="0.5" max="50" value="<?= e(setting('ref_rate')) ?>"></label>
     <label class="f"><span>Months each client earns for</span><input name="ref_months" type="number" min="1" max="60" value="<?= e(setting('ref_months')) ?>"></label>
     <label class="f"><span>Days to hold each earning (refunds)</span><input name="ref_hold_days" type="number" min="0" max="120" value="<?= e(setting('ref_hold_days')) ?>"></label>

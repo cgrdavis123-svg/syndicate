@@ -356,7 +356,18 @@ input[type="date"], input[type="time"] { color-scheme: dark; }
   .quick .btn { padding: 0 12px; }
   .sb { grid-template-columns: 96px 1fr 24px; }
   .sb small { display: none; }
+  /* Tables marked .cards become one card per row on phones, each value under its column name (td data-label).
+     A cell without a label (the name, or an action) takes the full width. */
+  .tbl.cards thead { display: none; }
+  .tbl.cards, .tbl.cards tbody { display: block; width: 100%; }
+  .tbl.cards tr { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .tbl.cards tbody tr:last-child { border-bottom: 0; }
+  .tbl.cards tbody tr:hover { background: none; }
+  .tbl.cards td { display: block; padding: 0; border: 0; text-align: left; min-width: 0; overflow-wrap: anywhere; }
+  .tbl.cards td:not([data-label]) { grid-column: 1 / -1; }
+  .tbl.cards td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 3px; font: 400 10px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--dim); }
 }
+.tbl td.num { white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 
 /* Print: only the invoice, on white */

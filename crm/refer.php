@@ -75,12 +75,12 @@ ref_top('Your referrals', $r);
   <section class="card">
     <div class="card-h"><h2>People you referred</h2></div>
     <?php if (!$refs): ?><p class="empty">No one yet. Share your link with a business that needs a website, ads, care or community management.</p><?php else: ?>
-    <table class="tbl"><thead><tr><th>Business</th><th>Status</th><th class="r">You’ve earned</th></tr></thead><tbody>
+    <div class="table-wrap"><table class="tbl cards"><thead><tr><th>Business</th><th>Status</th><th class="r">You’ve earned</th></tr></thead><tbody>
     <?php foreach ($refs as $f): ?>
       <tr><td><b><?= e($who($f)) ?></b><br><span class="muted small">Since <?= e(fmt_date($f['created_at'])) ?></span></td>
-        <td><?= e(REF_REFERRAL_STATUSES[$f['status']] ?? $f['status']) ?><?php if ($f['status'] === 'client' && $f['ends_at']): ?><br><span class="muted small"><?= $f['ends_at'] > today() ? 'Earning until ' . e(fmt_date($f['ends_at'])) : 'Finished ' . e(fmt_date($f['ends_at'])) ?></span><?php endif; ?></td>
-        <td class="r num"><?= ref_money($f['earned']) ?></td></tr>
-    <?php endforeach; ?></tbody></table><?php endif; ?>
+        <td data-label="Status"><?= e(REF_REFERRAL_STATUSES[$f['status']] ?? $f['status']) ?><?php if ($f['status'] === 'client' && $f['ends_at']): ?><br><span class="muted small"><?= $f['ends_at'] > today() ? 'Earning until ' . e(fmt_date($f['ends_at'])) : 'Finished ' . e(fmt_date($f['ends_at'])) ?></span><?php endif; ?></td>
+        <td data-label="You’ve earned" class="r num"><?= ref_money($f['earned']) ?></td></tr>
+    <?php endforeach; ?></tbody></table></div><?php endif; ?>
   </section>
   <section class="card">
     <div class="card-h"><h2>How you’re paid</h2></div>
@@ -98,17 +98,17 @@ ref_top('Your referrals', $r);
 <section class="card">
   <div class="card-h"><h2>Earnings</h2></div>
   <?php if (!$earn): ?><p class="empty">Nothing yet. When someone you referred pays us, it shows up here.</p><?php else: ?>
-  <table class="tbl"><thead><tr><th>Date</th><th>From</th><th>Status</th><th class="r">Payment</th><th class="r">You earn</th></tr></thead><tbody>
+  <div class="table-wrap"><table class="tbl cards"><thead><tr><th>Date</th><th>From</th><th>Status</th><th class="r">Payment</th><th class="r">You earn</th></tr></thead><tbody>
   <?php foreach ($earn as $x): ?>
-    <tr><td><?= e(fmt_date($x['paid_on'])) ?></td><td><?= e($who($x)) ?><?= $x['note'] !== '' ? '<br><span class="muted small">' . e($x['note']) . '</span>' : '' ?></td>
-      <td><?= e((float)$x['amount'] < 0 && $x['status'] === 'ready' ? 'Comes off the next payout' : (REF_EARN_STATUSES[$x['status']] ?? $x['status'])) ?><?= $x['status'] === 'held' ? '<br><span class="muted small">Ready ' . e(fmt_date($x['ready_on'])) . '</span>' : '' ?></td>
-      <td class="r num"><?= ref_money($x['base']) ?></td><td class="r num"><b><?= ref_money($x['amount']) ?></b></td></tr>
-  <?php endforeach; ?></tbody></table><?php endif; ?>
+    <tr><td data-label="Date"><?= e(fmt_date($x['paid_on'])) ?></td><td data-label="From"><?= e($who($x)) ?><?= $x['note'] !== '' ? '<br><span class="muted small">' . e($x['note']) . '</span>' : '' ?></td>
+      <td data-label="Status"><?= e((float)$x['amount'] < 0 && $x['status'] === 'ready' ? 'Comes off the next payout' : (REF_EARN_STATUSES[$x['status']] ?? $x['status'])) ?><?= $x['status'] === 'held' ? '<br><span class="muted small">Ready ' . e(fmt_date($x['ready_on'])) . '</span>' : '' ?></td>
+      <td data-label="Payment" class="r num"><?= ref_money($x['base']) ?></td><td data-label="You earn" class="r num"><b><?= ref_money($x['amount']) ?></b></td></tr>
+  <?php endforeach; ?></tbody></table></div><?php endif; ?>
 </section>
 <?php if ($pays): ?><section class="card">
   <div class="card-h"><h2>Payouts</h2></div>
-  <table class="tbl"><thead><tr><th>Date</th><th>How</th><th class="r">Amount</th></tr></thead><tbody>
-  <?php foreach ($pays as $p): ?><tr><td><?= e(fmt_date($p['created_at'])) ?></td><td><?= e(REF_PAYOUTS[$p['method']] ?? $p['method']) ?><?= $p['reference'] !== '' ? ' · ' . e($p['reference']) : '' ?></td><td class="r num"><?= ref_money($p['amount']) ?></td></tr><?php endforeach; ?>
-  </tbody></table>
+  <div class="table-wrap"><table class="tbl cards"><thead><tr><th>Date</th><th>How</th><th class="r">Amount</th></tr></thead><tbody>
+  <?php foreach ($pays as $p): ?><tr><td data-label="Date"><?= e(fmt_date($p['created_at'])) ?></td><td data-label="How"><?= e(REF_PAYOUTS[$p['method']] ?? $p['method']) ?><?= $p['reference'] !== '' ? ' · ' . e($p['reference']) : '' ?></td><td data-label="Amount" class="r num"><?= ref_money($p['amount']) ?></td></tr><?php endforeach; ?>
+  </tbody></table></div>
 </section><?php endif; ?>
 <?php ref_bottom();
