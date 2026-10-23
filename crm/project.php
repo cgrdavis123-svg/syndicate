@@ -88,6 +88,11 @@ layout_top($p['name'], 'projects', $user);
   <?php if ($rv['status'] === 'scheduled'): ?><form method="post" action="reviews.php" class="row" style="gap:8px"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int)$rv['id'] ?>"><input type="hidden" name="back" value="project"><input type="hidden" name="project" value="<?= $id ?>"><button class="btn ghost sm" name="action" value="send">Send now</button><button class="link-danger" name="action" value="skip">Don’t ask</button></form><?php endif; ?>
   <a class="muted small" href="reviews.php">Review requests →</a></div>
 <?php elseif ($p['status'] === 'done' && rv_on()): ?><div class="notice">A review request will be scheduled within 15 minutes. <a class="muted small" href="reviews.php">Review requests →</a></div><?php endif; ?>
+<?php require_once __DIR__ . '/app/builds.php'; if ($bd = build_for_project($id)): ?><div class="notice row" style="flex-wrap:wrap;gap:10px"><span class="grow">Website draft: <?= build_pill($bd['status']) ?><?= $bd['version'] ? ' · v' . (int)$bd['version'] : '' ?></span><a class="btn ghost sm" href="build.php?id=<?= (int)$bd['id'] ?>">Open the draft →</a></div>
+<?php elseif ($p['status'] !== 'done'): ?><details class="card"><summary class="small"><b>Have the builder draft this website</b> <span class="muted">(for projects that didn’t come through the store or a quote)</span></summary>
+  <form method="post" action="build.php" class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap"><?= csrf_field() ?><input type="hidden" name="action" value="create"><input type="hidden" name="project" value="<?= $id ?>">
+    <select name="sku" class="w-auto" aria-label="Package"><?php foreach (BUILD_ROUNDS as $sku => $n): ?><option value="<?= e($sku) ?>"><?= e((string)val('SELECT name FROM products WHERE sku = ?', [$sku]) ?: $sku) ?></option><?php endforeach; ?></select>
+    <button class="btn ghost sm">Add a website draft</button></form></details><?php endif; ?>
 <?php if ($errors): ?><div class="notice bad"><?= implode('<br>', array_map('e', $errors)) ?></div><?php endif; ?>
 <div class="grid-detail">
   <div class="stack">

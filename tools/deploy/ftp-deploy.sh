@@ -62,7 +62,7 @@ echo "crm.stusyn.com        → $CRM  (ads and wiki are inside it)"
 # Never upload server-only things, even if one slipped into a build. No --delete: nothing on the server is removed.
 EXCL="--exclude-glob app/config.php --exclude-glob storage/*.sqlite* --exclude-glob storage/*.key --exclude-glob storage/*.log \
   --exclude storage/sessions/ --exclude storage/portal/ --exclude storage/portal-sessions/ --exclude storage/ref-sessions/ --exclude storage/ads/ --exclude storage/demo/ \
-  --exclude storage/mail/ --exclude storage/backups/ --exclude storage/resumes/"
+  --exclude storage/mail/ --exclude storage/builds/ --exclude storage/backups/ --exclude storage/resumes/"
 up() { # up <build folder> <server folder>
   ftp "mirror --reverse --no-perms --parallel=4 $EXCL $(printf %q "$BUILD/$1") $(printf %q "$2")" >/dev/null
   echo "  ✓ $1 → $2 ($(find "$BUILD/$1" -type f | wc -l | tr -d ' ') files)"

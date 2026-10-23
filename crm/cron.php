@@ -26,6 +26,8 @@ require_once __DIR__ . '/app/referrals.php';
 try { $refs = ref_cron(); if ($refs) $ads = trim($ads . ' · ' . $refs, ' ·'); } catch (Throwable $e) { $ads = trim($ads . ' · Referrals failed: ' . $e->getMessage(), ' ·'); }
 require_once __DIR__ . '/app/reviews.php';
 try { $rv = rv_cron(); if ($rv) $ads = trim($ads . ' · ' . $rv, ' ·'); } catch (Throwable $e) { $ads = trim($ads . ' · Review requests failed: ' . $e->getMessage(), ' ·'); }
+require_once __DIR__ . '/app/builds.php';
+try { $bd = builds_cron(); if ($bd) $ads = trim($ads . ' · ' . $bd, ' ·'); } catch (Throwable $e) { $ads = trim($ads . ' · Website drafts failed: ' . $e->getMessage(), ' ·'); }
 require_once __DIR__ . '/app/checkup.php';
 require_once __DIR__ . '/app/previews.php';
 try { pv_cleanup(); } catch (Throwable $e) { $ads = trim($ads . ' · Preview cleanup failed: ' . $e->getMessage(), ' ·'); }

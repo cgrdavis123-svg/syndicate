@@ -178,6 +178,10 @@ function notify_clients(array $p, string $subject, string $body): int {
     return $n;
 }
 
+// Makes the web addresses in our own (already escaped) post text clickable, e.g. a draft preview link.
+function link_urls(string $html): string {
+    return preg_replace_callback('#https?://[^\s<]+#', function ($m) { $u = rtrim($m[0], '.,;:!?)'); return '<a href="' . $u . '" target="_blank" rel="noopener">' . $u . '</a>' . substr($m[0], strlen($u)); }, $html);
+}
 /* ---------- Shared pieces of the project page (you and the client see the same feed) ---------- */
 function project_posts(int $pid): array { return all('SELECT pp.*, c.first_name, c.last_name, c.email FROM project_posts pp LEFT JOIN contacts c ON c.id = pp.contact_id WHERE pp.project_id = ? ORDER BY pp.id DESC LIMIT 300', [$pid]); }
 function project_files(int $pid): array { return all('SELECT f.*, c.first_name, c.last_name, c.email FROM project_files f LEFT JOIN contacts c ON c.id = f.contact_id WHERE f.project_id = ? ORDER BY f.id DESC', [$pid]); }
@@ -215,7 +219,7 @@ function render_project_feed(array $posts, array $files, string $viewer): void {
           <time title="<?= e($pp['created_at']) ?>"><?= e(fmt_date($pp['created_at'], 'M j · g:i a')) ?></time>
           <?php if ($viewer === 'staff'): ?><form method="post" class="inline" data-confirm="Delete this post? The client won’t see it any more."><?= csrf_field() ?><input type="hidden" name="action" value="post_delete"><input type="hidden" name="post" value="<?= (int)$pp['id'] ?>"><button class="x" type="submit" aria-label="Delete post">×</button></form><?php endif; ?>
         </div>
-        <?php if (trim($pp['body']) !== ''): ?><div class="fp-body"><?= nl2br(e($pp['body'])) ?></div><?php endif; ?>
+        <?php if (trim($pp['body']) !== ''): ?><div class="fp-body"><?= $pp['author'] === 'client' ? nl2br(e($pp['body'])) : link_urls(nl2br(e($pp['body']))) ?></div><?php endif; ?>
         <?php if (!empty($byPost[$pp['id']])): ?><div class="mail-atts"><?php foreach ($byPost[$pp['id']] as $f) render_file_chip($f, $viewer); ?></div><?php endif; ?>
         <?php if ($pp['kind'] === 'approval' && $pp['approval'] !== 'pending'): ?>
           <p class="decision"><?= $pp['approval'] === 'approved' ? '✓ Approved' : '↺ Changes requested' ?> by <?= e(person_name(one('SELECT * FROM contacts WHERE id = ?', [(int)$pp['decided_by']]) ?: ['first_name' => 'the client'])) ?> · <?= e(fmt_date($pp['decided_at'], 'M j · g:i a')) ?><?= $pp['decision_note'] !== '' ? '<br><span class="text">“' . nl2br(e($pp['decision_note'])) . '”</span>' : '' ?></p>

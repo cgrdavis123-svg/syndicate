@@ -232,6 +232,8 @@ function quote_fulfil(array $q, ?array $s, string $method = ''): void {
         }
 
         if ($q['contact_id']) portal_enable((int)$q['contact_id'], true);
+        require_once __DIR__ . '/builds.php';
+        build_from_quote($q, $items, $projectId, $companyId ? (int)$companyId : null, $client);
         $skus = array_map(function ($i) { return $i['product_id'] ? (string)val('SELECT sku FROM products WHERE id = ?', [$i['product_id']]) : ''; }, $items);
         $built = (bool)array_filter($items, function ($i) { return $i['product_id'] && val('SELECT category FROM products WHERE id = ?', [$i['product_id']]) === 'website'; });
         foreach ($skus as $sku) if (isset(AD_PLANS_SKUS[$sku]) && $companyId) { require_once __DIR__ . '/ads.php'; ads_enable_for((int)$companyId, -(int)$q['id'], $sku, [], $siteId); }

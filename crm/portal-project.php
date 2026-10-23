@@ -14,6 +14,7 @@ if (is_post()) {
         else {
             q('UPDATE project_posts SET approval = ?, decision_note = ?, decided_by = ?, decided_at = ? WHERE id = ?', [$a === 'approve' ? 'approved' : 'changes', $note, $c['id'], now(), $pp['id']]);
             q('UPDATE projects SET updated_at = ? WHERE id = ?', [now(), $p['id']]);
+            require_once __DIR__ . '/app/builds.php'; build_decided((int)$pp['id'], $a, $note);
             notify_staff($p, $c, $a === 'approve' ? 'approved your request' : 'asked for changes', 'Request: ' . mb_strimwidth($pp['body'], 0, 400, '…') . ($note !== '' ? "\n\nTheir note: " . $note : ''));
             flash($a === 'approve' ? 'Approved. Thank you!' : 'Got it. We’ll make the changes and post an update.');
             redirect($back . '#post' . $pp['id']);

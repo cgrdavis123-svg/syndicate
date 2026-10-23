@@ -39,6 +39,14 @@ function pipeline_digest(): array {
         return $q['number'] . ' · ' . $who($q) . ' · ' . $note . ($exp && $exp <= $week ? ' · EXPIRES ' . date('M j', strtotime($exp)) : '') . "\n    " . $link('quote.php?id=' . $q['id']);
     }, $quotes), null];
 
+    // Website drafts waiting on you, and ones still waiting for a kickoff after a week.
+    require_once __DIR__ . '/builds.php';
+    $drafts = all("SELECT * FROM builds WHERE status IN ('review','blocked') OR (status = 'waiting' AND created_at < ?) OR (status = 'sent' AND updated_at < ?) ORDER BY updated_at LIMIT 12", [time() - 7 * 86400, time() - 5 * 86400]);
+    if ($drafts) $s[] = ['Website drafts', array_map(function ($b) use ($link) {
+        $note = ['review' => 'draft ready for you to review', 'blocked' => 'the builder has a question', 'waiting' => 'no kickoff call yet', 'sent' => 'client hasn’t answered for 5+ days'][$b['status']] ?? $b['status'];
+        return build_who($b) . ' · ' . $note . "\n    " . $link('build.php?id=' . $b['id']);
+    }, $drafts), null];
+
     // Invoices past due.
     $inv = all("SELECT i.*, c.first_name, c.last_name, co.name company FROM invoices i LEFT JOIN contacts c ON c.id = i.contact_id LEFT JOIN companies co ON co.id = i.company_id
         WHERE i.status = 'sent' AND i.due_date < ? ORDER BY i.due_date LIMIT 12", [$today]);

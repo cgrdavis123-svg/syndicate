@@ -631,6 +631,26 @@ function migrate(PDO $pdo): void {
         ");
         $pdo->exec('PRAGMA user_version = 29');
     }
+    if ($v < 30) {
+        // v30: website drafts made by the builder agent (app/builds.php, build-api.php, draft/). One build per website project;
+        // each upload is a version with its own private preview link.
+        $pdo->exec("
+            CREATE TABLE builds (id INTEGER PRIMARY KEY AUTOINCREMENT, project_id INTEGER NOT NULL UNIQUE REFERENCES projects(id) ON DELETE CASCADE,
+                order_id INTEGER, quote_id INTEGER, contact_id INTEGER REFERENCES contacts(id) ON DELETE SET NULL, company_id INTEGER REFERENCES companies(id) ON DELETE SET NULL,
+                sku TEXT NOT NULL DEFAULT '', business TEXT NOT NULL DEFAULT '', brief TEXT NOT NULL DEFAULT '{}', extras TEXT NOT NULL DEFAULT '[]',
+                status TEXT NOT NULL DEFAULT 'waiting', rounds INTEGER NOT NULL DEFAULT 2, rounds_used INTEGER NOT NULL DEFAULT 0,
+                notes TEXT NOT NULL DEFAULT '', publish TEXT NOT NULL DEFAULT '', change_notes TEXT NOT NULL DEFAULT '', question TEXT NOT NULL DEFAULT '',
+                version INTEGER NOT NULL DEFAULT 0, attempts INTEGER NOT NULL DEFAULT 0, claimed_at INTEGER, ready_at INTEGER, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL);
+            CREATE INDEX idx_builds_status ON builds(status);
+            CREATE TABLE build_versions (id INTEGER PRIMARY KEY AUTOINCREMENT, build_id INTEGER NOT NULL REFERENCES builds(id) ON DELETE CASCADE, version INTEGER NOT NULL,
+                token TEXT NOT NULL UNIQUE, status TEXT NOT NULL DEFAULT 'uploading', summary TEXT NOT NULL DEFAULT '', confirm TEXT NOT NULL DEFAULT '[]',
+                files INTEGER NOT NULL DEFAULT 0, bytes INTEGER NOT NULL DEFAULT 0, source TEXT NOT NULL DEFAULT '', post_id INTEGER, created_at INTEGER NOT NULL, done_at INTEGER,
+                UNIQUE (build_id, version));
+            CREATE INDEX idx_build_versions_post ON build_versions(post_id);
+            INSERT OR IGNORE INTO settings (key, value) VALUES ('build_on', '1');
+        ");
+        $pdo->exec('PRAGMA user_version = 30');
+    }
 }
 function migrate_v1(PDO $pdo): void {
     $pdo->exec("

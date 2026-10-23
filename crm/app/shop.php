@@ -485,6 +485,9 @@ function shop_fulfil(array $o, array $s): void {
         // Client portal access
         portal_enable((int)$contact['id'], true);
 
+        // A website draft for the builder agent, once the kickoff call has happened
+        if (array_filter($items, function ($i) { return $i['category'] === 'website'; })) { require_once __DIR__ . '/builds.php'; build_from_order($o, order_items((int)$o['id']), $brief, (int)$contact['id'], $companyId); }
+
         q('UPDATE orders SET contact_id = ?, company_id = ?, deal_id = ?, invoice_id = ?, site_id = ?, paid_total = ?, discount = ?, tax = ?, stripe_customer = ?, stripe_subscription = ?, stripe_payment = ?, sub_status = ?, updated_at = ? WHERE id = ?',
             [$contact['id'], $companyId, $dealId, $invoiceId, $siteId, $paid, $discount, $tax, (string)($s['customer'] ?? ''), (string)($s['subscription'] ?? ''), (string)($s['payment_intent'] ?? ''), $isSub ? ($o['trial_end'] ? 'trialing' : 'active') : '', now(), $o['id']]);
         $log = 'Paid ' . money($paid) . ' online (order ' . $o['ref'] . '): ' . $summary . ($o['monthly'] > 0 ? ' · then ' . money($o['monthly']) . '/mo' . ($o['trial_end'] ? ' from ' . date('M j, Y', (int)$o['trial_end']) : '') : '') . ($o['offer'] !== '' ? ' · offer ' . $o['offer'] : '') . '.';

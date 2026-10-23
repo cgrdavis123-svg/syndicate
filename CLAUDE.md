@@ -389,6 +389,7 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 | Contacts | `contacts.php`, `contact.php`, `contact-edit.php` | People, with a timeline of activities (note, call, email, meeting) |
 | Tasks | `tasks.php` | To-dos with due dates and priority, linked to records |
 | Projects | `projects.php`, `project.php`, `project-edit.php`, `project-file.php` | Client projects with steps, updates and files, shared with the client portal |
+| Website drafts | `builds.php`, `build.php` | Every website project the builder agent drafts: status, draft versions with private previews and source zips, your notes for the builder, the contact details approved for the site, sending a draft to the client for approval, hold/ready/cancel, the builder on/off switch. Nav badge = drafts to review + questions. See “Website drafts” in §14 |
 | Homepage previews | `previews.php` (linked from Outreach) | Every free homepage concept made for a prospect: style, who made it, views (real browsers only), live/expired/removed; extend, take down, or make one by hand. See “Homepage previews” in §14 |
 | Outreach | `outreach.php` | Prospects the outreach agent found and emailed, replies waiting on you, settings (mailbox, postal address, warm-up), agent key, do-not-contact list; see “Outreach (cold email)” |
 | Store | `store.php`, `store-order.php`, `store-products.php`, `store-product.php`, `store-offers.php`, `store-settings.php` | Orders from syndicatemarketing.co, product/price editor, special offers, Stripe keys, promo/tax/notify settings |
@@ -420,6 +421,8 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 | `book.php` | Public booking page (`?type=discovery-call`, `kickoff`, `tiktok-shop-consultation`) |
 | `care-report.php` | Monthly care report web page (signed link) |
 | `outreach-api.php` | Outreach agent API (key-protected: `Authorization: Bearer <key>` or `X-Api-Key`): `status`, `check`, `add`, `pending`, `respond`, `checkup`, `preview` |
+| `build-api.php` | Builder agent API (same agent key as outreach): `status`, `next` (claims a job), `file`, `source`, `start`, `upload`, `finish`, `fail` |
+| `draft/<token>/…` | A private website draft for review (`draft/index.php`, sandboxed by `draft/.htaccess`) |
 | `preview.php` | A free homepage concept for a prospect (`?t=` token), its remove page (`&remove=1`) and view beacon (`&seen=1`, from `assets/js/pv.js`) |
 | `rv.php` | The link in a review request email: records that it was opened, then redirects to the Google review page (`?t=` token) |
 | `u.php` | Unsubscribe from outreach emails (`?t=` token; one-click POST from mail apps) |
@@ -729,7 +732,7 @@ A public help center for clients and staff-only Team docs, in the CRM's `wiki/` 
 - **Staff pages**: `team.php` (Team docs by topic, recent changes), `articles.php` (views and helpful %), `edit.php` (editor with preview, live tags help, every save keeps the previous version with one-click restore, reader comments), `insights.php` (questions to answer, searches with no answer, unhelpful articles, most read, top searches).
 - **Topics** (`WIKI_CATEGORIES` / `WIKI_TEAM_CATEGORIES`): Getting started, Websites, Paid ads, Community management, Website care, Site Stats, Client portal, Billing & plans, Audits & consulting, Policies & privacy, Glossary; Team: Running the business, Client work, Systems & setup, Rules & voice, When something breaks.
 - **Linked from**: the marketing site footer, the client portal and ads portal footers, and the CRM menu (“Wiki ↗”).
-- **Keep it true:** when a promise, process or feature changes, update the matching help article (search the wiki) in the same change. 70 public and 25 team articles shipped on October 18, 2026; `offers-and-free-months` added the same day, then a **Community management** topic with `community-plans-compared`, `discord-server-setup`, `discord-access` and `community-moderation` (75 public). Team article `team-outreach` added October 19, 2026 (26 team); `team-logins` October 20, 2026 (27 team); `referral-program` and `team-referrals` October 22, 2026 (76 public, 28 team); `free-website-checkup` the same day (77 public), and `team-outreach` now covers the checkup and homepage previews; `team-reviews` the same day (29 team); `creator-partners` October 23, 2026 (78 public).
+- **Keep it true:** when a promise, process or feature changes, update the matching help article (search the wiki) in the same change. 70 public and 25 team articles shipped on October 18, 2026; `offers-and-free-months` added the same day, then a **Community management** topic with `community-plans-compared`, `discord-server-setup`, `discord-access` and `community-moderation` (75 public). Team article `team-outreach` added October 19, 2026 (26 team); `team-logins` October 20, 2026 (27 team); `referral-program` and `team-referrals` October 22, 2026 (76 public, 28 team); `free-website-checkup` the same day (77 public), and `team-outreach` now covers the checkup and homepage previews; `team-reviews` the same day (29 team); `creator-partners` October 23, 2026 (78 public); `team-website-drafts` the same day (30 team).
 
 ### Outreach (cold email)
 The outreach agent finds prospects and the CRM emails them. Engine `app/outreach.php`, admin `outreach.php`, agent API `outreach-api.php`, unsubscribe page `u.php`, Team article `team-outreach`.
@@ -750,6 +753,17 @@ A public, automated check of any website's home page, at `syndicatemarketing.co/
 - **Outreach:** `outreach-api.php?a=checkup` (`url`, `business`; 60 a day) returns the report link, score and findings for the first email. The first time someone opens a report the agent sent, the CRM adds a task. Agent reports are never reused for website visitors or the other way round.
 - **Draft quote** (`ck_quote()`, the button on `checkups.php` for reports someone asked to have emailed; the staff email links there): a draft quote for that contact on the checkup's deal, titled “Website fixes — host”, with the most useful fix included and the rest optional, each line saying which findings it fixes (a Starter rebuild replaces the site audit; never both care tiers). The intro names their score and worst problems and links the report. Deposit 100% under $500, else 50%. Opens in the quote editor to review before sending; the checkup keeps the link (`checkups.quote_id`), so the button then opens that quote.
 - **Retention:** reports nobody asked to have emailed are deleted after 180 days (`ck_cleanup()`, cron). Disclosed in the marketing privacy policy (`#checkup`).
+
+### Website drafts (the builder agent)
+First drafts of paid client websites, built by a scheduled task and reviewed by Grady before the client sees them. Engine `app/builds.php`, staff `builds.php` / `build.php`, agent API `build-api.php`, previews `draft/`, Team article `team-website-drafts`. Migration v30.
+- **Created** for every paid store order with a website package (`build_from_order()` in `shop_fulfil()`) and every won quote with one (`build_from_quote()`), one per project (`builds.project_id` unique), with the checkout brief, the order's add-ons and `rounds` from `BUILD_ROUNDS` (2 for one-page and starter, 3 for business and store). Staff can add one to any project (project page → “Have the builder draft this website”).
+- **Statuses** (`BUILD_STATUSES`): waiting (for kickoff) → ready → building → review (draft ready for you) → sent (with the client) → changes / approved; blocked (needs you); cancelled. `builds_cron()` (cron) marks a waiting build ready **3 hours after the client's kickoff booking ends** (`BUILD_KICKOFF_WAIT`), and returns claims older than 8 hours to the queue (after 3 tries → blocked).
+- **The agent** (scheduled task “Website builder”, Syndicate CRM cloud environment) calls `a=next`, which claims the oldest `changes` then `ready` build and returns the job: package and features, add-ons, brief, staff notes (`builds.notes`), contact details approved for the site (`builds.publish`; empty = mark them all `class="fill"`), Site Stats key and domain, the client's portal files (download links) and messages, the change notes, and the previous draft's preview and source zip. It builds following `templates/CLAUDE.md`, then `start` → `upload` (the built site, in batches under the upload limit; allowed types in `BUILD_TYPES`, paths checked by `build_clean_path()`, 800 files / 60 MB per draft) → `source` (one .zip) → `finish` (summary + list to confirm), or `fail` with a question.
+- **Review:** `finish` sets status review, emails `shop_notify` and adds a task. `build.php` shows the preview, summary, to-confirm list and source zip; **Send it back to the builder** (no round used) or **Send to the client for approval** (`build_send()`: an approval post in the portal with the preview link, an email, project → In review; an older unanswered draft post becomes a plain update).
+- **Client decision** (`build_decided()`, called from `portal-project.php`): Approve → approved + task “Put … live”; Request changes → `rounds_used` + 1 and the note becomes `change_notes` for the builder; beyond `rounds` it goes to blocked for Grady to make anyway or quote.
+- **Previews** `crm.stusyn.com/draft/<token>/` (one token per version, `build_versions`): files from `storage/builds/<id>/v<n>/site/`, root-relative links rewritten to stay inside the draft, clean URLs (`/about` → `about.html` or `about/`), a fixed “Draft for review · not live yet” bar, `noindex`. Served under `Content-Security-Policy: sandbox …` with `connect-src 'none'` and `form-action 'none'`, so a draft has no origin, can't read CRM cookies or pages, and its forms can't post. Cancelled builds' links stop working.
+- **Switch:** `build_on` (Website drafts → Switch the builder off). Weekly summary lists drafts waiting on you, ones waiting 7+ days for a kickoff, and ones with the client 5+ days.
+- Staff posts in the project feed now show web addresses as links (`link_urls()`), so the preview link is clickable for the client.
 
 ### Homepage previews
 A free draft home page for a prospect's business, made from their public details and linked in a cold email, so they can see what a new site could look like. Engine `app/previews.php`, public page `preview.php`, staff page `previews.php`, beacon `assets/js/pv.js`.
@@ -825,12 +839,13 @@ Each run:
 9. `care_cron()`: uptime checks every run; SSL daily; domain, security scan and PageSpeed weekly; backup-due, Care Plus tune-up and review-call tasks; monthly care reports on days 1–5
 10. `ads_cron()`: monthly ads report notes tasks and emails (days 1–5), one approval reminder after 2 days
 11. `outreach_cron()` (`app/outreach.php`): reads replies, bounces and opt-outs in the outreach mailbox, then sends what's due (weekdays 9–5, within the warm-up limit)
-12. `pv_cleanup()` (`app/previews.php`): deletes homepage previews 60 days after they expire
-13. `rv_cron()` (`app/reviews.php`): schedules review requests for newly finished projects and sends those that are due
-14. `ck_cleanup()` (`app/checkup.php`): deletes free checkup reports older than 180 days that nobody asked to have emailed
-15. `backup_run()` (`app/backup.php`): once a day after 2 AM, the **nightly backup** (see “Backups” in §17)
-16. `ref_cron()` (`app/referrals.php`): records referral earnings from new paid invoices, releases 30-day holds, and on days 1–5 adds one “Pay referral earnings” task
-17. `pipeline_digest_send()` (`app/digest.php`): the **weekly summary**, emailed to `shop_notify` once a week on Monday from 7 AM (setting `digest_week` stops repeats). It lists tasks due or overdue, open deals with no activity in 14+ days, quotes waiting on the client (flags those expiring within 7 days), overdue invoices, unpaid checkouts from the last 7 days, calls booked this week, and the last 7 days in numbers (new leads, deals won, money in, visitors to the two campaign pages). Also includes outreach (conversations waiting on Grady, and the week's sends, replies and bounces). Sent on demand from the dashboard (“Email me this week’s summary”) or `php app/cli.php digest [send]` (without `send` it just prints).
+12. `builds_cron()` (`app/builds.php`): website drafts become ready for the builder 3 hours after the kickoff call; stuck claims go back to the queue
+13. `pv_cleanup()` (`app/previews.php`): deletes homepage previews 60 days after they expire
+14. `rv_cron()` (`app/reviews.php`): schedules review requests for newly finished projects and sends those that are due
+15. `ck_cleanup()` (`app/checkup.php`): deletes free checkup reports older than 180 days that nobody asked to have emailed
+16. `backup_run()` (`app/backup.php`): once a day after 2 AM, the **nightly backup** (see “Backups” in §17)
+17. `ref_cron()` (`app/referrals.php`): records referral earnings from new paid invoices, releases 30-day holds, and on days 1–5 adds one “Pay referral earnings” task
+18. `pipeline_digest_send()` (`app/digest.php`): the **weekly summary**, emailed to `shop_notify` once a week on Monday from 7 AM (setting `digest_week` stops repeats). It lists tasks due or overdue, open deals with no activity in 14+ days, quotes waiting on the client (flags those expiring within 7 days), overdue invoices, unpaid checkouts from the last 7 days, calls booked this week, and the last 7 days in numbers (new leads, deals won, money in, visitors to the two campaign pages). Also includes outreach (conversations waiting on Grady, and the week's sends, replies and bounces). Sent on demand from the dashboard (“Email me this week’s summary”) or `php app/cli.php digest [send]` (without `send` it just prints).
 
 It prints a one-line summary (cPanel can email it to you; set the cron email to blank to silence it).
 
@@ -839,7 +854,7 @@ It prints a one-line summary (cPanel can email it to you; set the cron email to 
 ## 17. Databases and migrations
 
 ### CRM: `crm/storage/crm.sqlite`
-Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v30**.
+Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v31**.
 
 | Version | Adds |
 |---|---|
@@ -871,6 +886,7 @@ Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_versi
 | v27 | `checkups.quote_id` (the quote drafted from a checkup) |
 | v28 | Homepage previews: `previews` (token, business, email, website, theme, data JSON, via agent/staff, views, viewed_at, expires_at, removed_at, removed_by) |
 | v29 | Creator partners: `referrers.discount`, `referrers.audience`, `orders.ref_discount`; settings `ref_creator_rate` (10), `ref_creator_discount` (10) |
+| v30 | Website drafts: `builds` (one per website project: sku, brief, add-ons, status, rounds, notes, publish, change notes, question, version, claim), `build_versions` (token, summary, to-confirm list, files, bytes, source zip, the approval post); setting `build_on` |
 | v18 | Community products (`com-discord-setup`, `com-audit`, `com-manage`, `com-manage-plus`, after the care plans) and the `add-presskit` add-on, from `catalog.json` |
 
 ### Site Stats: `crm/storage/analytics.sqlite`
@@ -1110,7 +1126,8 @@ All setup items below were done by October 18, 2026, except the ones still open.
 | Consulting rate | $150/hour |
 | Exclude own visits | `?syn_ignore=1` |
 | Cart storage | `localStorage.sm_cart`, `sm_ref`, `sessionStorage.sm_src`, `sm_checkout`, `sm_order` |
-| CRM DB version | v29 (next: v30) |
+| CRM DB version | v30 (next: v31) |
+| Website drafts | CRM → Website drafts · previews `crm.stusyn.com/draft/TOKEN/` · agent `build-api.php` · scheduled task “Website builder” |
 | Homepage previews | `crm.stusyn.com/preview.php?t=TOKEN` · CRM → Outreach → Homepage previews · agent `outreach-api.php?a=preview` · 30 days, owner can remove |
 | Review requests | Settings → Review requests (`reviews.php`); one honest Google review ask per business a year, 3 days after Complete |
 | Free website checkup | `syndicatemarketing.co/checkup.html` · reports `checkup.html?r=TOKEN` · CRM → Checkups · agent `outreach-api.php?a=checkup` |
