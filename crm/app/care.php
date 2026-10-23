@@ -77,13 +77,30 @@ function care_fetch(array $reqs, int $timeout = 15): array {
         curl_multi_add_handle($mh, $ch); $hs[$i] = $ch;
     }
     do { $st = curl_multi_exec($mh, $running); if ($running) curl_multi_select($mh, 1.0); } while ($running && $st === CURLM_OK);
+    $codes = []; // curl_error() is empty under curl_multi; each transfer's result code comes from here
+    while ($info = curl_multi_info_read($mh)) $codes[is_object($info['handle']) ? spl_object_id($info['handle']) : (int)$info['handle']] = (int)$info['result'];
     foreach ($hs as $i => $ch) {
-        $out[$i] = ['code' => (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE), 'ms' => (int)round(curl_getinfo($ch, CURLINFO_TOTAL_TIME) * 1000), 'err' => curl_error($ch),
+        $cc = $codes[is_object($ch) ? spl_object_id($ch) : (int)$ch] ?? 0;
+        $out[$i] = ['code' => (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE), 'ms' => (int)round(curl_getinfo($ch, CURLINFO_TOTAL_TIME) * 1000), 'err' => $cc && $cc !== 23 ? care_curl_reason($cc, curl_error($ch)) : curl_error($ch),
             'body' => $bufs[$i], 'headers' => $hdrs[$i], 'final' => (string)curl_getinfo($ch, CURLINFO_EFFECTIVE_URL)];
         curl_multi_remove_handle($mh, $ch); curl_close($ch);
     }
     curl_multi_close($mh);
     return $out;
+}
+
+// A plain-words reason for a failed request, for alerts, the incident log and client emails.
+function care_curl_reason(int $code, string $detail = ''): string {
+    $why = care_curl_plain($code);
+    return $detail !== '' && stripos($why, $detail) === false ? $why . ' (' . mb_substr($detail, 0, 160) . ')' : $why;
+}
+function care_curl_plain(int $code): string {
+    // libcurl error numbers (stable across versions; not every PHP build defines the constants).
+    $plain = [6 => 'The domain name didn’t resolve (DNS problem, or the domain lapsed)', 7 => 'The server refused the connection',
+        28 => 'The server didn’t answer in time', 35 => 'The secure connection (SSL) failed', 47 => 'The page keeps redirecting',
+        51 => 'The security certificate isn’t valid (expired, or for a different name)', 52 => 'The server closed the connection without answering',
+        56 => 'The connection dropped while loading', 60 => 'The security certificate isn’t valid (expired, or for a different name)'];
+    return $plain[$code] ?? ('Connection error: ' . curl_strerror($code));
 }
 
 /* ---------- Uptime (every cron run) ---------- */
@@ -96,7 +113,7 @@ function care_run_checks(?int $onlySite = null): int {
     foreach ($sites as $i => $s) {
         $r = $res[$i]; $now = time();
         $ok = $r['code'] >= 200 && $r['code'] < 400;
-        $err = $r['err'] !== '' ? $r['err'] : ($ok ? '' : 'HTTP ' . $r['code']);
+        $err = $r['err'] !== '' ? $r['err'] : ($ok ? '' : ($r['code'] ? 'The page answered with an error (HTTP ' . $r['code'] . ')' : 'No response'));
         if ($ok && $s['check_keyword'] !== '' && stripos($r['body'], $s['check_keyword']) === false) { $ok = false; $err = 'The page loaded but “' . $s['check_keyword'] . '” wasn’t on it'; }
         q('INSERT INTO site_checks (site_id, ts, ok, code, ms, err) VALUES (?,?,?,?,?,?)', [$s['id'], $now, $ok ? 1 : 0, $r['code'], $r['ms'], mb_substr($err, 0, 300)]);
         $fails = $ok ? 0 : (int)$s['fail_count'] + 1;
