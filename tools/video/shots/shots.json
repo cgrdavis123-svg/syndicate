@@ -492,6 +492,26 @@
   "what": "Ridgeline concept site on phone, tall; Call now button near top",
   "spots": {}
  },
+ "client-kirbys": {
+  "file": "client-kirbys.jpg",
+  "w": 1600,
+  "h": 12586,
+  "kind": "client",
+  "tall": true,
+  "label": "Real client site \u00b7 kirbysupstate.com",
+  "what": "Kirby\u2019s Home Improvement, a real one-page site we built for a father-and-son team in Spartanburg (painting, drywall, repairs), desktop, tall; free estimate form top right",
+  "spots": {}
+ },
+ "client-kirbys-phone": {
+  "file": "client-kirbys-phone.jpg",
+  "w": 780,
+  "h": 16752,
+  "kind": "client",
+  "tall": true,
+  "label": "Real client site \u00b7 kirbysupstate.com",
+  "what": "Kirby\u2019s Home Improvement on phone, tall; Call button in the header, Get a free quote button in the hero",
+  "spots": {}
+ },
  "demo-pinestreet": {
   "file": "demo-pinestreet.jpg",
   "w": 1600,

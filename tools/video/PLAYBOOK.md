@@ -80,11 +80,13 @@ Scene types (text supports `*accent*`):
 
 **Ridgeline phone tap:** `{"at":1.9,"x":0.42,"y":1235}` lands on its "Call now" button.
 
+**Kirby’s phone tap:** `{"at":1.9,"x":0.68,"y":68}` lands on the "Call" button in its header (keep `scroll` starting at 0 so the header is on screen).
+
 ## 4. Hard rules (never break these)
 
 - **Prices only from `crm/app/catalog.json`** (plus $150/hour consultations). `check.mjs` rejects anything else. Wikis and custom work say "quote", never a number.
 - **No made-up results:** no percentages, no "X more leads", no client counts, no testimonials, no "#1", no guarantees. Dashboards are demo data; say so.
-- **Never name a real business** as a client except Intake Breathing and Rap Snacks (Grady's TikTok Shop work), and only in Creator Ops content.
+- **Never name a real business** as a client except Intake Breathing and Rap Snacks (Grady's TikTok Shop work, only in Creator Ops content) and **Kirby’s Home Improvement** (a real one-page site Syndicate Marketing built in Spartanburg, shots `client-kirbys` / `client-kirbys-phone`). Show Kirby’s as the site we built and nothing more: no visitor, call or lead numbers, no reviews or quotes from them, and never as an ads client. It’s the best proof for local trades and home services videos.
 - **Concept sites are fictional:** Hearth & Grain, Ridgeline, Pine Street Dental, Loom & Lantern, Fernhollow, Lampwright, Copperleaf SMP.
 - **Minecraft:** no Mojang characters, logos, fonts or textures (our voxel art is original). Always "Not affiliated with Mojang or Microsoft." Don't use the TikTok, Discord, Google or Meta logos either; their names are fine.
 - **Voice (CLAUDE.md §20):** plain, warm, specific. Never "synergy", "revolutionary", "world-class", fake urgency or scarcity.
