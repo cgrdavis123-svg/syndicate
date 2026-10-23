@@ -39,8 +39,10 @@ const products = seed.products.map(p => ({
 const catalog = { ok: true, currency: 'usd', ready: true, promo: true, products,
   categories: { website: 'Websites', ads: 'Paid ads', care: 'Care plans', community: 'Community', service: 'Audits & services', addon: 'Add-ons' },
   platforms: { google: 'Google', meta: 'Meta (Facebook & Instagram)', tiktok: 'TikTok' } };
-// Concept projects for the portfolio (marketing/work.json, demo sites in marketing/work/<slug>/).
+// Portfolio (marketing/work.json): real client sites ("client": true) and concept projects with demo sites in marketing/work/<slug>/.
+// "listed": false still builds the case page but keeps it off the grids.
 const work = JSON.parse(readFileSync(join(SRC, 'work.json'), 'utf8')).projects;
+const listed = work.filter(p => p.listed !== false);
 const win = {};
 new Function('window', readFileSync(join(SRC, 'assets/js/cards.js'), 'utf8'))(win);
 const Cards = win.SMCards;
@@ -122,7 +124,7 @@ ${body}
 
 const sitemap = [];
 // One case-study page per concept project.
-work.forEach((p, i) => { const c = casePage(p, i, work, products); pages.push([null, `work-${p.slug}.html`, c.front, c.body]); });
+work.forEach(p => { const c = casePage(p, listed, products); pages.push([null, `work-${p.slug}.html`, c.front, c.body]); });
 
 for (const [srcPath, file, virtMeta, virtBody] of pages) {
   let meta, body;
@@ -134,7 +136,7 @@ for (const [srcPath, file, virtMeta, virtBody] of pages) {
   } else { meta = virtMeta; body = virtBody; }
   const name = file.replace(/\.html$/, '');
   const nav = meta.nav || name;
-  body = body.replace(/\{\{work:grid\}\}/g, () => workGrid(work, products)).replace(/\{\{work:grid:(\d+)\}\}/g, (m, n) => workGrid(work.slice(0, Number(n)), products));
+  body = body.replace(/\{\{work:grid\}\}/g, () => workGrid(listed, products)).replace(/\{\{work:grid:(\d+)\}\}/g, (m, n) => workGrid(listed.slice(0, Number(n)), products));
   body = productTags(meta.heading ? legalPage(meta, body) : body);
   let html = fill(layout, {
     ...site,

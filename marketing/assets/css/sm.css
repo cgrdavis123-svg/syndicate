@@ -621,7 +621,7 @@ p.alert { display: block; }
   html { scroll-behavior: auto; }
 }
 
-/* ---------- Work (concept portfolio) ---------- */
+/* ---------- Work (client sites and concept portfolio) ---------- */
 .work-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
 .work-card { background: var(--card); border: 1px solid var(--line); border-radius: 26px; overflow: hidden; display: flex; flex-direction: column; transition: box-shadow .3s, transform .3s var(--ease); }
 .work-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
@@ -634,6 +634,7 @@ p.alert { display: block; }
 .work-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .work-tags span { height: 24px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; background: var(--paper); border: 1px solid var(--line); color: var(--ink-2); }
 .work-tags .concept { background: var(--ink); color: var(--lime); border-color: var(--ink); }
+.work-tags .client { background: var(--lime); color: var(--ink); border-color: var(--ink); }
 .dev { position: relative; padding-right: 16%; padding-bottom: 6%; }
 .dev-browser { background: #fff; border-radius: 12px 12px 0 0; overflow: hidden; box-shadow: 0 20px 50px -20px rgba(0,0,0,.45); }
 .dev-bar { display: flex; align-items: center; gap: 5px; padding: 8px 10px; background: #f1f0eb; }

@@ -1,6 +1,26 @@
 {
-  "_note": "Concept projects for the portfolio. Every business here is fictional; the pages say so. Each project has a demo site in marketing/work/<slug>/ and sample ads rendered on its case page.",
+  "_note": "Portfolio projects. Entries with \"client\": true are real client sites: linked live, no sample ads, no made-up results. The rest are fictional concepts; the pages say so, and each has a demo site in marketing/work/<slug>/ and sample ads on its case page. \"listed\": false keeps a case page building (for pages that link to it) but leaves it off the grids.",
   "projects": [
+    {
+      "slug": "kirbys",
+      "name": "Kirby’s Home Improvement",
+      "kind": "Painting, drywall & home repairs",
+      "client": true,
+      "url": "https://kirbysupstate.com/",
+      "domain": "kirbysupstate.com",
+      "package": "web-one-page",
+      "services": ["website", "analytics"],
+      "summary": "A one-page site for a father-and-son home improvement team in Spartanburg, built so a homeowner can call or ask for a free estimate in seconds.",
+      "colors": { "bg": "#f5f7f6", "ink": "#15202b", "accent": "#f4c20d" },
+      "challenge": "A family business that has painted and repaired homes around Spartanburg since 1994, almost entirely by word of mouth. People who heard about them had nowhere to look them up, see what they do or ask for a price.",
+      "approach": [
+        "The free estimate form and a call button sit right at the top, so the next step is never more than one tap away.",
+        "Every service people call them for, in plain words, plus the towns they cover, so homeowners know quickly whether it’s a fit.",
+        "Their own story up front: one family, two generations, and you talk to a Kirby, not a call center."
+      ],
+      "built": ["One-page site, mobile first", "Free estimate form sent to their inbox", "Tap-to-call header on phones", "Services, how it works and service area", "Business details for Google: hours, area and services", "Site Stats for calls and estimate requests"],
+      "goals": ["Quote request", "Phone call"]
+    },
     {
       "slug": "hearth-and-grain",
       "name": "Hearth & Grain",
@@ -33,6 +53,7 @@
     {
       "slug": "ridgeline-air",
       "name": "Ridgeline Heating & Air",
+      "listed": false,
       "kind": "HVAC contractor",
       "package": "web-starter",
       "services": ["website", "ads", "analytics"],

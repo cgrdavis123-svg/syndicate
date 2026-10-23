@@ -150,7 +150,7 @@ These apply to every change, every page and every email.
 │   ├── layout.html, pages/, legal/
 │   ├── assets/css/sm.css, assets/js/{cards,sm,checkout}.js, assets/work/*.jpg
 │   ├── work/                  ← 6 fictional demo sites (+ .htaccess: noindex, Google Fonts allowed)
-│   ├── work.json              ← portfolio data (concepts, ad campaigns)
+│   ├── work.json              ← portfolio data (client sites, concepts, ad campaigns)
 │   ├── work-render.mjs        ← renders the case-study pages
 │   └── htaccess.txt           ← becomes dist-marketing/.htaccess
 ├── crm/                       ← crm.stusyn.com (PHP, SQLite, deployed as-is)
@@ -320,7 +320,7 @@ Legal (`src/legal/`): `privacy.html`, `cookies.html`, `terms.html` (section 7 co
 | `paid-ads.html` | Ads plans (1, 2 or 3 platforms), ad account setup, ads audit |
 | `analytics.html` | Site Stats, analytics setup, site audit |
 | `pricing.html` | Every product and price, comparison table |
-| `work.html` + `work-<slug>.html` | Portfolio grid + 6 case pages (fictional concepts, clearly labelled) |
+| `work.html` + `work-<slug>.html` | Portfolio grid + case pages: real client sites first (labelled “Client site · Live”), then fictional concepts (labelled “Concept”) |
 | `about.html` | Who we are (part of Syndicate Holdings Group, Grady) |
 | `contact.html` | Lead form → CRM `shop-api.php?a=lead` (creates contact + deal + task) |
 | `checkout.html` | 4-step checkout (see below) |
@@ -343,7 +343,13 @@ Legal (`marketing/legal/`): `terms.html` (terms of sale) and `privacy.html`.
 - Prices and products load live from `shop-api.php?a=catalog`, with the built-in catalog as a fallback.
 
 ### Portfolio (`marketing/work.json`, `marketing/work/`)
-All six are **fictional concepts**, labelled as such, with `.example` domains and 555-01xx numbers, and `noindex`.
+**Client sites** (`"client": true`) come first: real businesses we built for, with `url` and `domain`, linked to the live site (“Visit the live site ↗”), tagged “Client site · Live”, no demo folder, no sample ads, no results, and the package shown as “Comparable package”. Screenshots come from the live URL (`node tools/work-shots.cjs <slug>`). Only add a client with their OK, and never add numbers they haven't given us.
+
+| Client | Business | Built | Live at |
+|---|---|---|---|
+| Kirby’s Home Improvement (`kirbys`) | Father-and-son painting, drywall and home repairs, Spartanburg | One-page site with free-estimate form, tap-to-call, services, service area; Site Stats goals Quote request and Phone call. Added October 23, 2026, replacing Ridgeline on the grids | https://kirbysupstate.com |
+
+The **concepts** are **fictional**, labelled as such, with `.example` domains and 555-01xx numbers, and `noindex`. `"listed": false` keeps a concept's case page and demo building (for pages that link to it) but leaves it off the Work and home grids: **Ridgeline is unlisted** but still backs the Starter offer page, the home-services page and the demo client portal.
 
 | Concept | Business | Shows off | Demo folder |
 |---|---|---|---|
