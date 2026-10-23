@@ -53,6 +53,7 @@ If you answer a prospect yourself, from the CRM inbox or your mail app, the agen
 - Handle anything under **Needs you** within one business day.
 - To stop emailing someone, open them and choose **Stop and never email again**, or add the address or domain under **Do not contact**.
 - If outreach pauses itself, look at the bounced prospects (usually bad addresses from a directory), then switch it back on.
+- **Blocked as spam** means a mail server refused the email for its content or our sending reputation, not because the address is wrong. The address isn’t put on do-not-contact and it doesn’t count as a bounce. You get an email and a task. For a sequence, shorten the email or drop the links, then press **Resume** (or **It’s a bad address** if it really is). In a conversation, answer from the CRM inbox with a short plain message. Several blocks in two weeks sends a warning: test an email at mail-tester.com and ask Namecheap whether their outgoing filter is stopping it.
 
 ## Setup (once)
 

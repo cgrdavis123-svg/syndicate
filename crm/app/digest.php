@@ -65,7 +65,7 @@ function pipeline_digest(): array {
         return $p['business'] . ' · ' . ($p['status'] === 'interested' ? 'interested' : 'needs your answer') . "\n    " . $link('outreach.php?id=' . $p['id']);
     }, $needs), null];
     $ok = []; foreach (all('SELECT kind, COUNT(*) n FROM outreach_log WHERE created_at >= ? GROUP BY kind', [$since]) as $r) $ok[$r['kind']] = (int)$r['n'];
-    $outLine = !empty($ok['sent']) ? 'Outreach: ' . $ok['sent'] . ' sent, ' . (($ok['reply'] ?? 0) + ($ok['declined'] ?? 0) + ($ok['unsubscribe'] ?? 0)) . ' replies, ' . ($ok['bounce'] ?? 0) . ' bounced'
+    $outLine = !empty($ok['sent']) ? 'Outreach: ' . $ok['sent'] . ' sent, ' . (($ok['reply'] ?? 0) + ($ok['declined'] ?? 0) + ($ok['unsubscribe'] ?? 0)) . ' replies, ' . ($ok['bounce'] ?? 0) . ' bounced' . (!empty($ok['blocked']) ? ', ' . $ok['blocked'] . ' blocked as spam' : '')
         . (setting('outreach_on') === '1' ? '' : ' (outreach is switched off)') : '';
 
     // Last week in numbers.

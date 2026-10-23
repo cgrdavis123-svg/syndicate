@@ -10,7 +10,7 @@ const OUT_STATUS = [
     'queued' => ['Waiting to send', '#8a929c'], 'active' => ['In sequence', '#7cc4ff'], 'replied' => ['Replied: agent to answer', '#ffb547'],
     'talking' => ['In conversation', '#7cc4ff'], 'interested' => ['Interested', '#c6ff3d'], 'needs_you' => ['Needs you', '#ff5c8a'],
     'finished' => ['No reply', '#8a929c'], 'declined' => ['Said no', '#8a929c'], 'unsubscribed' => ['Unsubscribed', '#8a929c'],
-    'bounced' => ['Bounced', '#ff5c8a'], 'paused' => ['Paused', '#8a929c'], 'cancelled' => ['Stopped', '#8a929c'],
+    'bounced' => ['Bounced', '#ff5c8a'], 'blocked' => ['Blocked as spam', '#ffb547'], 'paused' => ['Paused', '#8a929c'], 'cancelled' => ['Stopped', '#8a929c'],
 ];
 const OUT_FREEMAIL = ['gmail.com', 'googlemail.com', 'yahoo.com', 'ymail.com', 'outlook.com', 'hotmail.com', 'live.com', 'msn.com', 'aol.com', 'icloud.com', 'me.com',
     'mac.com', 'att.net', 'bellsouth.net', 'charter.net', 'spectrum.net', 'comcast.net', 'verizon.net', 'protonmail.com', 'proton.me', 'gmx.com', 'mail.com', 'zoho.com'];
@@ -82,10 +82,10 @@ function out_footer(array $p): string {
     return "\n\n" . (setting('outreach_from_name') ?: 'Grady Davis') . "\nSyndicate Marketing · syndicatemarketing.co\n" . trim(setting('outreach_address'))
         . "\n\nIf you’d rather I didn’t email again, just reply “no thanks” or unsubscribe here: " . out_unsub_url($p);
 }
-// Sends one email to the prospect (a reply in the same conversation when $thread). Returns ['ok', 'bounce', 'error', 'email_id'].
+// Sends one email to the prospect (a reply in the same conversation when $thread). Returns ['ok', 'bounce', 'blocked', 'error', 'email_id'].
 function out_send(array $p, string $subject, string $text, bool $thread): array {
     $box = out_mailbox();
-    if (!$box) return ['ok' => false, 'bounce' => false, 'error' => 'No outreach mailbox.'];
+    if (!$box) return ['ok' => false, 'bounce' => false, 'blocked' => false, 'error' => 'No outreach mailbox.'];
     $ids = array_values(array_filter(explode(' ', trim($p['msg_ids']))));
     $from = $box['email'];
     $m = ['from' => [setting('outreach_from_name') ?: 'Grady Davis', $from], 'to' => [[$p['contact_name'], $p['email']]], 'subject' => $subject,
@@ -97,9 +97,13 @@ function out_send(array $p, string $subject, string $text, bool $thread): array 
         $mid = (string)val('SELECT message_id FROM emails WHERE id = ?', [$eid]);
         $p['msg_ids'] = rtrim($p['msg_ids']) . ' ' . $mid . ' ';
         out_set((int)$p['id'], ['msg_ids' => $p['msg_ids'], 'last_sent_at' => now()]);
-        return ['ok' => true, 'bounce' => false, 'error' => '', 'email_id' => (int)$eid];
+        return ['ok' => true, 'bounce' => false, 'blocked' => false, 'error' => '', 'email_id' => (int)$eid];
     } catch (Throwable $ex) {
-        return ['ok' => false, 'bounce' => strpos($ex->getMessage(), 'won’t send to') !== false || strpos($ex->getMessage(), "won't send to") !== false, 'error' => $ex->getMessage()];
+        $msg = $ex->getMessage();
+        $rcpt = strpos($msg, 'won’t send to') !== false || strpos($msg, "won't send to") !== false;
+        // A refusal that names spam or policy is about the message or our reputation, not the address.
+        $blocked = $ex instanceof SmtpError && out_spam_block($msg);
+        return ['ok' => false, 'bounce' => $rcpt && !$blocked, 'blocked' => $blocked, 'error' => $msg];
     }
 }
 // Sends what's due: follow-ups first, then new first emails, spread through the day within the warm-up limit.
@@ -109,7 +113,7 @@ function out_send_due(bool $ignoreWindow = false): int {
     if ($left <= 0) return 0;
     $slots = max(1, (int)ceil((strtotime(today() . ' 17:00:00') - time()) / 900));
     $budget = $ignoreWindow ? $left : min($left, max(1, (int)ceil($left / $slots)));
-    $sent = 0;
+    $sent = 0; $blocks = 0;
     $due = all("SELECT * FROM outreach_prospects WHERE status IN ('queued','active') AND (next_at IS NULL OR next_at <= ?)
         ORDER BY step DESC, CASE priority WHEN 'A' THEN 0 WHEN 'B' THEN 1 ELSE 2 END, id LIMIT ?", [time(), $budget]);
     foreach ($due as $p) {
@@ -123,6 +127,7 @@ function out_send_due(bool $ignoreWindow = false): int {
         $r = out_send($p, $subject, $text, $step > 0);
         if (!$r['ok']) {
             if ($r['bounce']) { out_set((int)$p['id'], ['status' => 'bounced', 'next_at' => null]); out_optout($p['email'], 'bounced'); out_log((int)$p['id'], 'bounce', $r['error']); continue; }
+            if ($r['blocked']) { out_block($p, $r['error']); if (++$blocks >= 3) break; continue; } // three in one run: stop until the next run
             out_log((int)$p['id'], 'error', $r['error']);
             setting('outreach_error', date('M j, g:i A') . ': ' . $r['error']);
             break; // mailbox trouble: stop for this run and try again next time
@@ -140,6 +145,51 @@ function out_send_due(bool $ignoreWindow = false): int {
     if ($sent) out_check_bounces();
     return $sent;
 }
+// True when a refusal or bounce notice says the message was rejected as spam or by policy, rather than the address
+// not existing. Those keep the address usable: no do-not-contact entry, and they don't count toward the bounce limit.
+function out_spam_block(string $text): bool {
+    $t = mb_substr($text, 0, 4000);
+    if (preg_match('/(user unknown|unknown user|no such (user|mailbox|recipient)|does ?n[o’\']?t exist|address (not found|rejected: user)|mailbox (not found|does not exist|unavailable: user)|invalid (recipient|mailbox|address)|recipient (not found|unknown)|account (has been )?(disabled|deactivated|closed)|\b5\.1\.[0-3]\b|\b5\.2\.1\b)/i', $t)) return false;
+    return (bool)preg_match('/(spam|junk|bulk mail|black ?list|block ?list|blocked|spamhaus|barracuda|reputation|policy|content (rejected|filter)|rejected (for|due to) content|message discarded|suspicious|phish|unsolicited|\b5\.7\.[0-9]{1,2}\b|\b5\.4\.1\b|dmarc|spf (fail|check)|dkim)/i', $t);
+}
+// An email to a prospect was refused as spam: stop its sequence (unless it's a conversation), tell Grady, keep the address.
+function out_block(array $p, string $why, ?int $emailId = null): void {
+    $pid = (int)$p['id'];
+    if (in_array($p['status'], ['queued', 'active', 'paused'], true)) out_set($pid, ['status' => 'blocked', 'next_at' => null]);
+    elseif ($p['status'] === 'replied') out_set($pid, ['status' => 'needs_you']);
+    out_log($pid, 'blocked', mb_substr(trim($why), 0, 2000), $emailId);
+    q('INSERT INTO tasks (title, due_date, priority, entity_type, entity_id, created_at) VALUES (?,?,1,?,?,?)', ['Outreach: the email to ' . $p['business'] . ' was blocked as spam — check it', today(), '', null, now()]);
+    out_notify('Outreach email blocked as spam: ' . $p['business'],
+        'The email to ' . ($p['contact_name'] ?: $p['email']) . " at {$p['business']} was refused as spam, so it wasn't delivered.\n\n"
+        . 'What the mail server said: ' . mb_substr(trim(preg_replace('/\s+/', ' ', $why)), 0, 600) . "\n\n"
+        . "The address is still good: it isn't on the do-not-contact list and this doesn't count as a bounce. "
+        . (in_array($p['status'], ['talking', 'interested', 'replied', 'needs_you'], true) ? 'You are in a conversation with them, so answer from the CRM inbox with a short plain message (no links).' : 'Its follow-ups are on hold. Shorten the email or drop the links, then press Resume on the prospect, or mark it as a bad address.')
+        . "\n\n" . abs_url('outreach.php?id=' . $pid));
+    out_check_blocks();
+}
+// Several spam blocks in two weeks usually means the sending mailbox's reputation or the email wording, so warn once a week.
+function out_check_blocks(): void {
+    $n = (int)val("SELECT COUNT(*) FROM outreach_log WHERE kind = 'blocked' AND created_at >= ?", [date('Y-m-d H:i:s', strtotime('-14 days'))]);
+    $last = setting('outreach_block_warned');
+    if ($n < 3 || ($last !== '' && strtotime($last) > strtotime('-7 days'))) return;
+    setting('outreach_block_warned', now());
+    out_notify('Outreach: several emails blocked as spam', "$n outreach emails were refused as spam in the last two weeks. That's usually the wording (links, prices, offer language) or the mailbox's sending reputation, not bad addresses.\n\n"
+        . "Worth doing: send one email to mail-tester.com to see its spam score, and ask Namecheap support whether their outgoing filter is stopping mail from the outreach mailbox.\n\n" . abs_url('outreach.php?status=attention'));
+}
+// One-time repair: bounces recorded before spam blocks were told apart. Turns them back into blocks and frees the address.
+function out_fix_old_blocks(): void {
+    if (setting('outreach_blocks_fixed') === '1') return;
+    foreach (all("SELECT l.id lid, l.body, l.email_id, p.* FROM outreach_log l JOIN outreach_prospects p ON p.id = l.prospect_id WHERE l.kind = 'bounce'") as $r) {
+        $text = $r['body'] . "\n" . ($r['email_id'] ? (string)val('SELECT body_text FROM emails WHERE id = ?', [$r['email_id']]) : '');
+        if (!out_spam_block($text)) continue;
+        q("UPDATE outreach_log SET kind = 'blocked' WHERE id = ?", [$r['lid']]);
+        q("DELETE FROM outreach_optout WHERE email = ? AND domain = '' AND reason = 'bounced'", [$r['email']]);
+        if ($r['status'] === 'bounced') out_set((int)$r['id'], ['status' => 'blocked']);
+        out_log((int)$r['id'], 'note', 'This was a spam block, not a bad address: taken off the do-not-contact list.');
+    }
+    setting('outreach_blocks_fixed', '1');
+}
+
 // Too many bounces means bad addresses or a reputation problem: stop sending until Grady looks.
 function out_check_bounces(): void {
     $sent = (int)val("SELECT COUNT(*) FROM outreach_log WHERE kind = 'sent' AND created_at >= ?", [date('Y-m-d H:i:s', strtotime('-14 days'))]);
@@ -181,7 +231,7 @@ function out_reply_intent(string $text): string {
 }
 // Reads new mail in the outreach mailbox (after mail_sync): stops sequences on replies, records bounces and opt-outs.
 function out_process_mail(): array {
-    $box = out_mailbox(); $res = ['replies' => 0, 'optouts' => 0, 'bounces' => 0];
+    $box = out_mailbox(); $res = ['replies' => 0, 'optouts' => 0, 'bounces' => 0, 'blocks' => 0];
     if (!$box) return $res;
     $last = (int)setting('outreach_last_email');
     $rows = all('SELECT * FROM emails WHERE mailbox_id = ? AND id > ? ORDER BY id LIMIT 300', [$box['id'], $last]);
@@ -199,6 +249,10 @@ function out_process_mail(): array {
             $p = out_find($em);
             if (!$p) foreach (all("SELECT * FROM outreach_prospects WHERE step > 0 AND last_sent_at >= ?", [date('Y-m-d H:i:s', strtotime('-10 days'))]) as $c) {
                 if (stripos((string)$em['body_text'], (string)$c['email']) !== false) { $p = $c; break; }
+            }
+            if ($p && out_spam_block((string)$em['body_text'])) { // refused as spam: the address is fine
+                if (!in_array($p['status'], ['bounced', 'declined', 'unsubscribed', 'cancelled'], true)) { out_block($p, (string)$em['body_text'], (int)$em['id']); $res['blocks']++; }
+                continue; // left unread in the inbox
             }
             if ($p && !in_array($p['status'], ['bounced', 'declined', 'unsubscribed'], true)) {
                 out_set((int)$p['id'], ['status' => 'bounced', 'next_at' => null]); out_optout($p['email'], 'bounced');
@@ -235,9 +289,10 @@ function out_unsubscribe(array $p, string $how): void {
 }
 
 function outreach_cron(): string {
+    out_fix_old_blocks();
     $r = out_process_mail();
     $sent = out_send_due();
-    $bits = array_filter([$sent ? "$sent outreach email(s) sent" : '', $r['replies'] ? $r['replies'] . ' outreach repl' . ($r['replies'] === 1 ? 'y' : 'ies') : '', $r['optouts'] ? $r['optouts'] . ' opt-out(s)' : '', $r['bounces'] ? $r['bounces'] . ' bounce(s)' : '']);
+    $bits = array_filter([$sent ? "$sent outreach email(s) sent" : '', $r['replies'] ? $r['replies'] . ' outreach repl' . ($r['replies'] === 1 ? 'y' : 'ies') : '', $r['optouts'] ? $r['optouts'] . ' opt-out(s)' : '', $r['bounces'] ? $r['bounces'] . ' bounce(s)' : '', $r['blocks'] ? $r['blocks'] . ' blocked as spam' : '']);
     return implode(' · ', $bits);
 }
 

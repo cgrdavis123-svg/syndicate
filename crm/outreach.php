@@ -39,7 +39,8 @@ if (is_post()) {
     if ($p) {
         $pid = (int)$p['id'];
         if ($act === 'pause' && in_array($p['status'], ['queued', 'active'], true)) { out_set($pid, ['status' => 'paused']); out_log($pid, 'note', 'Paused by ' . $user['name'] . '.'); }
-        if ($act === 'resume' && $p['status'] === 'paused') { out_set($pid, ['status' => (int)$p['step'] ? 'active' : 'queued', 'next_at' => (int)$p['step'] ? out_bdays(time(), 1) : null]); out_log($pid, 'note', 'Resumed.'); }
+        if ($act === 'bad' && $p['status'] === 'blocked') { out_set($pid, ['status' => 'bounced', 'next_at' => null]); out_optout($p['email'], 'bounced'); out_log($pid, 'note', 'Marked as a bad address by ' . $user['name'] . '.'); }
+        if ($act === 'resume' && in_array($p['status'], ['paused', 'blocked'], true)) { out_set($pid, ['status' => (int)$p['step'] ? 'active' : 'queued', 'next_at' => (int)$p['step'] ? out_bdays(time(), 1) : null]); out_log($pid, 'note', 'Resumed.'); }
         if ($act === 'stop') { out_optout($p['email'], 'stopped by hand', true); out_set($pid, ['status' => 'cancelled', 'next_at' => null]); out_log($pid, 'note', 'Stopped and added to do-not-contact by ' . $user['name'] . '.'); }
         if ($act === 'mine' && in_array($p['status'], ['replied', 'needs_you'], true)) { out_set($pid, ['status' => 'talking']); out_log($pid, 'note', 'Taken over by ' . $user['name'] . '.'); }
         if ($act === 'back' && in_array($p['status'], ['needs_you', 'talking'], true)) { out_set($pid, ['status' => 'replied']); out_log($pid, 'note', 'Handed back to the agent.'); }
@@ -65,12 +66,12 @@ $pill = function (string $s) { [$l, $c] = OUT_STATUS[$s] ?? [$s, '#8a929c']; ret
 if (!$p):
     $on = setting('outreach_on') === '1'; $probs = out_problems(); $status = get('status');
     $counts = []; foreach (all('SELECT status, COUNT(*) n FROM outreach_prospects GROUP BY status') as $r) $counts[$r['status']] = (int)$r['n'];
-    $groups = ['' => ['All', null], 'attention' => ['Needs you', ['needs_you', 'replied']], 'interested' => ['Interested', ['interested', 'talking']], 'sending' => ['Sending', ['queued', 'active', 'paused']], 'done' => ['Done', ['finished', 'declined', 'unsubscribed', 'bounced', 'cancelled']]];
+    $groups = ['' => ['All', null], 'attention' => ['Needs you', ['needs_you', 'replied', 'blocked']], 'interested' => ['Interested', ['interested', 'talking']], 'sending' => ['Sending', ['queued', 'active', 'paused']], 'done' => ['Done', ['finished', 'declined', 'unsubscribed', 'bounced', 'cancelled']]];
     $in = $groups[$status][1] ?? null;
     $rows = $in ? all('SELECT * FROM outreach_prospects WHERE status IN (' . implode(',', array_fill(0, count($in), '?')) . ') ORDER BY updated_at DESC LIMIT 300', $in)
         : all('SELECT * FROM outreach_prospects ORDER BY updated_at DESC LIMIT 300');
     $week = date('Y-m-d H:i:s', strtotime('-7 days'));
-    $wk = ['sent' => 0, 'reply' => 0, 'declined' => 0, 'unsubscribe' => 0, 'bounce' => 0];
+    $wk = ['sent' => 0, 'reply' => 0, 'declined' => 0, 'unsubscribe' => 0, 'bounce' => 0, 'blocked' => 0];
     foreach (all('SELECT kind, COUNT(*) n FROM outreach_log WHERE created_at >= ? GROUP BY kind', [$week]) as $r) $wk[$r['kind']] = (int)$r['n'];
     $interestedWk = (int)val("SELECT COUNT(*) FROM outreach_log WHERE kind = 'agent' AND body LIKE 'Interested%' AND created_at >= ?", [$week]);
     $boxes = mailboxes(); $key = $_SESSION['out_key'] ?? ''; unset($_SESSION['out_key']);
@@ -84,7 +85,7 @@ if (!$p):
   <div class="kpi card"><span>Status</span><b style="color:<?= $on ? 'var(--lime)' : 'inherit' ?>"><?= $on ? 'On' : 'Off' ?></b><small><?= out_sent_today() ?> of <?= out_limit_today() ?> sent today</small></div>
   <div class="kpi card"><span>Sent, 7 days</span><b class="num"><?= $wk['sent'] ?></b><small><?= ($counts['queued'] ?? 0) ?> waiting to send</small></div>
   <div class="kpi card"><span>Replies, 7 days</span><b class="num"><?= $wk['reply'] + $wk['declined'] + $wk['unsubscribe'] ?></b><small><?= $interestedWk ?> interested · <?= $wk['declined'] + $wk['unsubscribe'] ?> no</small></div>
-  <div class="kpi card"><span>Bounces, 7 days</span><b class="num"><?= $wk['bounce'] ?></b><small><?= $wk['sent'] ? round($wk['bounce'] / $wk['sent'] * 100) . '% of sends' : 'Pauses itself above 8%' ?></small></div>
+  <div class="kpi card"><span>Bounces, 7 days</span><b class="num"><?= $wk['bounce'] ?></b><small><?= $wk['sent'] ? round($wk['bounce'] / $wk['sent'] * 100) . '% of sends' : 'Pauses itself above 8%' ?><?= $wk['blocked'] ? ' · ' . $wk['blocked'] . ' blocked as spam' : '' ?></small></div>
 </div>
 <div class="seg-links" style="margin:6px 0 4px"><?php foreach ($groups as $k => [$l, $sts]): $n = $sts ? array_sum(array_map(function ($s) use ($counts) { return $counts[$s] ?? 0; }, $sts)) : 0; ?><a href="outreach.php<?= $k ? '?status=' . $k : '' ?>"<?= $status === $k ? ' aria-current="page"' : '' ?>><?= e($l) ?><?= $n ? ' <span class="dim num">' . $n . '</span>' : '' ?></a><?php endforeach; ?></div>
 <div class="card flush"><div class="table-wrap"><table class="tbl"><thead><tr><th>Business</th><th>Status</th><th>Emails</th><th>Next</th><th>Updated</th></tr></thead><tbody>
@@ -136,6 +137,7 @@ if (!$p):
     <?php if ($thread): ?><a class="btn ghost sm" href="email.php?t=<?= e($thread) ?>">Open conversation</a><?php endif; ?>
     <?php if (in_array($p['status'], ['queued', 'active'], true)) echo $btn('pause', 'Pause'); ?>
     <?php if ($p['status'] === 'paused') echo $btn('resume', 'Resume'); ?>
+    <?php if ($p['status'] === 'blocked') { echo $btn('resume', 'Resume'); echo $btn('bad', 'It’s a bad address', 'btn ghost sm', 'Mark as bounced and add to do-not-contact?'); } ?>
     <?php if (in_array($p['status'], ['replied', 'needs_you'], true)) echo $btn('mine', 'I’ll answer this'); ?>
     <?php if (in_array($p['status'], ['needs_you', 'talking'], true)) echo $btn('back', 'Let the agent answer'); ?>
     <?php if ($p['deal_id']): ?><a class="btn ghost sm" href="deal.php?id=<?= (int)$p['deal_id'] ?>">Deal</a><?php endif; ?>
