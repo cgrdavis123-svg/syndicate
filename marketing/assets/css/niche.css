@@ -1,0 +1,21 @@
+/* Industry and local pages (websites-for-*.html, web-design-spartanburg.html). */
+.ni-needs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.ni-needs > div { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; display: grid; gap: 8px; align-content: start; }
+.ni-needs b { font-size: 19px; letter-spacing: -.02em; line-height: 1.25; }
+.ni-needs span { color: var(--muted); font-size: 15px; line-height: 1.55; }
+.ni-concept { display: block; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); background: var(--card); }
+.ni-concept img { display: block; width: 100%; height: auto; }
+.ni-concept figcaption { padding: 12px 16px; font-size: 13.5px; color: var(--muted); border-top: 1px solid var(--line); }
+.ni-tag { display: inline-block; font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; background: var(--paper-2); border-radius: 999px; padding: 4px 10px; margin-bottom: 14px; color: var(--ink-2); }
+.ni-list { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 10px; }
+.ni-list li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; font-size: 15.5px; color: var(--ink-2); }
+.ni-list li svg { width: 20px; height: 20px; margin-top: 2px; }
+.ni-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.ni-places { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; padding: 0; list-style: none; }
+.ni-places li { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: 14.5px; }
+.ni-other { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 12px; }
+.ni-other a { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; font-weight: 600; letter-spacing: -.01em; transition: border-color .2s; }
+.ni-other a:hover { border-color: var(--ink); }
+.ni-other a span { display: block; font-weight: 400; color: var(--muted); font-size: 14px; margin-top: 4px; }
+@media (max-width: 900px) { .ni-needs { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) { .ni-needs { grid-template-columns: 1fr; } }
