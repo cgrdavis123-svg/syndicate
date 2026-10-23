@@ -426,7 +426,7 @@ function ck_lead(array $in): array {
     log_activity('deal', $dealId, 'note', $log);
     log_activity('contact', (int)$contact['id'], 'note', $log);
     $to = setting('shop_notify') ?: setting('business_email');
-    if ($to !== '') send_mail($to, '[' . SHOP_BRAND . '] Website checkup — ' . $host . ' (' . $pub['score'] . '/100)', "$name ($email" . ($biz ? ", $biz" : '') . ") asked for their checkup report.\n\n$log\n\nIn the CRM: " . abs_url('deal.php?id=' . $dealId) . "\n", $email, SHOP_BRAND);
+    if ($to !== '') send_mail($to, '[' . SHOP_BRAND . '] Website checkup — ' . $host . ' (' . $pub['score'] . '/100)', "$name ($email" . ($biz ? ", $biz" : '') . ") asked for their checkup report.\n\n$log\n\nIn the CRM: " . abs_url('deal.php?id=' . $dealId) . "\nDraft a quote from it in one click: " . abs_url('checkups.php') . "\n", $email, SHOP_BRAND);
     // The email holds only our own words and the site they checked, and goes to each address at most once a day.
     $rk = hash('sha256', 'checkup-mail|' . $email);
     if (!val('SELECT 1 FROM attempts WHERE kind = ? AND ip_hash = ? AND created_at > ?', ['checkup_mail', $rk, time() - 86400])) {
@@ -437,6 +437,51 @@ function ck_lead(array $in): array {
             "\n\nIf you didn’t ask for this, you can ignore it.\n\n" . SHOP_BRAND . "\n" . setting('business_email'), setting('business_email'), SHOP_BRAND);
     }
     return ['ok' => true];
+}
+
+/* ---------- Draft a quote from a report (checkups.php) ---------- */
+// Turns the report's fixes into a draft quote for the person who asked for it: the most useful fix included,
+// the rest optional, each line saying which findings it covers. → ['ok', 'id'] or ['ok' => false, 'error'].
+function ck_quote(array $row): array {
+    require_once __DIR__ . '/quotes.php';
+    if ($row['quote_id'] && ($old = one("SELECT id FROM quotes WHERE id = ? AND status NOT IN ('declined','expired')", [(int)$row['quote_id']]))) return ['ok' => true, 'id' => (int)$old['id'], 'existing' => true];
+    $c = $row['contact_id'] ? one("SELECT * FROM contacts WHERE id = ? AND email != ''", [(int)$row['contact_id']]) : null;
+    if (!$c) return ['ok' => false, 'error' => 'Nobody has asked for this report by email yet, so there’s no one to quote. Run the checkup for a contact from their deal, or add them first.'];
+    $pub = ck_public($row);
+    $skus = array_column($pub['fixes'], 'sku');
+    if (!$skus) return ['ok' => false, 'error' => 'This report found nothing we’d charge to fix.'];
+    // Sensible packages: a rebuild already covers the search basics an audit would; never both care tiers.
+    if (in_array('web-starter', $skus, true)) $skus = array_values(array_diff($skus, ['svc-site-audit']));
+    if (in_array('care-plus', $skus, true) && in_array('care-plan', $skus, true)) $skus = array_values(array_diff($skus, [array_search('care-plus', $skus) < array_search('care-plan', $skus) ? 'care-plan' : 'care-plus']));
+    $prods = []; foreach (shop_products(true) as $p) $prods[$p['sku']] = $p;
+    $skus = array_values(array_filter($skus, function ($k) use ($prods) { return isset($prods[$k]); }));
+    if (!$skus) return ['ok' => false, 'error' => 'The products that fix these aren’t active in Store → Products.'];
+    $why = [];
+    foreach ($pub['findings'] as $f) if ($f['level'] !== 'good' && $f['fix'] !== '') $why[$f['fix']][] = $f['title'];
+    if (isset($why['svc-site-audit']) && in_array('web-starter', $skus, true)) $why['web-starter'] = array_merge($why['web-starter'] ?? [], $why['svc-site-audit']);
+    $alt = ['care-plan' => 'care-plus', 'care-plus' => 'care-plan']; foreach ($alt as $a => $b) if (in_array($a, $skus, true) && isset($why[$b])) $why[$a] = array_merge($why[$a] ?? [], $why[$b]);
+    $items = []; $steps = []; $days = 0;
+    foreach ($skus as $i => $sku) {
+        $p = $prods[$sku]; $fixes = array_slice(array_values(array_unique($why[$sku] ?? [])), 0, 4);
+        $items[] = ['product_id' => (int)$p['id'], 'description' => $p['name'], 'details' => mb_substr($fixes ? 'Fixes: ' . implode('; ', $fixes) . (count($why[$sku] ?? []) > 4 ? '; and more' : '') . '.' : $p['blurb'], 0, 600),
+            'unit_price' => (float)$p['price'], 'interval' => $p['interval'], 'optional' => $i === 0 ? 0 : 1];
+        if ($i === 0) { $steps = product_lines($p['steps']); $days = (int)$p['timeline_days']; }
+    }
+    $oneOff = $items[0]['interval'] === '' ? $items[0]['unit_price'] : 0;
+    $worst = array_slice(array_values(array_filter($pub['findings'], function ($f) { return $f['level'] === 'bad'; })), 0, 3);
+    if (!$worst) $worst = array_slice(array_values(array_filter($pub['findings'], function ($f) { return $f['level'] === 'warn'; })), 0, 3);
+    $intro = 'Hi ' . (trim($c['first_name']) ?: 'there') . ",\n\nThanks for running the free checkup on " . $pub['host'] . '. It scored ' . $pub['score'] . "/100, and the main things holding it back are:\n"
+        . implode("\n", array_map(function ($f) { return '- ' . $f['title']; }, $worst))
+        . "\n\nBelow is what we’d do about it" . (count($items) > 1 ? '. The first item makes the biggest difference; the rest are optional, so tick the ones you want' : '') . '. Each item says which problems it fixes, and if you’d rather fix some yourself, the report explains every one: ' . ck_report_url($row);
+    q('INSERT INTO quotes (number, token, brand, title, intro, contact_id, company_id, deal_id, valid_until, deposit_pct, terms, steps, timeline_days, notes, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        [next_quote_number(), bin2hex(random_bytes(16)), SHOP_BRAND, 'Website fixes — ' . $pub['host'], $intro, $c['id'], $c['company_id'], $row['deal_id'], date('Y-m-d', strtotime('+' . max(1, (int)setting('quote_valid_days')) . ' days')),
+         $oneOff > 0 && $oneOff < 500 ? 100 : 50, setting('quote_terms'), implode("\n", array_slice($steps, 0, 40)), $days, 'Drafted from the free checkup of ' . $pub['host'] . ' (score ' . $pub['score'] . '/100). Report: ' . ck_report_url($row, '&nv=1'), now(), now()]);
+    $id = (int)db()->lastInsertId();
+    foreach ($items as $pos => $it) q('INSERT INTO quote_items (quote_id, product_id, description, details, quantity, unit_price, interval, optional, selected, position) VALUES (?,?,?,?,1,?,?,?,?,?)',
+        [$id, $it['product_id'], $it['description'], $it['details'], $it['unit_price'], $it['interval'], $it['optional'], $it['optional'] ? 0 : 1, $pos]);
+    q('UPDATE checkups SET quote_id = ? WHERE id = ?', [$id, $row['id']]);
+    if ($row['deal_id']) log_activity('deal', (int)$row['deal_id'], 'note', 'Drafted quote from the website checkup (' . $pub['host'] . ').');
+    return ['ok' => true, 'id' => $id, 'existing' => false];
 }
 
 /* ---------- Cleanup (cron) ---------- */

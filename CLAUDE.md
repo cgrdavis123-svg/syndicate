@@ -370,7 +370,7 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 | Module | Files | What it does |
 |---|---|---|
 | Care | `care.php`, `care-site.php` | Website care plans and monitoring (see “Website care”) |
-| Checkups | `checkups.php` | Every free website checkup (website, outreach agent, staff), score, views, who asked for it by email; run one by hand. Nav badge = new emailed reports. See “Free website checkup” |
+| Checkups | `checkups.php` | Every free website checkup (website, outreach agent, staff), score, views, who asked for it by email; run one by hand; **Draft quote** on emailed reports. Nav badge = new emailed reports. See “Free website checkup” |
 | Dashboard | `index.php` | Today: tasks due, upcoming consultations/bookings, open deals, unpaid invoices, store orders, stats; “Email me this week’s summary” (see §16) |
 | Inbox | `inbox.php`, `email.php`, `compose.php`, `mailboxes.php`, `email-file.php`, `email-img.php` | IMAP/SMTP email inside the CRM, linked to contacts and deals; passwords encrypted with `storage/mail.key` |
 | Pipeline | `deals.php`, `deal.php`, `deal-edit.php` | Deals by stage: **New lead → Contacted → Qualified → Proposal → Won / Lost** |
@@ -735,6 +735,7 @@ A public, automated check of any website's home page, at `syndicatemarketing.co/
 - **Flow:** `a=checkup` (Turnstile, 8 per visitor per hour, 300 fresh checks a day) runs the scan and stores a row in `checkups` (a 32-hex token is the report link). The same site from the same source within 6 hours gets the same report. The page then calls `a=checkup-speed` once (PageSpeed takes 20–60 s; concurrent calls wait and poll). `a=checkup-report` returns the public report (no names, emails or who ran it) and counts a view (`&nv=1` doesn't; staff links use it).
 - **Leads:** “Email me this report” (`a=checkup-lead`, Turnstile, 6/hour) creates the contact and company (website filled in), a `new` deal with source **“Marketing site — checkup”** (reused for the same site), a follow-up task, the report summary on the timeline, an email to `shop_notify`, and one email per address per day to the visitor with the summary and link. Referral codes are attached like the contact form.
 - **Outreach:** `outreach-api.php?a=checkup` (`url`, `business`; 60 a day) returns the report link, score and findings for the first email. The first time someone opens a report the agent sent, the CRM adds a task. Agent reports are never reused for website visitors or the other way round.
+- **Draft quote** (`ck_quote()`, the button on `checkups.php` for reports someone asked to have emailed; the staff email links there): a draft quote for that contact on the checkup's deal, titled “Website fixes — host”, with the most useful fix included and the rest optional, each line saying which findings it fixes (a Starter rebuild replaces the site audit; never both care tiers). The intro names their score and worst problems and links the report. Deposit 100% under $500, else 50%. Opens in the quote editor to review before sending; the checkup keeps the link (`checkups.quote_id`), so the button then opens that quote.
 - **Retention:** reports nobody asked to have emailed are deleted after 180 days (`ck_cleanup()`, cron). Disclosed in the marketing privacy policy (`#checkup`).
 
 ### Review requests
@@ -814,7 +815,7 @@ It prints a one-line summary (cPanel can email it to you; set the cron email to 
 ## 17. Databases and migrations
 
 ### CRM: `crm/storage/crm.sqlite`
-Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v27**.
+Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v28**.
 
 | Version | Adds |
 |---|---|
@@ -843,6 +844,7 @@ Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_versi
 | v24 | Referral program: `referrers`, `referrer_links`, `referrals`, `referral_earnings`, `referral_payouts`; `orders.ref_code`, `bookings.ref_code`; settings `ref_on`, `ref_rate` (5), `ref_months` (12), `ref_hold_days` (30), `ref_min_cash` (25), `ref_task_month` |
 | v25 | Free website checkups: `checkups` (token, host, via site/agent/staff, label, score, result JSON, PageSpeed JSON, contact and deal once emailed, views); deal source “Marketing site — checkup” |
 | v26 | Review requests: `review_requests` (one per project: contact, email, status scheduled/sent/skipped, reason, token, due, sent, clicked); projects already finished are marked skipped; settings `review_on`, `review_url`, `review_delay_days` |
+| v27 | `checkups.quote_id` (the quote drafted from a checkup) |
 | v18 | Community products (`com-discord-setup`, `com-audit`, `com-manage`, `com-manage-plus`, after the care plans) and the `add-presskit` add-on, from `catalog.json` |
 
 ### Site Stats: `crm/storage/analytics.sqlite`
@@ -1082,7 +1084,7 @@ All setup items below were done by October 18, 2026, except the ones still open.
 | Consulting rate | $150/hour |
 | Exclude own visits | `?syn_ignore=1` |
 | Cart storage | `localStorage.sm_cart`, `sm_ref`, `sessionStorage.sm_src`, `sm_checkout`, `sm_order` |
-| CRM DB version | v26 (next: v27) |
+| CRM DB version | v27 (next: v28) |
 | Review requests | Settings → Review requests (`reviews.php`); one honest Google review ask per business a year, 3 days after Complete |
 | Free website checkup | `syndicatemarketing.co/checkup.html` · reports `checkup.html?r=TOKEN` · CRM → Checkups · agent `outreach-api.php?a=checkup` |
 | Referral program | 5% for 12 months, 30-day hold, credit or cash ($25+, W-9) · sign-up `syndicatemarketing.co/referrals.html` · referrer page `crm.stusyn.com/refer.php` · CRM → Referrals |

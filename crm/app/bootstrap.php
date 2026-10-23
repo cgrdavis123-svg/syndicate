@@ -606,6 +606,11 @@ function migrate(PDO $pdo): void {
         ");
         $pdo->exec('PRAGMA user_version = 26');
     }
+    if ($v < 27) {
+        // v27: the quote drafted from a checkup (checkups.php → Draft quote), so the button opens it instead of making another
+        $pdo->exec("ALTER TABLE checkups ADD COLUMN quote_id INTEGER REFERENCES quotes(id) ON DELETE SET NULL");
+        $pdo->exec('PRAGMA user_version = 27');
+    }
 }
 function migrate_v1(PDO $pdo): void {
     $pdo->exec("

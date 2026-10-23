@@ -2,6 +2,7 @@
 // Free website checkups: every report run on syndicatemarketing.co/checkup.html, by the outreach agent, or here.
 require __DIR__ . '/app/bootstrap.php';
 require __DIR__ . '/app/checkup.php';
+require_once __DIR__ . '/app/quotes.php';
 $user = require_user();
 if (is_post()) {
     if (post('action') === 'run') {
@@ -10,11 +11,17 @@ if (is_post()) {
         flash($r['reused'] ? 'That site was checked in the last few hours, so here’s that report.' : 'Done. Open the report to run the phone speed test.');
         redirect('checkups.php?open=' . $r['token']);
     }
+    if (post('action') === 'quote' && ($row = one('SELECT * FROM checkups WHERE id = ?', [(int)post('id')]))) {
+        $r = ck_quote($row);
+        if (!$r['ok']) { flash($r['error']); redirect('checkups.php'); }
+        flash($r['existing'] ? 'This checkup already has a quote, so here it is.' : 'Draft quote ready. Check the items and the note at the top, then save and send it.');
+        redirect('quote-edit.php?id=' . $r['id']);
+    }
     redirect('checkups.php');
 }
 q("UPDATE checkups SET seen_at = ? WHERE seen_at IS NULL AND contact_id IS NOT NULL", [now()]);
 $via = in_array(get('via'), ['site', 'agent', 'staff'], true) ? get('via') : '';
-$rows = all('SELECT k.*, c.first_name, c.last_name, c.email FROM checkups k LEFT JOIN contacts c ON c.id = k.contact_id' . ($via ? ' WHERE k.via = ?' : '') . ' ORDER BY k.id DESC LIMIT 200', $via ? [$via] : []);
+$rows = all('SELECT k.*, c.first_name, c.last_name, c.email, qt.number quote_number, qt.status quote_status FROM checkups k LEFT JOIN contacts c ON c.id = k.contact_id LEFT JOIN quotes qt ON qt.id = k.quote_id' . ($via ? ' WHERE k.via = ?' : '') . ' ORDER BY k.id DESC LIMIT 200', $via ? [$via] : []);
 $week = time() - 7 * 86400;
 $k = one('SELECT COUNT(*) n, SUM(contact_id IS NOT NULL) leads, SUM(via = \'agent\') agent, SUM(via = \'agent\' AND views > 0) opened FROM checkups WHERE created_at > ?', [$week]);
 $open = ck_row(get('open'));
@@ -34,14 +41,15 @@ $VIA = ['site' => 'Website', 'agent' => 'Outreach', 'staff' => 'Staff'];
   <div><button class="btn primary sm">Run checkup</button></div>
 </form>
 <p class="small"><a href="checkups.php"<?= $via === '' ? ' aria-current="page"' : '' ?>>All</a><?php foreach ($VIA as $v => $l): ?> · <a href="checkups.php?via=<?= $v ?>"<?= $via === $v ? ' aria-current="page"' : '' ?>><?= $l ?></a><?php endforeach; ?></p>
-<section class="card"><div class="table-wrap"><table class="tbl cards"><thead><tr><th>Website</th><th class="r">Score</th><th>From</th><th>Emailed to</th><th class="r">Views</th><th>Checked</th></tr></thead><tbody>
+<section class="card"><div class="table-wrap"><table class="tbl cards"><thead><tr><th>Website</th><th class="r">Score</th><th>From</th><th>Emailed to</th><th class="r">Views</th><th>Checked</th><th></th></tr></thead><tbody>
 <?php foreach ($rows as $r): $sc = (int)$r['score']; ?>
   <tr><td><a href="<?= e(ck_report_url($r, '&nv=1')) ?>" target="_blank" rel="noopener"><b><?= e($r['host']) ?></b></a><?= $r['label'] !== '' ? '<br><span class="muted small">' . e($r['label']) . '</span>' : '' ?></td>
     <td data-label="Score" class="r num"><span class="tag <?= $sc >= 80 ? 'lime' : ($sc >= 55 ? '' : 'pink') ?>"><?= $sc ?></span></td>
     <td data-label="From"><?= e($VIA[$r['via']] ?? $r['via']) ?></td>
     <td data-label="Emailed to"><?php if ($r['contact_id']): ?><a href="contact.php?id=<?= (int)$r['contact_id'] ?>"><?= e(trim($r['first_name'] . ' ' . $r['last_name']) ?: $r['email']) ?></a><?= $r['deal_id'] ? ' · <a href="deal.php?id=' . (int)$r['deal_id'] . '">deal</a>' : '' ?><?php else: ?><span class="muted">—</span><?php endif; ?></td>
     <td data-label="Views" class="r num"><?= (int)$r['views'] ?><?= $r['viewed_at'] ? '<br><span class="muted small">' . e(date('M j, g:i a', (int)$r['viewed_at'])) . '</span>' : '' ?></td>
-    <td data-label="Checked"><?= e(date('M j, g:i a', (int)$r['created_at'])) ?></td></tr>
-<?php endforeach; if (!$rows): ?><tr><td colspan="6" class="empty">No checkups yet.</td></tr><?php endif; ?>
+    <td data-label="Checked"><?= e(date('M j, g:i a', (int)$r['created_at'])) ?></td>
+    <td class="r"><?php if ($r['quote_number']): ?><a class="btn ghost sm" href="quote.php?id=<?= (int)$r['quote_id'] ?>"><?= e($r['quote_number']) ?> · <?= e(QUOTE_STATUSES[$r['quote_status']] ?? $r['quote_status']) ?></a><?php elseif ($r['contact_id']): ?><form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="quote"><input type="hidden" name="id" value="<?= (int)$r['id'] ?>"><button class="btn primary sm">Draft quote</button></form><?php endif; ?></td></tr>
+<?php endforeach; if (!$rows): ?><tr><td colspan="7" class="empty">No checkups yet.</td></tr><?php endif; ?>
 </tbody></table></div></section>
 <?php layout_bottom();
