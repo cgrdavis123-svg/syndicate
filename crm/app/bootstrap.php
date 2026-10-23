@@ -651,6 +651,16 @@ function migrate(PDO $pdo): void {
         ");
         $pdo->exec('PRAGMA user_version = 30');
     }
+    if ($v < 31) {
+        // v31: the online kickoff form (portal-kickoff.php): the client's answers, when they sent them, whether they want a call too, and one reminder.
+        $pdo->exec("
+            ALTER TABLE builds ADD COLUMN intake TEXT NOT NULL DEFAULT '';
+            ALTER TABLE builds ADD COLUMN intake_at INTEGER;
+            ALTER TABLE builds ADD COLUMN intake_call INTEGER NOT NULL DEFAULT 0;
+            ALTER TABLE builds ADD COLUMN intake_reminded_at INTEGER;
+        ");
+        $pdo->exec('PRAGMA user_version = 31');
+    }
 }
 function migrate_v1(PDO $pdo): void {
     $pdo->exec("

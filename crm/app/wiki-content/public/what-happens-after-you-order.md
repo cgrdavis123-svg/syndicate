@@ -13,9 +13,11 @@ Here’s what happens the moment your payment goes through.
 - **Your client portal opens.** We email you a sign-in link. Your project is already there, with each step listed. See [[signing-in-to-your-portal]].
 - If your order includes a website or ads, your **[[what-is-site-stats|Site Stats]]** dashboard is set up for you.
 
-## Within one business day
+## Your kickoff
 
-We email you to book your **[[the-kickoff-call|kickoff call]]**. The confirmation email also has a link so you can book it yourself.
+For a website, your confirmation email and your portal have a short **kickoff form**: about 10 minutes on what you do, who your customers are, how you’d like the site to look and what to show on it. We start the moment you send it. Rather talk it through? Book a free **[[the-kickoff-call|kickoff call]]** instead; the link is in the same email.
+
+For ads and other services, we email you within one business day to book a kickoff call, and the confirmation email has a link so you can book it yourself.
 
 ## Monthly plans
 

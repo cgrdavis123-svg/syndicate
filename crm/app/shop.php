@@ -38,8 +38,14 @@ function price_label(float $price, string $interval = '', string $unit = ''): st
 }
 
 // The first step after an order: a link to book the kickoff call when online booking is set up.
-function shop_kickoff_line(): string {
+function shop_kickoff_line(?array $c = null): string {
     $slug = (string)val("SELECT slug FROM meeting_types WHERE kind = 'kickoff' AND active = 1 ORDER BY position LIMIT 1");
+    // A website order starts with the online kickoff form; the call is there for anyone who'd rather talk.
+    if ($c && ($pid = (int)val("SELECT project_id FROM builds WHERE contact_id = ? AND status = 'waiting' AND intake_at IS NULL ORDER BY id DESC LIMIT 1", [$c['id']]))) {
+        require_once __DIR__ . '/builds.php';
+        return "Fill in your kickoff form (about 10 minutes). We start your website as soon as it’s in:\n     " . kickoff_url($c, $pid)
+            . ($slug !== '' ? "\n     Rather talk it through first? Book a free kickoff call instead: " . abs_url('book.php?type=' . rawurlencode($slug)) : '');
+    }
     return $slug !== '' ? "Book your kickoff call at a time that suits you:\n     " . abs_url('book.php?type=' . rawurlencode($slug)) : 'We’ll email you within one business day to schedule a short kickoff call.';
 }
 
@@ -517,7 +523,7 @@ function shop_mail_paid(array $o): void {
                 : "\nThen " . money($o['monthly']) . "/month, billed automatically on the same date each month until you cancel.")
                 . "\nCancel any time online in your client portal (Plans & billing): " . abs_url('portal-login.php?to=plans')
                 . (array_filter($items, function ($i) { return $i['category'] === 'ads'; }) ? "\nAds management ends at the first billing date at least 30 days after you cancel; other monthly plans end when the month you’ve paid for runs out." : ($trialEnd ? "\nCancel before " . date('F j', $trialEnd) . " and you won’t pay anything more." : "\nYour plan ends when the month you’ve paid for runs out.")) : '') . "\n\n"
-            . "What happens next\n  1. " . shop_kickoff_line() . "\n  2. Your client portal is ready. You can follow progress, upload your logo and photos, and approve work there:\n     " . portal_invite_url($c) . "\n  3. You’ll see each draft in the portal before anything goes live.\n\n"
+            . "What happens next\n  1. " . shop_kickoff_line($c) . "\n  2. Your client portal is ready. You can follow progress, upload your logo and photos, and approve work there:\n     " . portal_invite_url($c) . "\n  3. You’ll see each draft in the portal before anything goes live.\n\n"
             . "Questions? Just reply to this email.\n\n" . SHOP_BRAND . "\n" . setting('business_email'), setting('business_email'), SHOP_BRAND);
     }
     $to = setting('shop_notify') ?: setting('business_email');

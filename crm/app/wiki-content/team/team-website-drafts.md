@@ -14,7 +14,7 @@ Nothing reaches the client until you press **Send to the client for approval**, 
 ## The steps
 
 1. **Order paid.** The draft starts as *Waiting for kickoff*.
-2. **Kickoff call.** Write what you learned in **Notes for the builder** and fill in **Contact details the client approved** (empty means the builder marks every phone, email and address for you to confirm). The builder may start 3 hours after the call ends, or as soon as you press **Ready for the builder**.
+2. **Kickoff.** The client fills in the **kickoff form** in their portal (linked in their order email, on their portal home and at the top of their project). Sending it starts the draft straight away and fills in **Contact details the client approved** from what they chose to show. If they ticked “I’d also like a kickoff call”, or booked a call instead, the builder starts 3 hours after the call ends; write what you learned in **Notes for the builder** before then. **Ready for the builder** starts it any time. Clients who haven't sent the form or booked a call after 3 days get one reminder email.
 3. **The builder runs** a few times a day. It reads the checkout brief, the add-ons in the order, your notes, the client’s portal files and messages, and `templates/CLAUDE.md`, then uploads the site and a summary of what it assumed. If it can’t go on, it stops and asks (status *Needs you*); answer in your notes and press Ready again.
 4. **You review.** You get an email and a task. Open the preview (check it on your phone), read the summary and the “to confirm” list. If it isn’t right, use **Send it back to the builder** with notes; that doesn’t use one of the client’s rounds.
 5. **Send it.** The client gets an email and an approval box in their portal with the preview link.

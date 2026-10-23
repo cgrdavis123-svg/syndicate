@@ -61,7 +61,13 @@ function build_create(int $projectId, string $sku, array $o): ?int {
         $projectId, $o['order_id'] ?? null, $o['quote_id'] ?? null, $o['contact_id'] ?? null, $o['company_id'] ?? null, $sku, mb_substr((string)($o['business'] ?? ''), 0, 160),
         json_encode($o['brief'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), json_encode(array_values($o['extras'] ?? []), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         'waiting', BUILD_ROUNDS[$sku], time(), time()]);
-    return (int)db()->lastInsertId();
+    $id = (int)db()->lastInsertId();
+    if (!empty($o['order_id']) || !empty($o['quote_id'])) {
+        q("INSERT INTO project_posts (project_id, author, kind, body, created_at) VALUES (?, 'staff', 'update', ?, ?)", [$projectId,
+            "Start here: tell us about your business in your kickoff form. It takes about 10 minutes, and we start your website as soon as it’s in:\n" . abs_url('portal-kickoff.php?id=' . $projectId)
+            . "\n\nRather talk it through? Book a free kickoff call instead, using the link in your order email.", now()]);
+    }
+    return $id;
 }
 // From a paid store order (shop_fulfil).
 function build_from_order(array $o, array $items, array $brief, ?int $contactId, ?int $companyId): void {
@@ -104,6 +110,7 @@ function builds_cron(): string {
         if ((int)$b['attempts'] >= BUILD_MAX_ATTEMPTS) build_block($b, 'The builder started this draft ' . (int)$b['attempts'] . ' times without finishing. Check the notes and the brief, then mark it ready again.');
         else build_set((int)$b['id'], ['status' => $b['change_notes'] !== '' && (int)$b['version'] > 0 ? 'changes' : 'ready', 'claimed_at' => null]);
     }
+    if ($r = kickoff_reminders()) $out[] = $r . ' kickoff form reminder' . ($r === 1 ? '' : 's');
     return $out ? 'Website drafts ' . implode(', ', $out) : '';
 }
 function build_block(array $b, string $question): void {
@@ -137,6 +144,7 @@ function build_job(array $b): array {
         'client' => ['name' => $p ? person_name($p) : '', 'company' => (string)($p['company'] ?? '')],
         'publish' => $b['publish'] !== '' ? $b['publish'] : 'Nothing approved yet: mark every phone number, email and address as class="fill" for us to confirm.',
         'brief' => json_decode($b['brief'], true) ?: [],
+        'kickoff_form' => kickoff_answers($b) ?: null,
         'notes_from_us' => $b['notes'],
         'changes_to_make' => $prev ? $b['change_notes'] : '',
         'site_stats_key' => (string)($site['public_id'] ?? ''), 'domain' => (string)($site['domains'] ?? ''),
@@ -312,3 +320,85 @@ function build_rmdir(string $dir): void {
 }
 // What the dashboard, nav and weekly summary count as waiting on you.
 function builds_waiting_on_you(): int { return (int)val("SELECT COUNT(*) FROM builds WHERE status IN ('review','blocked')"); }
+
+/* ---------- The online kickoff form (portal-kickoff.php) ---------- */
+// What we ask, in order: key => [label, hint, kind, required]. Kinds: text, area (several lines), lines (one per line).
+const KICKOFF_FIELDS = [
+    'business' => ['Business name, as it should appear on the site', '', 'text', true],
+    'about' => ['What does your business do?', 'A few sentences in your own words, as you’d tell a new customer.', 'area', true],
+    'services' => ['Your services or products', 'One per line. Add a few words or a price after any of them if you like.', 'lines', true],
+    'customers' => ['Who are your customers?', 'Homeowners, busy families, other businesses, gamers… whoever you want more of.', 'area', false],
+    'area' => ['Where do you work?', 'Towns or areas you serve, or “online, anywhere”.', 'text', false],
+    'hours' => ['Opening hours', 'One per line, e.g. “Mon–Fri 8am–5pm”. Leave empty if you don’t keep set hours.', 'lines', false],
+    'why' => ['Why do customers pick you?', 'In your own words. We only put on the site what you tell us here, so no made-up claims.', 'area', false],
+    'goal' => ['The one thing you most want visitors to do', 'Call you, request a quote, book, buy, visit…', 'text', false],
+    'pages' => ['Pages you’d like', 'One per line. Not sure? Leave it and we’ll suggest the usual ones for your package.', 'lines', false],
+    'style' => ['Colors, feel, and websites you like', 'Paste links to sites you like and say what you like about them.', 'area', false],
+    'avoid' => ['Anything to leave out or avoid?', '', 'area', false],
+    'phone' => ['Phone number to show on the site', '', 'text', false],
+    'email' => ['Email address to show on the site', '', 'text', false],
+    'address' => ['Street address to show on the site', 'Only if customers come to you. Leave empty to keep it off the site.', 'text', false],
+    'social' => ['Social media and listing links', 'One per line: Facebook, Instagram, Google Business Profile, Yelp…', 'lines', false],
+    'domain' => ['Your web address', 'If you already have one, e.g. yourbusiness.com. Not sure? Leave it empty.', 'text', false],
+    'current' => ['Your current website, if you have one', 'We can reuse what’s good on it.', 'text', false],
+];
+function kickoff_answers(array $b): array { $a = json_decode((string)$b['intake'], true); return is_array($a) ? $a : []; }
+function kickoff_open(array $b): bool { return in_array($b['status'], ['waiting', 'ready'], true); }
+function kickoff_url(array $c, int $projectId): string { return portal_invite_url($c) . '&to=kickoff&p=' . $projectId; }
+// The contact details the client chose to show, in the form the builder reads.
+function kickoff_publish(array $a): string {
+    $out = [];
+    foreach (['phone' => 'Phone', 'email' => 'Email', 'address' => 'Address'] as $k => $l) if (trim((string)($a[$k] ?? '')) !== '') $out[] = $l . ': ' . trim($a[$k]);
+    if (trim((string)($a['social'] ?? '')) !== '') $out[] = 'Links: ' . implode(', ', array_filter(array_map('trim', explode("\n", $a['social']))));
+    if (trim((string)($a['address'] ?? '')) === '') $out[] = 'No street address on the site';
+    return $out ? implode("\n", $out) . "\n(Approved by the client in their kickoff form.)" : '';
+}
+// Saves the form. Returns [errors, started].
+function kickoff_save(array $b, array $c, array $in, bool $call): array {
+    $a = []; $errors = [];
+    foreach (KICKOFF_FIELDS as $k => [$label, , $kind, $req]) {
+        $v = trim(str_replace("\r", '', (string)($in[$k] ?? '')));
+        $a[$k] = mb_substr($v, 0, $kind === 'text' ? 300 : 4000);
+        if ($req && $a[$k] === '') $errors[] = 'Fill in “' . $label . '”.';
+    }
+    if ($a['email'] !== '' && !filter_var($a['email'], FILTER_VALIDATE_EMAIL)) $errors[] = 'Check the email address to show on the site.';
+    if ($errors) return [$errors, false];
+    $first = !$b['intake_at'];
+    $start = !$call && $b['status'] === 'waiting';
+    build_set((int)$b['id'], ['intake' => json_encode($a, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), 'intake_at' => time(), 'intake_call' => $call ? 1 : 0]
+        + ($b['publish'] === '' || strpos($b['publish'], '(Approved by the client in their kickoff form.)') !== false ? ['publish' => kickoff_publish($a)] : [])
+        + ($start ? ['status' => 'ready', 'ready_at' => time()] : []));
+    $p = build_project($b);
+    q("INSERT INTO project_posts (project_id, author, contact_id, kind, body, created_at) VALUES (?, 'client', ?, 'message', ?, ?)", [$b['project_id'], $c['id'],
+        ($first ? 'Sent the kickoff form.' : 'Updated the kickoff form.') . ($call ? ' I’d also like a kickoff call before you start.' : ''), now()]);
+    if (!$call) q("UPDATE project_steps SET done_at = ? WHERE project_id = ? AND done_at IS NULL AND title LIKE 'Kickoff%'", [now(), $b['project_id']]);
+    if (!$call) q("UPDATE tasks SET done_at = ? WHERE done_at IS NULL AND title LIKE 'Schedule kickoff call with%' AND entity_type = 'deal' AND entity_id IN (SELECT id FROM deals WHERE contact_id = ?)", [now(), $c['id']]);
+    $text = kickoff_text($a);
+    if ($p) notify_staff($p, $c, $first ? 'sent their kickoff form' : 'updated their kickoff form', ($start ? "The builder starts on the draft on its next run. Add anything else in Notes for the builder: " . abs_url('build.php?id=' . $b['id']) . "\n\n" : ($call ? "They want a kickoff call first, so the draft waits until 3 hours after it.\n\n" : '')) . $text);
+    return [[], $start];
+}
+function kickoff_text(array $a): string {
+    $rows = [];
+    foreach (KICKOFF_FIELDS as $k => [$label]) if (trim((string)($a[$k] ?? '')) !== '') $rows[] = $label . ":\n" . trim($a[$k]);
+    return implode("\n\n", $rows);
+}
+// One reminder, 3 days after the order, to clients who haven't sent the form or booked a call.
+function kickoff_reminders(): int {
+    $n = 0;
+    foreach (all("SELECT * FROM builds WHERE status = 'waiting' AND intake_at IS NULL AND intake_reminded_at IS NULL AND (order_id IS NOT NULL OR quote_id IS NOT NULL) AND created_at < ?", [time() - 3 * 86400]) as $b) {
+        q('UPDATE builds SET intake_reminded_at = ? WHERE id = ?', [time(), $b['id']]);
+        if ($b['contact_id'] && one("SELECT 1 FROM bookings bk JOIN meeting_types t ON t.id = bk.type_id WHERE t.kind = 'kickoff' AND bk.status = 'confirmed' AND bk.contact_id = ?", [$b['contact_id']])) continue;
+        $p = build_project($b); $c = $b['contact_id'] ? one('SELECT * FROM contacts WHERE id = ? AND portal_access = 1', [$b['contact_id']]) : null;
+        if (!$p || !$c || $c['email'] === '' || !$p['shared']) continue;
+        $first = $c['first_name'] ?: 'there';
+        $slug = (string)val("SELECT slug FROM meeting_types WHERE kind = 'kickoff' AND active = 1 ORDER BY position LIMIT 1");
+        if (send_mail($c['email'], 'One step to start your website',
+            "Hi $first,\n\nWe’re ready to start your website as soon as we know a bit about your business. It takes about 10 minutes:\n\n" . kickoff_url($c, (int)$p['id'])
+            . ($slug !== '' ? "\n\nRather talk it through? Book a free kickoff call instead: " . abs_url('book.php?type=' . rawurlencode($slug)) : '')
+            . "\n\nThis is the only reminder we’ll send about it.\n\n" . SHOP_BRAND . "\n" . setting('business_email'), setting('business_email'), SHOP_BRAND)) {
+            log_activity('contact', (int)$c['id'], 'email', 'Sent the one kickoff form reminder for ' . $p['name'] . '.');
+            $n++;
+        }
+    }
+    return $n;
+}

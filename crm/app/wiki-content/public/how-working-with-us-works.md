@@ -13,7 +13,7 @@ Syndicate Marketing builds websites, runs paid ads on Google, Meta and TikTok, a
 2. **Answer a few questions at checkout** about your business, your goals and your style. It takes about five minutes.
 3. **Pay securely** by card, Apple Pay or Google Pay. You get a receipt right away.
 4. **Your client portal opens straight away.** It’s where you follow progress, send files and approve work. See [[signing-in-to-your-portal]].
-5. **We book a kickoff call** within one business day to plan the details. See [[the-kickoff-call]].
+5. **You fill in a short kickoff form** in your portal (about 10 minutes), or book a kickoff call if you’d rather talk. See [[the-kickoff-call]].
 6. **We build, you review.** You see drafts in your portal and ask for changes. See [[rounds-of-changes]].
 7. **Launch.** We put it live, check everything works, and show you your [[what-is-site-stats|Site Stats]] dashboard.
 

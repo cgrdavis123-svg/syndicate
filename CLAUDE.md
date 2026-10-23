@@ -422,6 +422,7 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 | `care-report.php` | Monthly care report web page (signed link) |
 | `outreach-api.php` | Outreach agent API (key-protected: `Authorization: Bearer <key>` or `X-Api-Key`): `status`, `check`, `add`, `pending`, `respond`, `checkup`, `preview` |
 | `build-api.php` | Builder agent API (same agent key as outreach): `status`, `next` (claims a job), `file`, `source`, `start`, `upload`, `finish`, `fail` |
+| `portal-kickoff.php` | The client's online kickoff form for a website project (`?id=` project; email links `portal-login.php?k=…&to=kickoff&p=ID` sign in and open it) |
 | `draft/<token>/…` | A private website draft for review (`draft/index.php`, sandboxed by `draft/.htaccess`) |
 | `preview.php` | A free homepage concept for a prospect (`?t=` token), its remove page (`&remove=1`) and view beacon (`&seen=1`, from `assets/js/pv.js`) |
 | `rv.php` | The link in a review request email: records that it was opened, then redirects to the Google review page (`?t=` token) |
@@ -757,7 +758,8 @@ A public, automated check of any website's home page, at `syndicatemarketing.co/
 ### Website drafts (the builder agent)
 First drafts of paid client websites, built by a scheduled task and reviewed by Grady before the client sees them. Engine `app/builds.php`, staff `builds.php` / `build.php`, agent API `build-api.php`, previews `draft/`, Team article `team-website-drafts`. Migration v30.
 - **Created** for every paid store order with a website package (`build_from_order()` in `shop_fulfil()`) and every won quote with one (`build_from_quote()`), one per project (`builds.project_id` unique), with the checkout brief, the order's add-ons and `rounds` from `BUILD_ROUNDS` (2 for one-page and starter, 3 for business and store). Staff can add one to any project (project page → “Have the builder draft this website”).
-- **Statuses** (`BUILD_STATUSES`): waiting (for kickoff) → ready → building → review (draft ready for you) → sent (with the client) → changes / approved; blocked (needs you); cancelled. `builds_cron()` (cron) marks a waiting build ready **3 hours after the client's kickoff booking ends** (`BUILD_KICKOFF_WAIT`), and returns claims older than 8 hours to the queue (after 3 tries → blocked).
+- **Kickoff form** (`portal-kickoff.php`, `KICKOFF_FIELDS` and `kickoff_*()` in `app/builds.php`, migration v31): about 10 minutes on the business (what it does, services, customers, area, hours, why customers pick them, the one action), the site (pages, style and sites they like, things to avoid, domain, current site), what to show (phone, email, address, social links: only what they fill in) and their logo and photos (saved as project files). Linked from the order and won-quote emails (`shop_kickoff_line($c)` gives the form first and the call as the alternative when a website build is waiting), a “Start here” post on the project, a box at the top of the portal project and “Needs you” on the portal home. Sending it saves `builds.intake` / `intake_at`, fills `builds.publish` from their choices (unless staff wrote their own), ticks the “Kickoff” project step and the “Schedule kickoff call” task, posts a note in the feed, emails `shop_notify` with the answers (`notify_staff`), and moves the build to **ready** at once, unless they tick “I’d also like a kickoff call” (`intake_call`), in which case it waits for the call as before. Answers can be changed until the builder claims it; the builder gets them as `kickoff_form`. `kickoff_reminders()` (in `builds_cron()`) emails one reminder 3 days after the order to clients with no form and no kickoff booking. Refunds: “before your kickoff” now means the call, or sending the form if they skip the call (terms of sale §3, help article `refunds`).
+- **Statuses** (`BUILD_STATUSES`): waiting (for kickoff) → ready → building → review (draft ready for you) → sent (with the client) → changes / approved; blocked (needs you); cancelled. `builds_cron()` (cron) marks a waiting build ready **3 hours after the client's kickoff booking ends** (a sent kickoff form makes it ready straight away) (`BUILD_KICKOFF_WAIT`), and returns claims older than 8 hours to the queue (after 3 tries → blocked).
 - **The agent** (scheduled task “Website builder”, Syndicate CRM cloud environment) calls `a=next`, which claims the oldest `changes` then `ready` build and returns the job: package and features, add-ons, brief, staff notes (`builds.notes`), contact details approved for the site (`builds.publish`; empty = mark them all `class="fill"`), Site Stats key and domain, the client's portal files (download links) and messages, the change notes, and the previous draft's preview and source zip. It builds following `templates/CLAUDE.md`, then `start` → `upload` (the built site, in batches under the upload limit; allowed types in `BUILD_TYPES`, paths checked by `build_clean_path()`, 800 files / 60 MB per draft) → `source` (one .zip) → `finish` (summary + list to confirm), or `fail` with a question.
 - **Review:** `finish` sets status review, emails `shop_notify` and adds a task. `build.php` shows the preview, summary, to-confirm list and source zip; **Send it back to the builder** (no round used) or **Send to the client for approval** (`build_send()`: an approval post in the portal with the preview link, an email, project → In review; an older unanswered draft post becomes a plain update).
 - **Client decision** (`build_decided()`, called from `portal-project.php`): Approve → approved + task “Put … live”; Request changes → `rounds_used` + 1 and the note becomes `change_notes` for the builder; beyond `rounds` it goes to blocked for Grady to make anyway or quote.
@@ -839,7 +841,7 @@ Each run:
 9. `care_cron()`: uptime checks every run; SSL daily; domain, security scan and PageSpeed weekly; backup-due, Care Plus tune-up and review-call tasks; monthly care reports on days 1–5
 10. `ads_cron()`: monthly ads report notes tasks and emails (days 1–5), one approval reminder after 2 days
 11. `outreach_cron()` (`app/outreach.php`): reads replies, bounces and opt-outs in the outreach mailbox, then sends what's due (weekdays 9–5, within the warm-up limit)
-12. `builds_cron()` (`app/builds.php`): website drafts become ready for the builder 3 hours after the kickoff call; stuck claims go back to the queue
+12. `builds_cron()` (`app/builds.php`): website drafts become ready for the builder 3 hours after the kickoff call; stuck claims go back to the queue; one kickoff form reminder 3 days after the order
 13. `pv_cleanup()` (`app/previews.php`): deletes homepage previews 60 days after they expire
 14. `rv_cron()` (`app/reviews.php`): schedules review requests for newly finished projects and sends those that are due
 15. `ck_cleanup()` (`app/checkup.php`): deletes free checkup reports older than 180 days that nobody asked to have emailed
@@ -854,7 +856,7 @@ It prints a one-line summary (cPanel can email it to you; set the cron email to 
 ## 17. Databases and migrations
 
 ### CRM: `crm/storage/crm.sqlite`
-Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v31**.
+Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v32**.
 
 | Version | Adds |
 |---|---|
@@ -887,6 +889,7 @@ Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_versi
 | v28 | Homepage previews: `previews` (token, business, email, website, theme, data JSON, via agent/staff, views, viewed_at, expires_at, removed_at, removed_by) |
 | v29 | Creator partners: `referrers.discount`, `referrers.audience`, `orders.ref_discount`; settings `ref_creator_rate` (10), `ref_creator_discount` (10) |
 | v30 | Website drafts: `builds` (one per website project: sku, brief, add-ons, status, rounds, notes, publish, change notes, question, version, claim), `build_versions` (token, summary, to-confirm list, files, bytes, source zip, the approval post); setting `build_on` |
+| v31 | Online kickoff form: `builds.intake` (JSON answers), `intake_at`, `intake_call`, `intake_reminded_at` |
 | v18 | Community products (`com-discord-setup`, `com-audit`, `com-manage`, `com-manage-plus`, after the care plans) and the `add-presskit` add-on, from `catalog.json` |
 
 ### Site Stats: `crm/storage/analytics.sqlite`
@@ -1024,7 +1027,7 @@ These appear on the sites, in `catalog.json`, the terms of sale and quote terms.
 - **Rounds of changes:** 2 (one-page, starter), 3 (business, store).
 - **Timelines:** one-page ~2 wks, starter ~3 wks, business ~4–5 wks, store ~6 wks; audits 7 days; analytics setup 5 days; first ads live in ~2–3 wks. Rush delivery (+$150) shortens the website timeline.
 - **We reply within one business day** to contact forms and portal messages.
-- **Refunds:** deposits and one-off payments fully refundable before the kickoff call; after that, based on work completed.
+- **Refunds:** deposits and one-off payments fully refundable before the kickoff (the call, or sending the kickoff form if they skip the call); after that, based on work completed.
 - **Cancellation:** online any time in the client portal (**Plans & billing**, `portal-plans.php`), or by email. Ads management ends at the first billing date at least **30 days** after cancelling (`plan_cancel_notice_days`); care and other monthly plans end when the paid month runs out. The exact end date shows before confirming, and a confirmation email goes to the client and an alert to `shop_notify`. Order and quote emails link to `portal-login.php?to=plans`; the marketing footer has “Manage or cancel a plan”.
 - **Care requests** are started within two business days (care plan) or one business day (Care Plus). Edit time doesn’t roll over. For sites we didn’t build, fixing problems that were there before can use edit time or be quoted first (terms of sale §4).
 - **Strategy session credit:** the $75 is credited toward any package bought within 30 days.
@@ -1126,7 +1129,7 @@ All setup items below were done by October 18, 2026, except the ones still open.
 | Consulting rate | $150/hour |
 | Exclude own visits | `?syn_ignore=1` |
 | Cart storage | `localStorage.sm_cart`, `sm_ref`, `sessionStorage.sm_src`, `sm_checkout`, `sm_order` |
-| CRM DB version | v30 (next: v31) |
+| CRM DB version | v31 (next: v32) |
 | Website drafts | CRM → Website drafts · previews `crm.stusyn.com/draft/TOKEN/` · agent `build-api.php` · scheduled task “Website builder” |
 | Homepage previews | `crm.stusyn.com/preview.php?t=TOKEN` · CRM → Outreach → Homepage previews · agent `outreach-api.php?a=preview` · 30 days, owner can remove |
 | Review requests | Settings → Review requests (`reviews.php`); one honest Google review ask per business a year, 3 days after Complete |

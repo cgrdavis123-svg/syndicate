@@ -75,7 +75,9 @@ layout_top('Website draft · ' . build_who($b), 'builds', $user);
 </div>
 <?php if ($errors): ?><div class="notice bad"><?= implode('<br>', array_map('e', $errors)) ?></div><?php endif; ?>
 <?php if ($b['status'] === 'blocked' && $b['question'] !== ''): ?><div class="notice bad"><b>The builder needs you.</b><br><?= nl2br(e($b['question'])) ?><br><span class="muted small">Answer it in your notes below (or upload what’s missing to the project), then press Ready for the builder.</span></div><?php endif; ?>
-<?php if ($b['status'] === 'waiting'): ?><div class="notice"><?= $kick ? 'Kickoff call ' . e(date('M j, g:i a', (int)$kick['starts_at'])) . '. The builder can start ' . BUILD_KICKOFF_WAIT . ' hours after it ends, so add what you learned below before then.' : 'Waiting for the kickoff call. It starts by itself ' . BUILD_KICKOFF_WAIT . ' hours after the call, or press Ready for the builder now.' ?></div><?php endif; ?>
+<?php if ($b['status'] === 'waiting'): ?><div class="notice"><?= $kick ? 'Kickoff call ' . e(date('M j, g:i a', (int)$kick['starts_at'])) . '. The builder can start ' . BUILD_KICKOFF_WAIT . ' hours after it ends, so add what you learned below before then.'
+  : ($b['intake_at'] && $b['intake_call'] ? 'The client sent the kickoff form and asked for a call first. The builder starts ' . BUILD_KICKOFF_WAIT . ' hours after the call, or press Ready for the builder now.'
+  : 'Waiting for the client’s kickoff form (or a kickoff call). It starts by itself when the form comes in, or ' . BUILD_KICKOFF_WAIT . ' hours after a call. Press Ready for the builder to start now.' . ($b['intake_reminded_at'] ? ' One reminder was sent ' . e(date('M j', (int)$b['intake_reminded_at'])) . '.' : '')) ?></div><?php endif; ?>
 <?php if ($b['status'] === 'sent' && $sentPost): ?><div class="notice">Draft v<?= (int)$latest['version'] ?> is with the client since <?= e(fmt_date($sentPost['created_at'], 'M j')) ?>. Their Approve or Request changes in the portal moves this on.</div><?php endif; ?>
 <?php if ($b['status'] === 'approved'): ?><div class="notice">Approved. Download the source below, put it live on their domain (templates/CLAUDE.md §12), and mark the project Complete.</div><?php endif; ?>
 <?php if ($b['status'] === 'changes' || ($b['change_notes'] !== '' && in_array($b['status'], ['building', 'blocked'], true))): ?><div class="notice"><b>Changes the builder is working from:</b><br><?= nl2br(e($b['change_notes'])) ?></div><?php endif; ?>
@@ -109,6 +111,9 @@ layout_top('Website draft · ' . build_who($b), 'builds', $user);
     <?php endforeach; ?></ul></section><?php endif; ?>
   </div>
   <div class="stack">
+    <?php if ($b['intake_at']): $ka = kickoff_answers($b); ?><section class="card"><div class="card-h"><h2>Kickoff form</h2><span class="muted small">Sent <?= e(date('M j, g:i a', (int)$b['intake_at'])) ?><?= $b['intake_call'] ? ' · wants a call' : '' ?></span></div>
+      <dl class="small"><?php foreach (KICKOFF_FIELDS as $k => [$l]): if (trim((string)($ka[$k] ?? '')) === '') continue; ?><dt class="muted"><?= e($l) ?></dt><dd><?= nl2br(e($ka[$k])) ?></dd><?php endforeach; ?></dl>
+    </section><?php elseif ($p && in_array($b['status'], ['waiting', 'ready'], true)): ?><section class="card"><div class="card-h"><h2>Kickoff form</h2></div><p class="empty">Not sent yet. The client sees it at the top of their project and on their portal home.</p></section><?php endif; ?>
     <section class="card"><div class="card-h"><h2>From checkout</h2></div>
       <?php if ($brief): ?><dl class="small"><?php foreach (BRIEF_LABELS as $k => $l): if (!isset($brief[$k]) || $brief[$k] === '' || $brief[$k] === []) continue; ?><dt class="muted"><?= e($l) ?></dt><dd><?= e(is_array($brief[$k]) ? implode(', ', $brief[$k]) : $brief[$k]) ?></dd><?php endforeach; ?></dl>
       <?php else: ?><p class="empty">No checkout brief. Put what the builder needs in your notes.</p><?php endif; ?>

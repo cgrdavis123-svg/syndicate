@@ -8,14 +8,16 @@ $ids = array_map('intval', array_column($projects, 'id')) ?: [0];
 $in = implode(',', $ids);
 $todo = all("SELECT pp.*, p.name project FROM project_posts pp JOIN projects p ON p.id = pp.project_id WHERE pp.project_id IN ($in) AND pp.approval = 'pending' ORDER BY pp.id");
 $recent = all("SELECT pp.*, p.name project FROM project_posts pp JOIN projects p ON p.id = pp.project_id WHERE pp.project_id IN ($in) AND pp.author = 'staff' AND pp.kind IN ('update','approval') ORDER BY pp.id DESC LIMIT 5");
+$kick = all("SELECT b.project_id, p.name project FROM builds b JOIN projects p ON p.id = b.project_id WHERE b.project_id IN ($in) AND b.status IN ('waiting','ready') AND b.intake_at IS NULL");
 $invoices = portal_invoices($c);
 $due = array_filter($invoices, function ($i) { return $i['status'] === 'sent'; });
 portal_top('Overview', $c);
 ?>
 <div class="page-head"><div><p class="eyebrow"><?= e($c['company'] ?: 'Welcome') ?></p><h1>Hi <?= e($c['first_name'] ?: 'there') ?>.</h1></div></div>
-<?php if ($todo || $due): ?>
+<?php if ($todo || $due || $kick): ?>
 <section class="card attn"><div class="card-h"><h2>Needs you</h2></div>
   <ul class="list">
+    <?php foreach ($kick as $k): ?><li><a href="portal-kickoff.php?id=<?= (int)$k['project_id'] ?>"><span class="kind k-task"></span><span class="grow"><b>Fill in your kickoff form</b><small><?= e($k['project']) ?> · about 10 minutes, and we start right after</small></span><span class="btn primary xs">Start</span></a></li><?php endforeach; ?>
     <?php foreach ($todo as $t): ?><li><a href="portal-project.php?id=<?= (int)$t['project_id'] ?>#post<?= (int)$t['id'] ?>"><span class="kind k-email"></span><span class="grow"><b>Review and approve</b><small><?= e($t['project']) ?> · <?= e(mb_strimwidth(preg_replace('/\s+/', ' ', $t['body']), 0, 90, '…')) ?></small></span><span class="btn primary xs">Review</span></a></li><?php endforeach; ?>
     <?php foreach ($due as $i): $tot = invoice_total((int)$i['id'])['total']; ?><li><a href="i.php?t=<?= e($i['share_token']) ?>" target="_blank" rel="noopener"><span class="kind k-task"></span><span class="grow"><b>Invoice <?= e($i['number']) ?> · <?= money($tot) ?></b><small class="<?= $i['due_date'] < today() ? 'warn' : '' ?>"><?= $i['due_date'] < today() ? 'Past due since ' : 'Due ' ?><?= e(fmt_date($i['due_date'])) ?></small></span><span class="btn <?= $i['payment_url'] ? 'primary' : 'ghost' ?> xs"><?= $i['payment_url'] ? 'Pay' : 'View' ?></span></a></li><?php endforeach; ?>
   </ul>

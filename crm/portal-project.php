@@ -41,6 +41,8 @@ $posts = project_posts((int)$p['id']); $files = project_files((int)$p['id']);
 portal_top($p['name'], $c);
 ?>
 <div class="page-head"><div class="grow-head"><a class="muted small" href="portal.php">← All projects</a><h1><?= e($p['name']) ?></h1><p class="row muted"><?= project_status_pill($p['status']) ?><?php if ($p['due_date'] && $p['status'] !== 'done'): ?> <span class="small">Target <?= e(fmt_date($p['due_date'])) ?></span><?php endif; ?></p></div></div>
+<?php require_once __DIR__ . '/app/builds.php'; if (($kb = build_for_project((int)$p['id'])) && kickoff_open($kb) && !$kb['intake_at']): ?><div class="notice row" style="flex-wrap:wrap;gap:10px"><span class="grow"><b>Start here:</b> tell us about your business in your kickoff form. It takes about 10 minutes, and we start your website as soon as it’s in.</span><a class="btn primary sm" href="portal-kickoff.php?id=<?= (int)$p['id'] ?>">Fill in the kickoff form</a></div>
+<?php elseif ($kb && kickoff_open($kb)): ?><p class="muted small"><a href="portal-kickoff.php?id=<?= (int)$p['id'] ?>">Your kickoff form</a> · you can change your answers until we start building.</p><?php endif; ?>
 <?php if ($errors): ?><div class="notice bad"><?= implode('<br>', array_map('e', $errors)) ?></div><?php endif; ?>
 <div class="grid-detail">
   <div class="stack">

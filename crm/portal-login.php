@@ -6,7 +6,7 @@ header('Cache-Control: no-store');
 portal_session();
 if (get('k') !== '' || get('t') !== '') demo_miss(); // a real sign-in link always signs in for real
 elseif (DEMO) redirect('portal-demo.php'); // signed out of the demo: sign back in to it
-$dest = get('to') === 'plans' || post('to') === 'plans' ? 'portal-plans.php' : 'portal.php';
+$dest = get('to') === 'plans' || post('to') === 'plans' ? 'portal-plans.php' : (get('to') === 'kickoff' && ctype_digit(get('p')) ? 'portal-kickoff.php?id=' . (int)get('p') : 'portal.php');
 if (portal_contact()) redirect($dest);
 $sent = false; $error = ''; $email = strtolower(post('email'));
 if (get('k') !== '' || get('t') !== '') {
