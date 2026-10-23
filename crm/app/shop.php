@@ -180,7 +180,7 @@ function offer_closed_text(array $of, string $state): string {
 // Prices a cart against the catalog, and an offer if there is one. Each line has the price charged today or
 // monthly ('price'), the catalog price ('list_price') and any free months ('trial_months').
 // Returns ['lines' => [...], 'one_time' => x, 'monthly' => y, 'today' => z, 'trial_months' => n, 'offer' => row|null, 'error' => ''].
-function shop_price_cart(array $items, array $brief = [], string $offer = ''): array {
+function shop_price_cart(array $items, array $brief = [], string $offer = '', float $codePct = 0): array {
     $bySku = []; foreach (shop_products() as $p) $bySku[$p['sku']] = $p;
     $lines = []; $cats = [];
     foreach (array_slice($items, 0, 30) as $it) {
@@ -228,6 +228,8 @@ function shop_price_cart(array $items, array $brief = [], string $offer = ''): a
     }
     // Included free when a package it comes with is in the same order (e.g. domain setup with the Business website).
     foreach ($lines as $sku => $l) if (array_intersect(array_filter(explode(',', (string)($l['product']['free_with'] ?? ''))), array_keys($lines))) $lines[$sku]['price'] = 0.0;
+    // A creator's code: a percentage off the one-time items (monthly plans stay full price). Never on top of an offer.
+    if ($codePct > 0 && !$of) foreach ($lines as $sku => $l) if ($l['product']['interval'] !== 'month' && $l['price'] > 0) $lines[$sku]['price'] = round($l['price'] * (100 - $codePct) / 100, 2);
     $one = 0; $mo = 0; $now = 0;
     foreach ($lines as $l) {
         $amt = $l['price'] * $l['qty'];
@@ -278,7 +280,16 @@ function shop_checkout(array $in): array {
     if (empty($in['agree'])) return ['ok' => false, 'error' => 'Please agree to the terms of sale to continue.', 'field' => 'agree'];
     $brief = shop_clean_brief($in['brief'] ?? []);
     $offer = mb_substr(trim((string)($in['offer'] ?? '')), 0, 60);
-    $cart = shop_price_cart(is_array($in['items'] ?? null) ? $in['items'] : [], $brief + ['platforms' => []], $offer);
+    // A code typed at checkout (a creator partner's). It takes money off and counts as their referral.
+    $code = strtolower(preg_replace('/\s+/', '', mb_substr((string)($in['code'] ?? ''), 0, 40))); $pct = 0;
+    if ($code !== '') {
+        require_once __DIR__ . '/referrals.php';
+        if ($offer !== '') return ['ok' => false, 'error' => 'Codes can’t be combined with a special offer. Remove the code, or the offer.', 'field' => 'code'];
+        $dc = ref_discount_check($code, $email);
+        if (!$dc['ok']) return ['ok' => false, 'error' => $dc['error'], 'field' => 'code', 'code_bad' => true];
+        $pct = $dc['pct']; $code = $dc['referrer']['code'];
+    }
+    $cart = shop_price_cart(is_array($in['items'] ?? null) ? $in['items'] : [], $brief + ['platforms' => []], $offer, $pct);
     if ($cart['error'] !== '') return ['ok' => false, 'error' => $cart['error'], 'field' => $cart['field'] ?? '', 'offer_gone' => !empty($cart['offer_gone'])];
     $trialEnd = $cart['trial_months'] ? offer_trial_end($cart['trial_months']) : null;
     if (!shop_ready()) return ['ok' => false, 'error' => 'Online checkout isn’t switched on yet. Email ' . setting('business_email') . ' and we’ll send you a payment link.'];
@@ -288,7 +299,8 @@ function shop_checkout(array $in): array {
         [$ref, $key, 'pending', $name, $email, $phone, $biz, $site, json_encode($brief, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $cart['one_time'], $cart['monthly'], stripe_live() ? 1 : 0, mb_substr((string)($in['source'] ?? ''), 0, 120), ip_hash(),
          $cart['offer'] ? $cart['offer']['slug'] : '', $trialEnd, now(), now()]);
     $orderId = (int)db()->lastInsertId();
-    if (($rc = strtolower(trim(mb_substr((string)($in['ref'] ?? ''), 0, 40)))) !== '' && preg_match('/^[a-z0-9][a-z0-9-]{2,39}$/', $rc)) q('UPDATE orders SET ref_code = ? WHERE id = ?', [$rc, $orderId]);
+    if ($code !== '') q('UPDATE orders SET ref_code = ?, ref_discount = ? WHERE id = ?', [$code, $pct, $orderId]);
+    elseif (($rc = strtolower(trim(mb_substr((string)($in['ref'] ?? ''), 0, 40)))) !== '' && preg_match('/^[a-z0-9][a-z0-9-]{2,39}$/', $rc)) q('UPDATE orders SET ref_code = ? WHERE id = ?', [$rc, $orderId]);
     // Proof of what was agreed (California asks for it to be kept for at least three years; orders are never deleted).
     q('UPDATE orders SET consent = ? WHERE id = ?', [json_encode(['at' => now(), 'ip_hash' => ip_hash(), 'terms' => shop_site_url() . '/terms.html', 'text' => 'Agreed to the terms of sale, including the refund terms'
         . ($cart['monthly'] > 0 ? ', and to be charged ' . money($cart['monthly']) . ' every month' . ($trialEnd ? ' starting ' . date('F j, Y', $trialEnd) . ', after ' . $cart['trial_months'] . ' free months,' : '') . ' until cancelled (cancel online in the client portal)' : '') . '.'
@@ -299,7 +311,7 @@ function shop_checkout(array $in): array {
         q('INSERT INTO order_items (order_id, product_id, sku, name, category, price, interval, quantity, list_price, trial_months) VALUES (?,?,?,?,?,?,?,?,?,?)',
             [$orderId, $p['id'], $p['sku'], $p['name'], $p['category'], $l['price'], $p['interval'], $l['qty'], $l['list_price'], $l['trial_months']]);
         if ($l['price'] <= 0 && !$l['trial_months'] && $p['interval'] !== 'month') continue; // included free: recorded on the order, nothing to charge
-        $label = $p['name'] . ($l['trial_months'] ? ' — first ' . $l['trial_months'] . ' months free' : ($l['price'] < $l['list_price'] ? ' (offer price, regularly ' . money($l['list_price']) . ')' : ''));
+        $label = $p['name'] . ($l['trial_months'] ? ' — first ' . $l['trial_months'] . ' months free' : ($l['price'] < $l['list_price'] ? ($pct > 0 ? ' (' . rtrim(rtrim(number_format($pct, 2), '0'), '.') . '% off with code ' . strtoupper($code) . ', regularly ' : ' (offer price, regularly ') . money($l['list_price']) . ')' : ''));
         $pd = ['currency' => 'usd', 'unit_amount' => (int)round($l['price'] * 100), 'product_data' => ['name' => $label, 'metadata' => ['sku' => $p['sku']]]];
         if ($p['blurb'] !== '') $pd['product_data']['description'] = mb_substr($p['blurb'], 0, 300);
         if ($p['interval'] === 'month') $pd['recurring'] = ['interval' => 'month'];
@@ -320,7 +332,8 @@ function shop_checkout(array $in): array {
             . 'You’ll get a receipt by email, and a link to your ' . SHOP_BRAND . ' client portal to start your project.']],
     ];
     if ($cart['offer']) $params['metadata']['offer'] = $cart['offer']['slug'];
-    if (setting('shop_promo') === '1' && !$cart['offer']) $params['allow_promotion_codes'] = true; // offers don't stack with promo codes
+    if ($pct > 0) $params['metadata']['code'] = $code;
+    if (setting('shop_promo') === '1' && !$cart['offer'] && $pct <= 0) $params['allow_promotion_codes'] = true; // offers and creator codes don't stack with promo codes
     if (setting('shop_tax') === '1') $params['automatic_tax'] = ['enabled' => true];
     if ($sub) $params['subscription_data'] = ['metadata' => ['order_ref' => $ref], 'description' => SHOP_BRAND . ' · ' . $biz . ' · ' . $ref];
     // Free months: one-off items are charged today, and monthly billing starts when the trial ends.
@@ -400,7 +413,8 @@ function shop_fulfil(array $o, array $s): void {
         foreach ($items as $it) {
             $free = (int)$it['trial_months'] > 0;
             $desc = $it['name'] . ($free ? ' — first ' . (int)$it['trial_months'] . ' months free, then ' . money((float)$it['price']) . '/month' : ($it['interval'] === 'month' ? ' — first month' : ''))
-                . (!$free && $it['list_price'] !== null && (float)$it['list_price'] > (float)$it['price'] ? ((float)$it['price'] <= 0 ? ' (included with your package; regularly ' : ' (offer price; regularly ') . money((float)$it['list_price']) . ')' : '');
+                . (!$free && $it['list_price'] !== null && (float)$it['list_price'] > (float)$it['price'] ? ((float)$it['price'] <= 0 ? ' (included with your package; regularly '
+                    : ((float)($o['ref_discount'] ?? 0) > 0 && $it['interval'] !== 'month' ? ' (' . rtrim(rtrim(number_format((float)$o['ref_discount'], 2), '0'), '.') . '% off with code ' . strtoupper($o['ref_code']) . '; regularly ' : ' (offer price; regularly ')) . money((float)$it['list_price']) . ')' : '');
             q('INSERT INTO invoice_items (invoice_id, description, quantity, unit_price, position) VALUES (?,?,?,?,?)', [$invoiceId, $desc, $it['quantity'], $free ? 0 : $it['price'], $pos++]);
         }
         if ($discount > 0) q('INSERT INTO invoice_items (invoice_id, description, quantity, unit_price, position) VALUES (?,?,?,?,?)', [$invoiceId, 'Discount', 1, -$discount, $pos++]);
@@ -570,7 +584,8 @@ function shop_resume(array $o): array {
     foreach (['has_domain', 'has_logo', 'assets', 'ad_accounts'] as $k) unset($brief[$k]); // stored as the words they picked; they'll choose again
     $of = offer_row((string)$o['offer']);
     return ['ok' => true, 'offer' => $of && offer_state($of) === 'live' ? $of['slug'] : '', 'items' => array_map(function ($i) { return ['sku' => $i['sku'], 'qty' => (int)$i['quantity']]; }, order_items((int)$o['id'])),
-        'customer' => ['name' => $o['name'], 'email' => $o['email'], 'phone' => $o['phone'], 'business' => $o['business'], 'website' => $o['website']], 'brief' => $brief];
+        'customer' => ['name' => $o['name'], 'email' => $o['email'], 'phone' => $o['phone'], 'business' => $o['business'], 'website' => $o['website']], 'brief' => $brief,
+        'code' => (float)($o['ref_discount'] ?? 0) > 0 ? $o['ref_code'] : ''];
 }
 
 /* ---------- Stripe webhook events ---------- */

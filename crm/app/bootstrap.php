@@ -621,6 +621,16 @@ function migrate(PDO $pdo): void {
         ");
         $pdo->exec('PRAGMA user_version = 28');
     }
+    if ($v < 29) {
+        // v29: creator partners (referrals with a code followers type at checkout for a discount on their first order)
+        $pdo->exec("
+            ALTER TABLE referrers ADD COLUMN discount REAL NOT NULL DEFAULT 0;
+            ALTER TABLE referrers ADD COLUMN audience TEXT NOT NULL DEFAULT '';
+            ALTER TABLE orders ADD COLUMN ref_discount REAL NOT NULL DEFAULT 0;
+            INSERT OR IGNORE INTO settings (key, value) VALUES ('ref_creator_rate', '10'), ('ref_creator_discount', '10');
+        ");
+        $pdo->exec('PRAGMA user_version = 29');
+    }
 }
 function migrate_v1(PDO $pdo): void {
     $pdo->exec("

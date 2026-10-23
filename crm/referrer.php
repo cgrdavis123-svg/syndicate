@@ -13,6 +13,7 @@ if (is_post()) {
         $email = strtolower(trim(post('email')));
         if (!filter_var($email, FILTER_VALIDATE_EMAIL) || val('SELECT 1 FROM referrers WHERE email = ? AND id != ?', [$email, $id])) { flash('Enter an email that isn’t used by another referral account.'); redirect($back); }
         $rate = min(50, max(0, round((float)post('rate'), 2)));
+        q('UPDATE referrers SET discount = ?, audience = ? WHERE id = ?', [min(50, max(0, round((float)post('discount'), 2))), mb_substr(post('audience'), 0, 200), $id]);
         q('UPDATE referrers SET name = ?, email = ?, business = ?, kind = ?, rate = ?, months = ?, payout = ?, payout_details = ?, w9 = ?, status = ?, notes = ?, updated_at = ? WHERE id = ?', [
             mb_substr(post('name'), 0, 120) ?: $r['name'], $email, mb_substr(post('business'), 0, 150), isset(REF_KINDS[post('kind')]) ? post('kind') : 'referrer', $rate,
             min(60, max(1, (int)post('months'))), isset(REF_PAYOUTS[post('payout')]) ? post('payout') : 'credit', mb_substr(post('payout_details'), 0, 300), post('w9') === '1' ? 1 : 0,
@@ -54,7 +55,8 @@ $stripeCus = $r['payout'] === 'credit' ? ref_stripe_customer($r) : '';
 layout_top($r['name'] . ' · Referrals', 'referrals', $user);
 ?>
 <div class="page-head"><div><a class="muted small" href="referrals.php">← Referrals</a><h1><?= e($r['name']) ?></h1>
-  <p class="muted small"><?= e(REF_KINDS[$r['kind']] ?? 'Referrer') ?> · <?= e(ref_pct($r['rate'])) ?> for <?= (int)$r['months'] ?> months · <?= e(REF_STATUSES[$r['status']]) ?><?= $r['contact_id'] ? ' · ' . entity_link('contact', (int)$r['contact_id']) : '' ?><?= $r['agreed_at'] ? ' · agreed to the rules ' . e(fmt_date($r['agreed_at'])) : '' ?></p></div>
+  <p class="muted small"><?= e(REF_KINDS[$r['kind']] ?? 'Referrer') ?> · <?= e(ref_pct($r['rate'])) ?> for <?= (int)$r['months'] ?> months · <?= e(REF_STATUSES[$r['status']]) ?><?= $r['contact_id'] ? ' · ' . entity_link('contact', (int)$r['contact_id']) : '' ?><?= $r['agreed_at'] ? ' · agreed to the rules ' . e(fmt_date($r['agreed_at'])) : '' ?></p>
+  <p class="muted small">Code <b class="mono"><?= e(strtoupper($r['code'])) ?></b><?= (float)$r['discount'] > 0 ? ' · gives ' . e(ref_pct($r['discount'])) . ' off a first order' : '' ?><?= $r['audience'] !== '' ? ' · ' . e($r['audience']) : '' ?></p></div>
   <form method="post"><?= csrf_field() ?><button class="btn ghost sm" name="action" value="invite">Email them a sign-in link</button></form></div>
 <section class="card"><div class="copy-row"><input readonly id="refLink" value="<?= e(ref_link($r)) ?>" aria-label="Referral link"><button class="btn ghost sm" type="button" data-copy="#refLink">Copy link</button></div></section>
 <div class="kpis">
@@ -115,6 +117,8 @@ layout_top($r['name'] . ' · Referrals', 'referrals', $user);
     <label class="f"><span>Type</span><select name="kind"><?php foreach (REF_KINDS as $k => $l): ?><option value="<?= $k ?>"<?= selected($r['kind'], $k) ?>><?= e($l) ?></option><?php endforeach; ?></select></label>
     <label class="f"><span>Rate (%)</span><input name="rate" type="number" step="0.5" min="0" max="50" value="<?= e((string)(float)$r['rate']) ?>"></label>
     <label class="f"><span>Months each client earns for</span><input name="months" type="number" min="1" max="60" value="<?= (int)$r['months'] ?>"></label>
+    <label class="f"><span>Discount their code gives (%)</span><input name="discount" type="number" step="1" min="0" max="50" value="<?= e((string)(float)$r['discount']) ?>"><small class="muted">Off the one-time items in a new client’s first order. 0 = a plain referral link, nothing off.</small></label>
+    <label class="f"><span>Where they post</span><input name="audience" value="<?= e($r['audience']) ?>" placeholder="TikTok @handle, about 12K followers"></label>
     <label class="f"><span>Payout</span><select name="payout"><?php foreach (REF_PAYOUTS as $k => $l): ?><option value="<?= $k ?>"<?= selected($r['payout'], $k) ?>><?= e($l) ?></option><?php endforeach; ?></select></label>
     <label class="f"><span>Where cash goes</span><input name="payout_details" value="<?= e($r['payout_details']) ?>"></label>
     <label class="chk"><input type="checkbox" name="w9" value="1"<?= (int)$r['w9'] ? ' checked' : '' ?>> W-9 on file (needed before any cash payout)</label>

@@ -61,9 +61,13 @@ ref_top('Your referrals', $r);
 ?>
 <div class="page-head"><div class="grow-head"><h1>Your referrals</h1><p class="muted">You earn <b><?= e(ref_pct($r['rate'])) ?></b> of what each client you refer pays us in their first <?= (int)$r['months'] ?> months.</p></div></div>
 <section class="card">
-  <div class="card-h"><h2>Your link</h2></div>
+  <div class="card-h"><h2><?= (float)$r['discount'] > 0 ? 'Your code and link' : 'Your link' ?></h2></div>
+  <?php if ((float)$r['discount'] > 0): ?>
+  <div class="copy-row" style="margin-bottom:10px"><input readonly id="refCode" class="mono" value="<?= e(strtoupper($r['code'])) ?>" aria-label="Your code"><button class="btn primary sm" type="button" data-copy="#refCode">Copy code</button></div>
+  <p class="muted small" style="margin-bottom:14px">Your audience types <b class="mono"><?= e(strtoupper($r['code'])) ?></b> at checkout and gets <?= e(ref_pct($r['discount'])) ?> off the one-time items in their first order (monthly plans are full price). Your link applies the code for them.</p>
+  <?php endif; ?>
   <div class="copy-row"><input readonly id="refLink" value="<?= e(ref_link($r)) ?>" aria-label="Your referral link"><button class="btn primary sm" type="button" data-copy="#refLink">Copy link</button></div>
-  <p class="muted small" style="margin-top:10px">It works on any page of our website: add <span class="mono">?ref=<?= e($r['code']) ?></span> to the end. People can also mention your name or email (<?= e($r['email']) ?>) when they get in touch. Posting it publicly? Say you earn a commission, for example “I get a referral bonus if you sign up.”</p>
+  <p class="muted small" style="margin-top:10px"><?php if ($r['kind'] === 'creator'): ?>Every post or video that mentions us needs a clear paid-partnership label: turn on the platform’s branded-content setting and say “#ad, I earn a commission if you use my code.” <?php endif; ?>It works on any page of our website: add <span class="mono">?ref=<?= e($r['code']) ?></span> to the end. People can also mention your name or email (<?= e($r['email']) ?>) when they get in touch. Posting it publicly? Say you earn a commission, for example “I get a referral bonus if you sign up.”</p>
 </section>
 <div class="kpis">
   <div class="card kpi"><span>Clients</span><b class="num"><?= $t['clients'] ?></b><small><?= $t['leads'] ? $t['leads'] . ' more in touch with us' : 'Signed up through you' ?></small></div>

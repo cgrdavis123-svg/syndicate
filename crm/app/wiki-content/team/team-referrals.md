@@ -36,3 +36,15 @@ Commissioned sales reps use the same system: add them by hand as **Commissioned 
 - **Don’t count:** on the referrer’s page, use “Don’t count” on a referral (self-referrals, spam, someone who was already talking to us). Unpaid earnings for it are cancelled. The reason stays private.
 - **Pause or close** a referrer in their Details. Paused: new people stop being tied to them, existing clients keep earning. Closed: nothing new earns and they can’t sign in.
 - Rules referrers agree to (honest claims, disclose the commission, no spam, no paid search on our name) are on the referrals page. Close accounts that break them.
+
+## Creator partners
+
+Creators sign up on syndicatemarketing.co/creators.html (or you add one by hand as **Creator partner** with the code they want). They get:
+
+- their own code (3–20 letters and numbers, checked against taken and reserved words), shown in capitals;
+- **10%** for 12 months (`ref_creator_rate`) and a code that gives **10% off** the one-time items in a new client’s first order (`ref_creator_discount`); both are in Referrals → Program settings, and per person on their page;
+- “Where they post” saved on their page, so you can check their mentions.
+
+The code is typed at checkout or picked up from their `?ref=` link. Checkout re-checks it: only active creator codes, never on top of an offer or promo code, never their own, never for someone who has paid us or is already talking to us. The order stores the code and discount, the Stripe line and the CRM invoice say “10% off with code …”, and the client is tied to the creator like any referral.
+
+Before paying a creator, look at their posts: each mention needs a paid-partnership label and a clear “#ad / I earn a commission”. Unlabelled mentions don’t earn; pause the partner if it keeps happening.

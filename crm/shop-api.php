@@ -6,7 +6,8 @@
 //   GET  shop-api.php?a=order&ref=…&k=…[&session_id=…]  order status for the thank-you page
 //   GET  shop-api.php?a=resume&ref=…&k=…           an unpaid order, to finish it from the reminder email
 //   POST shop-api.php?a=lead      {name, email, business, topic, message}  contact form
-//   POST shop-api.php?a=refer     {name, email, business, payout, payout_details, agree}  referral program sign-up
+//   POST shop-api.php?a=refer     {name, email, business, payout, payout_details, agree[, creator, code, audience]}  referral / creator sign-up
+//   POST shop-api.php?a=code      {code[, email]}  is this a creator code, and what does it take off? (checkout box, ?ref= links)
 //   POST shop-api.php?a=checkup   {url}  free website checkup → {token}; GET a=checkup-report&r=… the report
 //   POST shop-api.php?a=checkup-speed {r}  runs the phone speed test for a report (slow); POST a=checkup-lead {r, name, email, business} emails it
 require __DIR__ . '/app/bootstrap.php';
@@ -69,6 +70,15 @@ $in = json_decode((string)file_get_contents('php://input', false, null, 0, 65536
 if (!is_array($in)) reply(400, ['ok' => false, 'error' => 'Something went wrong. Refresh the page and try again.']);
 if (trim((string)($in['website_url'] ?? '')) !== '') reply(200, ['ok' => true, 'url' => shop_site_url() . '/thank-you.html']); // spam trap
 
+if ($a === 'code') {
+    require_once __DIR__ . '/app/referrals.php';
+    if (too_many('code', 30, 60)) reply(429, ['ok' => false, 'error' => 'Too many tries. Please wait a little.']);
+    record_attempt('code');
+    $code = strtolower(preg_replace('/\s+/', '', mb_substr((string)($in['code'] ?? ''), 0, 40)));
+    $r = ref_discount_check($code, mb_substr((string)($in['email'] ?? ''), 0, 190));
+    if (!$r['ok']) reply(200, ['ok' => false, 'error' => $r['error']]);
+    reply(200, ['ok' => true, 'code' => strtoupper($r['referrer']['code']), 'ref' => $r['referrer']['code'], 'pct' => $r['pct']]);
+}
 if ($a === 'checkout') {
     if (too_many('checkout', 12, 60)) reply(429, ['ok' => false, 'error' => 'Too many tries. Please wait a few minutes, or email ' . setting('business_email') . '.']);
     record_attempt('checkout');

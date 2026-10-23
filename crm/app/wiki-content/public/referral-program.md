@@ -7,6 +7,8 @@ keywords: referral, refer a friend, affiliate, commission, earn, referral link, 
 ---
 Anyone 18 or older can join, client or not. You get a personal link, and when a business you send our way becomes a client, you earn **5%** of what they pay us in their first **12 months**.
 
+Post videos or stream? [[creator-partners|Creator partners]] get their own code, 10%, and 10% off for their audience.
+
 ## Joining
 
 Sign up on the [referral page](https://syndicatemarketing.co/referrals.html#join). We email you your link and a sign-in link for your referrals page, where you can see who signed up through you, what you’ve earned and what’s on its way. There’s no password: enter your email on [your referrals page](https://crm.stusyn.com/refer.php) any time and we’ll send a fresh sign-in link.

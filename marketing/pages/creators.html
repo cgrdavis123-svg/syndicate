@@ -1,0 +1,160 @@
+<!-- {
+  "title": "Creator partners: your audience saves {{creatorDiscount}}%, you earn {{creatorRate}}% — Syndicate Marketing",
+  "description": "For creators whose audience runs a business, a Discord or a shop. Get your own code: your audience saves {{creatorDiscount}}% on their first order, and you earn {{creatorRate}}% of what they pay us for {{refMonths}} months.",
+  "styles": ["creators.css"],
+  "scripts": ["referrals.js"]
+} -->
+
+<section class="page-hero">
+  <div class="wrap split" style="align-items:center">
+    <div>
+      <div class="crumbs reveal"><a href="./">Home</a><span>/</span><span>Creator partners</span></div>
+      <h1 class="reveal d1">Your audience saves {{creatorDiscount}}%. <span class="serif hl">You earn {{creatorRate}}%.</span></h1>
+      <p class="lede reveal d2">If the people who watch you run a small business, a Discord server, a game studio or a TikTok Shop, they’ll need a website, ads or a community run properly sooner or later. Give them your own code. They get {{creatorDiscount}}% off their first order, and you earn {{creatorRate}}% of everything they pay us for their first {{refMonths}} months.</p>
+      <div class="cta-row reveal d3"><a href="#join" class="btn btn-ink">Pick your code {{arrow}}</a><a href="#terms" class="btn btn-ghost">Read the rules</a></div>
+      <p class="fine reveal d3" style="margin-top:16px">No follower minimum. No posting quota. Free to join, 18+.</p>
+    </div>
+    <div class="code-demo reveal d2" aria-label="Example: what a follower sees at checkout">
+      <div class="cd-head"><span>Checkout</span><small>Example</small></div>
+      <div class="cd-row"><span>Starter website</span><b>{{price:web-starter}}</b></div>
+      <div class="cd-code"><span>Creator code</span><b>YOURNAME</b><em>{{creatorDiscount}}% off</em></div>
+      <div class="cd-row save"><span>Code YOURNAME</span><b>−{{cdisc:web-starter}}</b></div>
+      <div class="cd-row big"><span>Due today</span><b>{{cprice:web-starter}}</b></div>
+      <div class="cd-foot"><span>You earn on this order</span><b>{{cearn:web-starter}}</b></div>
+    </div>
+  </div>
+</section>
+
+<section class="section tight">
+  <div class="wrap">
+    <div class="sec-head"><div><span class="eyebrow reveal"><span class="dot"></span>How it works</span><h2 class="reveal d1">Mention us when it fits. <span class="serif">That’s it.</span></h2></div></div>
+    <ol class="how" style="padding:0;margin:0">
+      <li class="reveal"><b>Pick your code</b><span>Your handle or anything easy to say out loud, like <span class="mono">PIXELPAT</span>. We email it to you with a link that applies it automatically.</span></li>
+      <li class="reveal d1"><b>Mention us, labelled as an ad</b><span>In a video, a stream, a pinned comment or your bio link. Turn on the platform’s paid-partnership label and say you earn a commission.</span></li>
+      <li class="reveal d2"><b>They save {{creatorDiscount}}%</b><span>On the one-time items in their first order: websites, add-ons, Discord setup, audits. Monthly plans are full price.</span></li>
+      <li class="reveal d3"><b>You earn {{creatorRate}}%</b><span>Of every payment in their first {{refMonths}} months, monthly plans included. Held {{refHoldDays}} days for refunds, then paid as cash or account credit.</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="section tight">
+  <div class="wrap split">
+    <div>
+      <span class="eyebrow reveal"><span class="dot"></span>The numbers</span>
+      <h2 class="reveal d1">From our real, published prices.</h2>
+      <p class="lede reveal d2">Every price is on our website, so your audience sees exactly what you see. Ad spend goes straight from the client to Google, Meta or TikTok and never passes through us, so it doesn’t count. Neither does sales tax.</p>
+    </div>
+    <div class="cmp-wrap reveal d2">
+      <table class="cmp" style="min-width:0">
+        <thead><tr><th>If they buy</th><th>They pay with your code</th><th class="hi">You earn</th></tr></thead>
+        <tbody>
+          <tr><td>One-page website</td><td><s class="was">{{price:web-one-page}}</s> {{cprice:web-one-page}}</td><td class="hi"><b>{{cearn:web-one-page}}</b></td></tr>
+          <tr><td>Starter website</td><td><s class="was">{{price:web-starter}}</s> {{cprice:web-starter}}</td><td class="hi"><b>{{cearn:web-starter}}</b></td></tr>
+          <tr><td>Online store</td><td><s class="was">{{price:web-store}}</s> {{cprice:web-store}}</td><td class="hi"><b>{{cearn:web-store}}</b></td></tr>
+          <tr><td>Discord server setup</td><td><s class="was">{{price:com-discord-setup}}</s> {{cprice:com-discord-setup}}</td><td class="hi"><b>{{cearn:com-discord-setup}}</b></td></tr>
+          <tr><td>Community management, {{refMonths}} months</td><td>{{price:com-manage}}</td><td class="hi"><b>{{cearn:com-manage:12}}</b></td></tr>
+          <tr><td>Ads on one platform, {{refMonths}} months</td><td>{{price:ads-one}}</td><td class="hi"><b>{{cearn:ads-one:12}}</b></td></tr>
+          <tr><td>Care Plus, {{refMonths}} months</td><td>{{price:care-plus}}</td><td class="hi"><b>{{cearn:care-plus:12}}</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section tight">
+  <div class="wrap">
+    <div class="sec-head"><div><span class="eyebrow reveal"><span class="dot"></span>Who it’s for</span><h2 class="reveal d1">Creators whose audience <span class="serif">builds things.</span></h2></div></div>
+    <div class="creator-kinds">
+      <div class="card-soft reveal"><b>Small-business creators</b><p>Owners, coaches and “day in the life” accounts. Your audience needs a website that brings in calls, and ads that are tracked properly.</p></div>
+      <div class="card-soft reveal d1"><b>Gaming creators and streamers</b><p>Your viewers run Discords, mod teams, indie studios and esports teams. We set up servers safely and run them week to week.</p></div>
+      <div class="card-soft reveal d2"><b>Local creators</b><p>Food, events and “best of” accounts in your town. The places you feature are the businesses that need us.</p></div>
+      <div class="card-soft reveal d3"><b>TikTok Shop and ecommerce</b><p>Sellers who outgrow a storefront need their own online store, tracking and ads across Google, Meta and TikTok.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section tight">
+  <div class="wrap split">
+    <div>
+      <span class="eyebrow reveal"><span class="dot"></span>What you can say</span>
+      <h2 class="reveal d1">True things, <span class="serif">in your own words.</span></h2>
+      <p class="lede reveal d2">We don’t send scripts. Say it how you’d say it, as long as it’s accurate. A few facts people find useful:</p>
+    </div>
+    <ul class="checks reveal d2">
+      <li>{{check}}<div><b>Fixed prices, published up front</b><span>A one-page website is {{price:web-one-page}}, a five-page site {{price:web-starter}}, a Discord server setup {{price:com-discord-setup}}. No “contact us for a quote” for the packages.</span></div></li>
+      <li>{{check}}<div><b>A free website checkup</b><span>Anyone can type their website into <a class="link" href="checkup.html">our free checkup</a> and get a plain-English report in about a minute. Good for a “try this” moment.</span></div></li>
+      <li>{{check}}<div><b>Ad spend is never marked up</b><span>Clients pay Google, Meta and TikTok directly. Our fee is separate and listed.</span></div></li>
+      <li>{{check}}<div><b>Monthly plans cancel online</b><span>In the client portal, any time. There’s also a <a class="link" href="{{crm}}/portal-demo.php" target="_blank" rel="noopener">demo client portal</a> you can show on screen.</span></div></li>
+      <li>{{check}}<div><b>Want to show real work?</b><span>Our <a class="link" href="work.html">work page</a> has live client sites and clearly labelled example concepts.</span></div></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section tight">
+  <div class="wrap">
+    <div class="note-band reveal">
+      <h2>Label every mention as an ad.</h2>
+      <p>US law (the FTC’s rules on endorsements) says your audience has to know you’re paid when you recommend us. So every post, video or stream that mentions us needs both of these:</p>
+      <ol class="disclose">
+        <li><b>The platform’s label.</b> TikTok “Content disclosure → Branded content”, Instagram “Paid partnership”, YouTube “Includes paid promotion”, Twitch: say it on stream and in the title or panel.</li>
+        <li><b>Your own words, early and clear.</b> For example: “#ad — I earn a commission if you use my code.” Not hidden in a pile of hashtags or only in a link.</li>
+      </ol>
+      <p>And only say what’s true: use the prices on our website, and don’t promise rankings, sales, followers or results. We don’t promise those either.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section tight" id="join">
+  <div class="wrap contact-grid">
+    <div>
+      <span class="eyebrow reveal"><span class="dot"></span>Join</span>
+      <h2 class="reveal d1">Pick your code.</h2>
+      <p class="lede reveal d2">We’ll email your code, your link and a sign-in link to your partner page, where you can see who signed up through you, what you’ve earned and what’s on its way.</p>
+      <ul class="checks reveal d3">
+        <li>{{check}}<div><b>Cash</b><span>Once you have at least ${{refMinCash}} ready, paid monthly. Before the first cash payout we’ll ask for a W-9, because we report cash payments to the IRS when the law says to.</span></div></li>
+        <li>{{check}}<div><b>Or account credit</b><span>If you’d rather have a website, a Discord setup or ads for yourself. Any amount, off your own bill.</span></div></li>
+        <li>{{check}}<div><b>Already have a regular referral link?</b><span>Email <a class="link" href="mailto:{{email}}">{{email}}</a> and we’ll switch it to a creator code.</span></div></li>
+      </ul>
+    </div>
+    <form class="co-panel reveal d2" id="referForm" data-creator novalidate>
+      <input type="hidden" name="creator" value="1">
+      <div class="form-grid">
+        <label class="field"><span>Your name</span><input name="name" autocomplete="name" required><span class="err">Enter your name.</span></label>
+        <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" required><span class="err">Enter a valid email address.</span></label>
+        <label class="field"><span>Your code</span><input name="code" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="YOURNAME" class="mono" style="text-transform:uppercase;letter-spacing:.06em" required><span class="err">3 to 20 letters and numbers.</span><span class="fine" style="margin-top:6px">Letters and numbers only. Easy to say out loud.</span></label>
+        <label class="field"><span>Where you post</span><input name="audience" maxlength="200" placeholder="TikTok @yourname, about 12K followers" required><span class="err">Tell us where you post.</span></label>
+        <fieldset class="field full"><legend>How would you like to be paid?</legend>
+          <div class="opts" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
+            <div class="opt"><input type="radio" name="payout" id="p-cash" value="cash" checked><label for="p-cash">Cash<small>From ${{refMinCash}}, W-9 needed</small></label></div>
+            <div class="opt"><input type="radio" name="payout" id="p-credit" value="credit"><label for="p-credit">Account credit<small>Off your own bill with us</small></label></div>
+          </div>
+        </fieldset>
+        <label class="field full" data-cash hidden><span>Where should cash go? <small>(optional, you can add it later)</small></span><input name="payout_details" maxlength="300" placeholder="PayPal or Venmo, or a mailing address for a check"><span class="fine" style="margin-top:6px">Please don’t send bank account numbers here.</span></label>
+        <div class="hp" aria-hidden="true"><label>Leave this empty <input name="website_url" tabindex="-1" autocomplete="off"></label></div>
+        <label class="agree full"><input type="checkbox" name="agree" value="1"> <span>I’m 18 or older and I agree to the <a href="#terms">creator rules</a>, including labelling every mention of Syndicate Marketing as a paid partnership.</span></label>
+        <div class="full">{{captcha}}</div>
+        <div class="alert bad full" id="referAlert" hidden></div>
+        <div class="full"><button type="submit" class="btn btn-ink btn-block">Email me my code</button><p class="fine" style="margin-top:12px">We use your details to run your partnership and pay you. <a class="link" href="privacy.html#referrals">Privacy policy</a></p></div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="section tight" id="terms">
+  <div class="wrap">
+    <div class="sec-head"><div><span class="eyebrow reveal"><span class="dot"></span>The rules</span><h2 class="reveal d1">Creator terms</h2><p class="lede reveal d2">The <a class="link" href="referrals.html#terms">referral terms</a> apply, with these differences for creator partners. Syndicate Holdings Group LLC runs the program for its Syndicate Marketing brand. Last updated {{legalUpdated}}.</p></div></div>
+    <div class="faq">
+      <details class="reveal" open><summary>What your code does</summary><p>Your audience types your code at checkout on syndicatemarketing.co, or opens your link, which applies it for them. It takes {{creatorDiscount}}% off the one-time items in a first order (website packages, add-ons, audits, Discord setup). Monthly plans are full price. It only works for someone new to us, not for anyone who has already paid us or is already talking to us about a project, and it doesn’t combine with special offers or other promo codes. You can’t use your own code.</p></details>
+      <details class="reveal"><summary>What you earn</summary><p>{{creatorRate}}% of what the client pays us in the {{refMonths}} months from their first payment, after the code’s discount: website packages, add-ons, audits, care plans, ads management and community management fees. Ad spend, sales tax and anything refunded don’t count. A client counts for you if they used your code, or opened your link within {{refLinkDays}} days before getting in touch (by ordering, booking a call or sending a message). If someone opened another partner’s link first, the code they type at checkout is the one that counts.</p></details>
+      <details class="reveal"><summary>Disclosure</summary><p>Every post, video, stream, story or bio that mentions us must say clearly that you’re paid: the platform’s paid-partnership or branded-content label where it has one, and your own words, such as “#ad — I earn a commission if you use my code,” placed where people will see it before they click. Mentions without a clear disclosure don’t earn anything, and we may ask you to fix or remove them.</p></details>
+      <details class="reveal"><summary>What you can and can’t say</summary><p>Say it your way, as long as it’s true and current. Use the prices on our website. Don’t promise rankings, sales, followers, ad results or timelines we don’t promise. Don’t say you’ve used us unless you have, and don’t describe a client’s results unless they’ve shared them publicly. Don’t make content aimed at children about us. Don’t pretend to work for us or make deals on our behalf; you’re an independent partner, not our employee or agent.</p></details>
+      <details class="reveal"><summary>What’s not allowed</summary><p>No spam: no bulk or cold email, texts or direct messages with your code, and no buying lists. No paid search ads on our name, and no coupon or deal sites listing your code. No fake reviews or fake accounts. Breaking these rules means those referrals don’t earn and we can close the partnership.</p></details>
+      <details class="reveal"><summary>When and how you’re paid</summary><p>Each earning is held {{refHoldDays}} days, then it’s ready. We pay what’s ready once a month, as cash (from ${{refMinCash}}, with a W-9 on file; cash payouts may be reported to the IRS on a Form 1099) or as account credit, whichever you chose. You’re responsible for taxes on what you earn. Switch between cash and credit any time from your partner page.</p></details>
+      <details class="reveal"><summary>Changes and ending</summary><p>We may change the rate, the discount or the program, or end a partnership, by emailing you. Changes don’t affect what you’ve already earned, and clients you brought in before a change keep earning on the old terms for their first {{refMonths}} months. You can leave any time by emailing <a class="link" href="mailto:{{email}}">{{email}}</a>.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding:40px 24px">
+  <div class="cta-band reveal"><div><h2>Already a partner?</h2><p>Get a sign-in link to see your code, referrals, earnings and payouts.</p></div><div class="cta-row"><a href="{{crm}}/refer.php" class="btn btn-ink">See my partner page {{arrow}}</a></div></div>
+</section>

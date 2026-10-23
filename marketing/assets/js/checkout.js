@@ -168,6 +168,35 @@
     return value;
   }
 
+  /* ---------- Creator code ---------- */
+  var codeChecked = '';
+  function paintCode(msg, bad) {
+    var cd = SM.code(), of = SM.offer(), box = $('#codeBox'); if (!box) return;
+    box.hidden = !!of && !cd;
+    var on = $('#codeOn'), fm = $('#codeForm'), m = $('#codeMsg');
+    on.hidden = !cd; fm.hidden = !!cd;
+    if (cd) on.innerHTML = C.check + '<span><b>' + C.esc(cd.code) + '</b> · ' + cd.pct + '% off the one-time items in this order</span><button type="button" id="codeRemove">Remove</button>';
+    if (cd && of) on.innerHTML += '<span class="code-msg bad" style="flex-basis:100%">Codes can’t be combined with ' + C.esc(of.name) + '. Remove the code to keep the offer.</span>';
+    m.textContent = msg || ''; m.className = 'code-msg' + (bad ? ' bad' : '');
+  }
+  function applyCode() {
+    var inp = $('#codeIn'), v = (inp.value || '').replace(/\s+/g, '').toLowerCase();
+    if (!v) { paintCode('Type the code, then Apply.', true); inp.focus(); return; }
+    var b = $('#codeApply'); b.disabled = true;
+    SM.checkCode(v, values().email || '', function (r) {
+      b.disabled = false;
+      if (!r.ok) { paintCode(r.error || 'We don’t recognise that code.', true); inp.focus(); return; }
+      inp.value = ''; codeChecked = (values().email || '').toLowerCase(); SM.setCode(r); SM.track('Code applied', { code: r.code }); paintCode();
+    });
+  }
+  // Once we know their email, check the code still applies (it's for a first order from someone new).
+  function recheckCode() {
+    var cd = SM.code(), em = (values().email || '').toLowerCase();
+    if (!cd || !em || em === codeChecked) return;
+    codeChecked = em;
+    SM.checkCode(cd.ref, em, function (r) { if (!r.ok && !r.offline) { SM.setCode(null); paintCode(r.error, true); } });
+  }
+
   /* ---------- Moving between steps ---------- */
   function go(n, opts) {
     if (n > step) { for (var i = step; i < n; i++) if (i > 1 && !validate(i)) return; }
@@ -181,7 +210,7 @@
     });
     if (n === 1) paintOrder();
     if (n === 3) paintBrief();
-    if (n === 4) paintReview();
+    if (n === 4) { paintReview(); paintCode(); recheckCode(); }
     saveDraft();
     if (!opts || !opts.quiet) { var top = $('#checkout').getBoundingClientRect().top + w.scrollY - 90; if (w.scrollY > top) w.scrollTo({ top: top, behavior: 'smooth' }); var h = $('.co-step:not([hidden]) h2'); if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); } }
     SM.track('Checkout step', { step: String(n) });
@@ -194,11 +223,14 @@
     if (bk) { e.preventDefault(); go(step - 1); }
     if (gt) { e.preventDefault(); go(Number(gt.getAttribute('data-goto'))); }
     if (st && !st.disabled) { e.preventDefault(); var k = Number(st.closest('li').getAttribute('data-step')); if (k <= maxStep) go(k); }
+    if (t.closest('#codeApply')) { e.preventDefault(); applyCode(); }
+    if (t.closest('#codeRemove')) { e.preventDefault(); SM.setCode(null); paintCode(); var ci = $('#codeIn'); if (ci) ci.focus(); }
     if (t.closest('.sum-toggle')) { sum.classList.toggle('open'); t.closest('.sum-toggle').setAttribute('aria-expanded', sum.classList.contains('open')); }
   });
+  form.addEventListener('keydown', function (e) { if (e.target.id === 'codeIn' && e.key === 'Enter') { e.preventDefault(); applyCode(); } });
   form.addEventListener('input', function (e) { var f = e.target.closest('.field'); if (f) f.classList.remove('bad'); toggles(); saveDraft(); });
   form.addEventListener('change', function (e) { if (e.target.name === 'agree' && e.target.checked) $('#payAlert').hidden = true; toggles(); saveDraft(); });
-  d.addEventListener('sm:cart', function () { paintOrder(); paintBrief(); if (step === 4) paintReview(); });
+  d.addEventListener('sm:cart', function () { paintOrder(); paintBrief(); if (step === 4) { paintReview(); paintCode(); } });
 
   /* ---------- Pay ---------- */
   form.addEventListener('submit', function (e) {
@@ -213,10 +245,11 @@
     var btn = $('#payBtn'); btn.classList.add('is-loading'); btn.textContent = 'Opening secure payment…';
     var src = ''; try { src = sessionStorage.getItem('sm_src') || ''; } catch (err) {}
     fetch(SM.API + '?a=checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: SM.cart().items, offer: SM.offer() ? SM.cart().offer : '', customer: customer, brief: brief, agree: true, source: src, ref: SM.ref ? SM.ref() : '', website_url: v.website_url || '' }) })
+      body: JSON.stringify({ items: SM.cart().items, offer: SM.offer() ? SM.cart().offer : '', code: SM.code() ? SM.code().ref : '', customer: customer, brief: brief, agree: true, source: src, ref: SM.ref ? SM.ref() : '', website_url: v.website_url || '' }) })
       .then(function (r) { return r.json().catch(function () { return { ok: false }; }); })
       .then(function (r) {
         if (r.offer_gone && SM.cart().offer) { try { sessionStorage.removeItem('sm_offer_' + SM.cart().offer); } catch (e2) {} SM.dropOffer(); }
+        if (r.code_bad) { SM.setCode(null); paintCode(r.error, true); }
         if (!r.ok || !r.url) { var er = new Error(r.error || ''); er.field = r.field; throw er; }
         try { sessionStorage.setItem('sm_order', JSON.stringify({ ref: r.ref, k: r.key })); } catch (err) {}
         SM.track('Checkout started', { value: String(SM.totals(SM.lines()).today) });
@@ -225,7 +258,8 @@
       .catch(function (err) {
         btn.classList.remove('is-loading'); paintSummary();
         alertEl.hidden = false; alertEl.textContent = (err && err.message) || ('We couldn’t reach the payment page. Check your connection and try again, or email ' + SM.CFG.email + '.');
-        if (err && err.field && err.field !== 'agree') { var k = CUSTOMER.indexOf(err.field) !== -1 ? 2 : 3; go(k); fieldErr(err.field, err.message); }
+        if (err && err.field === 'code') { paintCode(err.message, true); }
+        else if (err && err.field && err.field !== 'agree') { var k = CUSTOMER.indexOf(err.field) !== -1 ? 2 : 3; go(k); fieldErr(err.field, err.message); }
       });
   });
 
@@ -250,6 +284,7 @@
           SM.clear();
           r.items.forEach(function (i) { SM.add(i.sku); if (i.qty > 1) SM.setQty(i.sku, i.qty); });
           restore(Object.assign({}, r.customer, r.brief));
+          if (r.code) SM.checkCode(r.code, r.customer.email, function (x) { if (x.ok) SM.setCode(x); });
           maxStep = 4; SM.track('Checkout resumed');
           var next = function () { go(SM.problems(SM.lines()).length ? 1 : 3, { quiet: true }); };
           if (r.offer) SM.setOffer(r.offer, next); else next();

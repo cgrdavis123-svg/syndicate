@@ -228,8 +228,9 @@ No frameworks, no npm dependencies. Node 18+ locally.
   - `email` hello@stusyn.com
   - `bookDiscovery` / `bookKickoff` (CRM `book.php?type=discovery-call` / `kickoff`)
   - `statsSite` (`SM_STATS`, default `UIOdnDz160w8`)
-  - `legalUpdated` ('October 22, 2026'), `arrow`, `check`
+  - `legalUpdated` ('October 23, 2026'), `arrow`, `check`
   - `refRate` (5), `refMonths` (12), `refHoldDays` (30), `refLinkDays` (60), `refMinCash` (25): the referral numbers shown on the site; keep them in step with CRM → Referrals settings
+  - `creatorRate` (10), `creatorDiscount` (10): the creator partner numbers on `creators.html`; keep them in step with `ref_creator_rate` / `ref_creator_discount`
 - Reads `crm/app/catalog.json` (prices and products) and `marketing/work.json` (portfolio), and renders product cards with `marketing/assets/js/cards.js` (the same code the browser uses, loaded through `new Function`), so the build and the live cart always agree.
 - **Template tags:**
 
@@ -240,6 +241,7 @@ No frameworks, no npm dependencies. Node 18+ locally.
 | `{{price:sku}}` | Formatted price, e.g. `$850` or `$300/mo` |
 | `{{amount:sku}}` | Raw number |
 | `{{earn:sku}}` / `{{earn:sku:12}}` | What a referrer earns (`refRate`) on one purchase, or on 12 months of a monthly plan |
+| `{{cprice:sku}}` / `{{cdisc:sku}}` / `{{cearn:sku}}` / `{{cearn:sku:12}}` | Creator partners: what their audience pays with the code, what the code takes off, what the creator earns (`creatorRate`, after the discount on one-time items; monthly plans full price) |
 | `{{work:grid}}` / `{{work:grid:2}}` | Portfolio grid (all, or the first N) |
 | `{{features:sku}}` | The product's feature list as `<li>` items with checkmarks |
 | `{{icon:name}}` / `{{icon:name\|Label}}` / `{{icon:name\|Label\|fallback}}` | Inline SVG from `icons/ui/` or `icons/brands/` (also works on stusyn.com). Decorative, or labelled with `Label`. A brand file not added yet shows the label (or the fallback HTML) instead, and the build lists what's missing |
@@ -329,6 +331,7 @@ Legal (`src/legal/`): `privacy.html`, `cookies.html`, `terms.html` (section 7 co
 | `checkup.html` | **Free website checkup** (see “Free website checkup” in §14): type a website, get a plain-English report of the home page in about a minute; findings link to the products that fix them; “Email me this report” makes a lead. Reports live at `checkup.html?r=TOKEN`. Linked from the home hero, the care page and the footer. Styles `assets/css/checkup.css`, script `assets/js/checkup.js` |
 | `web-design-spartanburg.html`, `websites-for-home-service-businesses.html`, `websites-for-dentists.html`, `websites-for-restaurants.html`, `websites-for-game-studios.html` | **Industry and local pages** for Google (in the sitemap, linked from the footer column “Who we build for” and the websites page). Each covers what that kind of business needs, the packages most pick (live product cards), the matching example with its screenshot (real client Kirby’s Home Improvement on the Spartanburg and home-service pages, with Ridgeline linked as the five-page concept; fictional Pine Street, Hearth & Grain, Lampwright/Fernhollow on the others), relevant extras, an FAQ and links to the others. Styles `assets/css/niche.css`. Keep them few and genuinely different: near-copy pages for more towns or trades would read as doorway spam to Google. No made-up stats, clients or reviews; no in-person promises beyond the About page's “happy to meet in person around the Upstate” |
 | `referrals.html` | **Referral program**: how it works, earnings table from catalog prices (`{{earn:sku}}`), sign-up form (→ `shop-api.php?a=refer`, script `assets/js/referrals.js`), and the referral rules (`#terms`). In the footer as “Refer a business, earn 5%” |
+| `creators.html` | **Creator partners** (for influencers): their audience saves `creatorDiscount`% on one-time items in a first order with the creator's code, the creator earns `creatorRate`% for 12 months. Example checkout card, earnings table (`{{cprice}}`/`{{cearn}}`), who it's for, true talking points, the FTC disclosure rule, sign-up (`a=refer` with `creator=1`, `code`, `audience`; script `referrals.js`, styles `creators.css`) and creator terms (`#terms`). In the sitemap; footer “Creators: partner with us”; linked from `referrals.html` |
 | `404.html` | Not found |
 
 Legal (`marketing/legal/`): `terms.html` (terms of sale) and `privacy.html`.
@@ -337,6 +340,7 @@ Legal (`marketing/legal/`): `terms.html` (terms of sale) and `privacy.html`.
 - Cart lives in `localStorage` key **`sm_cart`**. Any link with `?add=<sku>` starts or adds to the cart (this is how stusyn.com's one-page button works).
 - **Rules:** one website package per order, one ads plan per order, one care plan per order. Add-ons with `requires` need their parent (e.g. `add-page` needs a website, `add-ads-setup` needs an ads plan). Per-page add-ons have a quantity.
 - A referral link (`?ref=code` on any page) is kept in `localStorage` **`sm_ref`** for 60 days (first link wins) and sent with checkout, the contact form and discovery-call booking links (`book.php?…&ref=`).
+- **Creator codes:** a `?ref=` link that is a creator code (checked with `shop-api.php?a=code`) or a code typed in the **Creator code** box on checkout step 4 is kept in `localStorage` **`sm_code`** (`{code, ref, pct}`). The cart and drawer take `pct`% off one-time lines (monthly plans full price; not with an offer) and show “Code X (10% off)”. Checkout re-checks the code with their email; the CRM refuses it for the creator, for anyone who has paid or is already talking to us, and with offers (`field: code`, the box shows why).
 - Visit source and UTM data are kept in `sessionStorage` **`sm_src`** and sent with the order (the CRM records the deal source, e.g. `Marketing site — checkout`).
 - Checkout steps: **1 Cart → 2 Your details → 3 Project details → 4 Review & pay**. Pay sends the customer to Stripe Checkout (hosted). The in-progress form is kept in `sessionStorage` `sm_checkout`; the order reference is kept in `sm_order`.
 - After paying, Stripe returns them to `thank-you.html?ref=…&k=…&session_id=…`, which polls `shop-api.php?a=order` and shows paid, processing (bank payments) or still waiting.
@@ -409,7 +413,7 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 | Endpoint | Used by |
 |---|---|
 | `a.js`, `t.php` | Site Stats tracker script and collector |
-| `shop-api.php?a=catalog` / `offer` / `checkout` / `order` / `lead` / `refer` / `checkup` / `checkup-report` / `checkup-speed` / `checkup-lead` | syndicatemarketing.co cart, offers, checkout, thank-you page, contact form, referral sign-up and the free checkup (CORS limited to the shop site; `catalog` and `offer` are public) |
+| `shop-api.php?a=catalog` / `offer` / `checkout` / `order` / `lead` / `refer` / `code` / `checkup` / `checkup-report` / `checkup-speed` / `checkup-lead` | syndicatemarketing.co cart, offers, checkout, thank-you page, contact form, referral sign-up and the free checkup (CORS limited to the shop site; `catalog` and `offer` are public) |
 | `stripe-webhook.php` | Stripe events (store orders, quotes, paid bookings, renewals, refunds) |
 | `i.php` | Public invoice view/pay link (`?k=` token) |
 | `q.php` | Public proposal: view, choose options, accept, pay deposit, decline |
@@ -725,7 +729,7 @@ A public help center for clients and staff-only Team docs, in the CRM's `wiki/` 
 - **Staff pages**: `team.php` (Team docs by topic, recent changes), `articles.php` (views and helpful %), `edit.php` (editor with preview, live tags help, every save keeps the previous version with one-click restore, reader comments), `insights.php` (questions to answer, searches with no answer, unhelpful articles, most read, top searches).
 - **Topics** (`WIKI_CATEGORIES` / `WIKI_TEAM_CATEGORIES`): Getting started, Websites, Paid ads, Community management, Website care, Site Stats, Client portal, Billing & plans, Audits & consulting, Policies & privacy, Glossary; Team: Running the business, Client work, Systems & setup, Rules & voice, When something breaks.
 - **Linked from**: the marketing site footer, the client portal and ads portal footers, and the CRM menu (“Wiki ↗”).
-- **Keep it true:** when a promise, process or feature changes, update the matching help article (search the wiki) in the same change. 70 public and 25 team articles shipped on October 18, 2026; `offers-and-free-months` added the same day, then a **Community management** topic with `community-plans-compared`, `discord-server-setup`, `discord-access` and `community-moderation` (75 public). Team article `team-outreach` added October 19, 2026 (26 team); `team-logins` October 20, 2026 (27 team); `referral-program` and `team-referrals` October 22, 2026 (76 public, 28 team); `free-website-checkup` the same day (77 public), and `team-outreach` now covers the checkup and homepage previews; `team-reviews` the same day (29 team).
+- **Keep it true:** when a promise, process or feature changes, update the matching help article (search the wiki) in the same change. 70 public and 25 team articles shipped on October 18, 2026; `offers-and-free-months` added the same day, then a **Community management** topic with `community-plans-compared`, `discord-server-setup`, `discord-access` and `community-moderation` (75 public). Team article `team-outreach` added October 19, 2026 (26 team); `team-logins` October 20, 2026 (27 team); `referral-program` and `team-referrals` October 22, 2026 (76 public, 28 team); `free-website-checkup` the same day (77 public), and `team-outreach` now covers the checkup and homepage previews; `team-reviews` the same day (29 team); `creator-partners` October 23, 2026 (78 public).
 
 ### Outreach (cold email)
 The outreach agent finds prospects and the CRM emails them. Engine `app/outreach.php`, admin `outreach.php`, agent API `outreach-api.php`, unsubscribe page `u.php`, Team article `team-outreach`.
@@ -770,6 +774,7 @@ Anyone 18+ can join; new clients they send earn them a share of what those clien
 - **Attribution:** `?ref=code` → `sm_ref` (60 days) → `orders.ref_code` / `bookings.ref_code` / the lead form → `ref_attach()` when the contact is created (store fulfilment, discovery-call confirmation, contact form). Only **new** contacts count: not the referrer or their business (same email, contact, company or business email domain), not anyone already referred, already paid, or with a deal older than a day. Staff can tie a client who named a referrer (“Tie to …”, `how = manual`); the deal source becomes “Referral”.
 - **Earnings:** `ref_sweep()` (each cron run, `ref_cron()`) records one `referral_earnings` row per paid invoice of a referred client (unique `invoice_id`), sets `referrals.first_paid_at` / `ends_at`, emails the referrer and `shop_notify` on the first one, releases holds, and voids earnings on voided invoices. `charge.refunded` calls `ref_refund()` (shrinks or voids; after payout, a negative earning comes off the next payout). On days 1–5, one task “Pay referral earnings” when anything is ready. `ref_payout()` pays everything ready, records `referral_payouts` and emails a receipt.
 - **Statuses:** referrer active / paused (no new referrals) / closed (no new earnings, can't sign in); referral lead / client / void (“Not counted”, reason private); earning held / ready / paid / void.
+- **Creator partners** (kind `creator`, added October 23, 2026): sign up on `creators.html` with their own code (`ref_code_problem()`: 3–20 letters/numbers, not taken, not in `REF_RESERVED`) and where they post (`referrers.audience`). Rate `ref_creator_rate` (10%) and code discount `referrers.discount` from `ref_creator_discount` (10%), both editable per person and in Program settings. `ref_discount_check()` decides whether a code takes money off: active creator code, not the creator's own party, not someone already known (`ref_already_known()`) or with a paid order. `shop_price_cart(…, $codePct)` takes it off one-time lines; never with an offer; promo codes are switched off for that session. Orders keep `ref_code` + `ref_discount`; Stripe lines and the CRM invoice say “10% off with code X; regularly $…”; the typed code overrides an earlier referral link. Creators must label every mention as a paid partnership (the welcome email, partner page and terms say how); unlabelled mentions don't earn. Help article `creator-partners`, Team article `team-referrals` → Creator partners.
 
 ### Plans & billing (online cancellation)
 Clients see their monthly plans (store orders and won quotes with a live Stripe subscription) at `portal-plans.php` and cancel in two steps. `plan_cancel()` in `app/shop.php` sets `cancel_at` (ads, with notice, `proration_behavior=none`) or `cancel_at_period_end` in Stripe, stores `cancel_at`, logs it and sends both emails. The webhook also records `cancel_at` when a plan is cancelled from the Stripe dashboard.
@@ -834,7 +839,7 @@ It prints a one-line summary (cPanel can email it to you; set the cron email to 
 ## 17. Databases and migrations
 
 ### CRM: `crm/storage/crm.sqlite`
-Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v29**.
+Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v30**.
 
 | Version | Adds |
 |---|---|
@@ -865,6 +870,7 @@ Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_versi
 | v26 | Review requests: `review_requests` (one per project: contact, email, status scheduled/sent/skipped, reason, token, due, sent, clicked); projects already finished are marked skipped; settings `review_on`, `review_url`, `review_delay_days` |
 | v27 | `checkups.quote_id` (the quote drafted from a checkup) |
 | v28 | Homepage previews: `previews` (token, business, email, website, theme, data JSON, via agent/staff, views, viewed_at, expires_at, removed_at, removed_by) |
+| v29 | Creator partners: `referrers.discount`, `referrers.audience`, `orders.ref_discount`; settings `ref_creator_rate` (10), `ref_creator_discount` (10) |
 | v18 | Community products (`com-discord-setup`, `com-audit`, `com-manage`, `com-manage-plus`, after the care plans) and the `add-presskit` add-on, from `catalog.json` |
 
 ### Site Stats: `crm/storage/analytics.sqlite`
@@ -1104,11 +1110,12 @@ All setup items below were done by October 18, 2026, except the ones still open.
 | Consulting rate | $150/hour |
 | Exclude own visits | `?syn_ignore=1` |
 | Cart storage | `localStorage.sm_cart`, `sm_ref`, `sessionStorage.sm_src`, `sm_checkout`, `sm_order` |
-| CRM DB version | v28 (next: v29) |
+| CRM DB version | v29 (next: v30) |
 | Homepage previews | `crm.stusyn.com/preview.php?t=TOKEN` · CRM → Outreach → Homepage previews · agent `outreach-api.php?a=preview` · 30 days, owner can remove |
 | Review requests | Settings → Review requests (`reviews.php`); one honest Google review ask per business a year, 3 days after Complete |
 | Free website checkup | `syndicatemarketing.co/checkup.html` · reports `checkup.html?r=TOKEN` · CRM → Checkups · agent `outreach-api.php?a=checkup` |
 | Referral program | 5% for 12 months, 30-day hold, credit or cash ($25+, W-9) · sign-up `syndicatemarketing.co/referrals.html` · referrer page `crm.stusyn.com/refer.php` · CRM → Referrals |
+| Creator partners | Own code: audience gets 10% off one-time items in a first order, creator earns 10% for 12 months · `syndicatemarketing.co/creators.html` · CRM → Referrals (type Creator partner) |
 | Gaming campaign | `syndicatemarketing.co/gaming-communities.html?t=studio\|creator\|esports\|business&b=Name&n=First` |
 | Outreach | CRM → Outreach; sends from outreach@syndicatemarketing.co; agent API `crm.stusyn.com/outreach-api.php` |
 | Current offer | `starter-500`: $500 Starter website + 3 months Care Plus free · `syndicatemarketing.co/starter-website-offer.html?b=Business+Name&n=First` |

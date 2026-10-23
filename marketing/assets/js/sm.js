@@ -22,12 +22,20 @@
   // Referral links (?ref=code): remembered in this browser for 60 days and sent with an order, a message or a
   // discovery-call booking. The first link someone used is the one that counts.
   var REF_DAYS = 60;
+  // A creator partner's code: typed at checkout, or picked up from their ?ref= link. It takes a percentage off the
+  // one-time items in a first order (the CRM checks it again, and checks the email, before anything is charged).
+  function codeOn() { var c = store('sm_code'); if (c && c.ref && c.at > Date.now() - REF_DAYS * 864e5) return c; if (c) store('sm_code', null); return null; }
+  function setCode(r) { if (!r) store('sm_code', null); else store('sm_code', { code: r.code, ref: r.ref, pct: +r.pct || 0, at: Date.now() }); try { d.dispatchEvent(new CustomEvent('sm:cart')); } catch (e) {} }
+  function checkCode(code, email, cb) {
+    fetch(API + '?a=code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: code, email: email || '' }) })
+      .then(function (r) { return r.json(); }).then(cb).catch(function () { cb({ ok: false, error: 'We couldn’t check that code just now. Try again in a moment.', offline: true }); });
+  }
   function refCode() { var r = store('sm_ref'); if (r && r.code && r.at > Date.now() - REF_DAYS * 864e5) return r.code; if (r) store('sm_ref', null); return ''; }
   (function () {
     try {
       var qs = new URLSearchParams(location.search), c = (qs.get('ref') || '').toLowerCase();
       if (!qs.has('ref')) return;
-      if (/^[a-z0-9][a-z0-9-]{2,39}$/.test(c) && !refCode()) store('sm_ref', { code: c, at: Date.now() });
+      if (/^[a-z0-9][a-z0-9-]{2,39}$/.test(c) && !refCode()) { store('sm_ref', { code: c, at: Date.now() }); if (!codeOn()) checkCode(c, '', function (r) { if (r.ok) setCode(r); }); }
       qs.delete('ref');
       history.replaceState(null, '', location.pathname + (qs.toString() ? '?' + qs : '') + location.hash);
     } catch (e) {}
@@ -153,8 +161,11 @@
   function totals(ls) {
     var t = { one: 0, mo: 0, trialMo: 0, was: 0 };
     ls.forEach(function (l) { var a = l.p.price * l.qty; if (l.p.interval === 'month') { t.mo += a; if (l.p.trial) t.trialMo += a; } else t.one += a; if (l.p.was && !l.p.incl) t.was += (l.p.was - l.p.price) * l.qty; });
-    t.today = t.one + t.mo - t.trialMo;
-    var o = offerOn(); t.trialEnds = o && t.trialMo ? o.trial_ends : ''; t.trialMonths = o ? o.trial_months : 0;
+    var o = offerOn(), cd = o ? null : codeOn();
+    t.code = 0;
+    if (cd && cd.pct > 0) ls.forEach(function (l) { if (l.p.interval !== 'month' && l.p.price > 0) t.code += (l.p.price - Math.round(l.p.price * (100 - cd.pct)) / 100) * l.qty; });
+    t.code = Math.round(t.code * 100) / 100; t.codeName = t.code ? cd.code : ''; t.codePct = cd ? cd.pct : 0;
+    t.today = t.one + t.mo - t.trialMo - t.code; t.trialEnds = o && t.trialMo ? o.trial_ends : ''; t.trialMonths = o ? o.trial_months : 0;
     return t;
   }
   function longDate(iso) { if (!iso) return ''; var p = iso.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); }
@@ -208,6 +219,7 @@
     return '<div class="totals">' + (t.one ? '<div><span>One-time</span><span>' + C.money(t.one) + '</span></div>' : '') +
       (t.mo ? '<div><span>Monthly</span><span>' + C.money(t.mo) + '/mo</span></div>' : '') +
       (t.was ? '<div class="save"><span>Offer savings</span><span>−' + C.money(t.was) + '</span></div>' : '') +
+      (t.code ? '<div class="save"><span>Code ' + C.esc(t.codeName) + ' (' + t.codePct + '% off)</span><span>−' + C.money(t.code) + '</span></div>' : '') +
       '<div class="big"><span>Due today</span><span>' + C.money(t.today) + '</span></div>' +
       (t.mo ? '<div class="mo"><span>Then ' + C.money(t.mo) + '/month' + (t.trialEnds ? ' from ' + longDate(t.trialEnds) : '') + '</span><span>cancel any time</span></div>' : '') + '</div>';
   }
@@ -329,7 +341,7 @@
     });
   })();
 
-  w.SM = { API: API, CFG: CFG, ref: refCode, cart: function () { return cart; }, lines: lines, offer: offerOn, setOffer: setOffer, loadOffer: loadOffer, longDate: longDate,
+  w.SM = { API: API, CFG: CFG, ref: refCode, code: codeOn, setCode: setCode, checkCode: checkCode, cart: function () { return cart; }, lines: lines, offer: offerOn, setOffer: setOffer, loadOffer: loadOffer, longDate: longDate,
     dropOffer: function () { delete cart.offer; save(); }, totals: totals, problems: problems, suggestions: suggestions, product: product, onCatalog: onCatalog,
     add: add, setQty: setQty, remove: remove, clear: function () { cart = { items: [] }; save(); }, lineHtml: lineHtml, totalsHtml: totalsHtml, toast: toast, track: track, store: store, openCart: openCart };
   paintCount();

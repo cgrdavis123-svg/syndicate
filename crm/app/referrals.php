@@ -9,7 +9,7 @@
 require_once __DIR__ . '/shop.php';
 
 const REF_STATUSES = ['active' => 'Active', 'paused' => 'Paused', 'closed' => 'Closed'];
-const REF_KINDS = ['referrer' => 'Referrer', 'rep' => 'Sales rep'];
+const REF_KINDS = ['referrer' => 'Referrer', 'creator' => 'Creator partner', 'rep' => 'Sales rep'];
 const REF_PAYOUTS = ['credit' => 'Account credit', 'cash' => 'Cash'];
 const REF_EARN_STATUSES = ['held' => 'Waiting', 'ready' => 'Ready to pay', 'paid' => 'Paid', 'void' => 'Cancelled'];
 const REF_REFERRAL_STATUSES = ['lead' => 'Not a client yet', 'client' => 'Client', 'void' => 'Not counted'];
@@ -23,6 +23,33 @@ function ref_rate_default(): float { $r = (float)setting('ref_rate'); return $r 
 function ref_months_default(): int { $m = (int)setting('ref_months'); return $m > 0 ? $m : 12; }
 function ref_hold_days(): int { $d = setting('ref_hold_days'); return $d === '' ? 30 : max(0, (int)$d); }
 function ref_min_cash(): float { $m = setting('ref_min_cash'); return $m === '' ? 25 : max(0, (float)$m); }
+// Creator partners (syndicatemarketing.co/creators.html): their own easy code, a higher rate, and a discount for their audience.
+function ref_creator_rate(): float { $r = setting('ref_creator_rate'); return $r === '' ? 10 : max(0, min(50, (float)$r)); }
+function ref_creator_discount(): float { $d = setting('ref_creator_discount'); return $d === '' ? 10 : max(0, min(50, (float)$d)); }
+const REF_RESERVED = ['admin', 'syndicate', 'syndicatemarketing', 'stusyn', 'grady', 'support', 'hello', 'help', 'staff', 'team', 'test', 'free', 'discount', 'promo', 'code', 'offer', 'sale', 'stripe', 'tiktok', 'discord', 'google', 'meta'];
+// A code a creator picks: 3–20 letters and numbers, easy to say out loud. Returns an error, or '' if it's fine.
+function ref_code_problem(string $code): string {
+    if (!preg_match('/^[a-z0-9]{3,20}$/', $code)) return 'Pick a code of 3 to 20 letters and numbers, with no spaces or symbols.';
+    if (in_array($code, REF_RESERVED, true) || preg_match('/^(syn|sm)\d*$/', $code)) return 'That code is reserved. Try another, like your handle.';
+    if (val('SELECT 1 FROM referrers WHERE code = ?', [$code])) return 'Someone already has that code. Try another, like your handle with a number.';
+    return '';
+}
+// Can this code take money off this person's order? Only for creator codes, only for someone new to us, never for the creator.
+// Returns ['ok' => true, 'referrer' => ..., 'pct' => 10] or ['ok' => false, 'error' => ...].
+function ref_discount_check(string $code, string $email = ''): array {
+    $no = function ($m) { return ['ok' => false, 'error' => $m]; };
+    if (!ref_on()) return $no('Codes aren’t being taken right now.');
+    $r = ref_by_code($code);
+    if (!$r || (float)$r['discount'] <= 0) return $no('We don’t recognise that code. Check the spelling, or leave it blank.');
+    $email = strtolower(trim($email));
+    if ($email !== '') {
+        $c = one('SELECT * FROM contacts WHERE email = ? COLLATE NOCASE ORDER BY id LIMIT 1', [$email]) ?: ['id' => 0, 'email' => $email, 'company_id' => null];
+        if (ref_same_party($r, $c)) return $no('That’s your own code, so it can’t be used on your order.');
+        if ($c['id'] && ref_already_known($c) !== '') return $no('Codes are for a first order from someone new to us, and you’ve worked with us before. Remove the code to continue.');
+        if (one("SELECT 1 FROM orders WHERE email = ? COLLATE NOCASE AND status = 'paid'", [$email])) return $no('Codes are for a first order, and you’ve ordered from us before. Remove the code to continue.');
+    }
+    return ['ok' => true, 'referrer' => $r, 'pct' => (float)$r['discount']];
+}
 // Money with a proper minus sign (a refund after a payout leaves a negative balance).
 function ref_money($n, bool $cents = true): string { return (float)$n < -0.004 ? '−' . money(abs((float)$n), $cents) : money(abs((float)$n) < 0.005 ? 0 : $n, $cents); }
 function ref_pct($r): string { return rtrim(rtrim(number_format((float)$r, 2), '0'), '.') . '%'; }
@@ -246,17 +273,23 @@ function ref_signup(array $in): array {
     $s = function ($k, $max = 200) use ($in) { return mb_substr(trim((string)($in[$k] ?? '')), 0, $max); };
     $name = $s('name', 120); $email = strtolower($s('email', 190)); $biz = $s('business', 150); $details = $s('payout_details', 300);
     $payout = $s('payout', 10) === 'cash' ? 'cash' : 'credit';
+    $creator = !empty($in['creator']);
+    $code = strtolower(preg_replace('/\s+/', '', $s('code', 40))); $audience = $s('audience', 200);
     if (mb_strlen($name) < 2) return ['ok' => false, 'error' => 'Enter your name.', 'field' => 'name'];
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return ['ok' => false, 'error' => 'Enter a valid email address.', 'field' => 'email'];
-    if (empty($in['agree'])) return ['ok' => false, 'error' => 'Please confirm you’re 18 or older and agree to the referral terms.', 'field' => 'agree'];
+    if ($creator && mb_strlen($audience) < 3) return ['ok' => false, 'error' => 'Tell us where you post, like “TikTok @yourname”.', 'field' => 'audience'];
+    if (empty($in['agree'])) return ['ok' => false, 'error' => $creator ? 'Please confirm you’re 18 or older and agree to the creator terms.' : 'Please confirm you’re 18 or older and agree to the referral terms.', 'field' => 'agree'];
     $r = one('SELECT * FROM referrers WHERE email = ?', [$email]);
     if ($r) { if ($r['status'] !== 'closed') ref_send_signin($r); return ['ok' => true]; }
+    if ($creator && ($why = ref_code_problem($code)) !== '') return ['ok' => false, 'error' => $why, 'field' => 'code'];
     $contact = one('SELECT id FROM contacts WHERE email = ? COLLATE NOCASE ORDER BY id LIMIT 1', [$email]);
-    q('INSERT INTO referrers (code, name, email, business, contact_id, rate, months, payout, payout_details, agreed_at, ip_hash, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
-        [ref_new_code($name), $name, $email, $biz, $contact ? (int)$contact['id'] : null, ref_rate_default(), ref_months_default(), $payout, $details, now(), ip_hash(), now(), now()]);
+    q('INSERT INTO referrers (code, name, email, business, contact_id, kind, rate, months, discount, audience, payout, payout_details, agreed_at, ip_hash, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        [$creator ? $code : ref_new_code($name), $name, $email, $biz, $contact ? (int)$contact['id'] : null, $creator ? 'creator' : 'referrer', $creator ? ref_creator_rate() : ref_rate_default(), ref_months_default(),
+         $creator ? ref_creator_discount() : 0, $audience, $payout, $details, now(), ip_hash(), now(), now()]);
     $r = ref_get((int)db()->lastInsertId());
-    if ($contact) log_activity('contact', (int)$contact['id'], 'note', 'Joined the referral program (' . $r['code'] . ').');
+    if ($contact) log_activity('contact', (int)$contact['id'], 'note', 'Joined the ' . ($creator ? 'creator' : 'referral') . ' program (' . $r['code'] . ').');
     $first = trim(explode(' ', $name)[0]) ?: 'there';
+    if ($creator) { ref_mail_creator_welcome($r); ref_mail_staff_signup($r); return ['ok' => true]; }
     send_mail($email, 'Your ' . SHOP_BRAND . ' referral link', "Hi $first,\n\nThanks for joining the " . SHOP_BRAND . " referral program. Here’s your link:\n\n" . ref_link($r) . "\n\n"
         . "How it works\n  • Share the link with a business that needs a website, ads, website care or community management.\n"
         . '  • If they become a client within ' . REF_LINK_DAYS . " days of opening it, you earn " . ref_pct($r['rate']) . ' of what they pay us in their first ' . (int)$r['months'] . " months. Ad spend and sales tax don’t count.\n"
@@ -265,10 +298,33 @@ function ref_signup(array $in): array {
         . "  • If you post your link publicly, say you earn a commission, for example “I get a referral bonus if you sign up.”\n\n"
         . "See your referrals and earnings (this link works once and lasts " . REF_WELCOME_DAYS . " days; you can always get a new one from the same page):\n" . ref_make_link($r, REF_WELCOME_DAYS * 1440)
         . "\n\nThe full rules: " . ref_site() . "/referrals.html#terms\n\nQuestions? Just reply.\n\n" . SHOP_BRAND . "\n" . setting('business_email'), setting('business_email'), SHOP_BRAND);
-    $to = setting('shop_notify') ?: setting('business_email');
-    if ($to !== '') send_mail($to, '[Referrals] New referral partner — ' . $name, "$name ($email" . ($biz !== '' ? ", $biz" : '') . ") joined the referral program.\nPayout choice: " . REF_PAYOUTS[$payout] . "\nLink: " . ref_link($r)
-        . "\n\nIn the CRM: " . abs_url('referrer.php?id=' . $r['id']) . "\n", $email, SHOP_BRAND);
+    ref_mail_staff_signup($r);
     return ['ok' => true];
+}
+function ref_code_upper(array $r): string { return strtoupper($r['code']); }
+function ref_mail_staff_signup(array $r): void {
+    $to = setting('shop_notify') ?: setting('business_email');
+    if ($to === '') return;
+    $creator = $r['kind'] === 'creator';
+    send_mail($to, '[Referrals] New ' . ($creator ? 'creator partner' : 'referral partner') . ' — ' . $r['name'], $r['name'] . ' (' . $r['email'] . ($r['business'] !== '' ? ', ' . $r['business'] : '') . ') joined the ' . ($creator ? 'creator' : 'referral') . " program.\n"
+        . ($creator ? 'Where they post: ' . $r['audience'] . "\nCode: " . ref_code_upper($r) . ' (' . ref_pct($r['discount']) . ' off for their audience, ' . ref_pct($r['rate']) . " for them)\n" : '')
+        . 'Payout choice: ' . REF_PAYOUTS[$r['payout']] . "\nLink: " . ref_link($r) . "\n\nIn the CRM: " . abs_url('referrer.php?id=' . $r['id']) . "\n", $r['email'], SHOP_BRAND);
+}
+function ref_mail_creator_welcome(array $r): void {
+    $first = trim(explode(' ', $r['name'])[0]) ?: 'there';
+    $code = ref_code_upper($r);
+    send_mail($r['email'], 'Your ' . SHOP_BRAND . ' creator code: ' . $code, "Hi $first,\n\nThanks for joining the " . SHOP_BRAND . " creator program. You’re set up:\n\n"
+        . "  Your code: $code\n  Your link: " . ref_link($r) . "\n\n"
+        . "How it works\n"
+        . '  • Your audience types ' . $code . ' at checkout (or uses your link) and gets ' . ref_pct($r['discount']) . " off the one-time items in their first order: websites, add-ons, audits and setups. Monthly plans are full price.\n"
+        . '  • When someone becomes a client through your code or link (within ' . REF_LINK_DAYS . ' days of opening the link), you earn ' . ref_pct($r['rate']) . ' of what they pay us in their first ' . (int)$r['months'] . " months. Ad spend and sales tax don’t count.\n"
+        . '  • Each earning is held ' . ref_hold_days() . ' days in case of a refund, then paid as account credit or cash (from ' . money(ref_min_cash()) . ", W-9 needed), whichever you choose.\n\n"
+        . "Every time you mention us, say it’s a paid partnership. The law requires it (FTC), and it’s fair to your audience. Easiest ways:\n"
+        . "  • Turn on the platform’s paid-partnership or branded-content label (TikTok’s “Content disclosure”, Instagram’s “Paid partnership”, YouTube’s “paid promotion”).\n"
+        . "  • And say it out loud or in the caption, near the start: “#ad — I earn a commission if you use my code.”\n"
+        . "Only say what’s true: use the prices on our site, and don’t promise rankings, sales or results.\n\n"
+        . 'See your referrals and earnings (this link works once and lasts ' . REF_WELCOME_DAYS . " days; you can always get a new one from the same page):\n" . ref_make_link($r, REF_WELCOME_DAYS * 1440)
+        . "\n\nThe full rules: " . ref_site() . "/creators.html#terms\n\nQuestions, or want talking points or a demo for a video? Just reply.\n\n" . SHOP_BRAND . "\n" . setting('business_email'), setting('business_email'), SHOP_BRAND);
 }
 
 /* ---------- Emails and cron ---------- */

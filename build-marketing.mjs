@@ -18,9 +18,11 @@ const site = {
   bookKickoff: (process.env.SM_CRM || 'https://crm.stusyn.com') + '/book.php?type=kickoff',
   // Site Stats for this website (CRM → Site stats → Add a website → install code). Leave empty to turn them off.
   statsSite: process.env.SM_STATS ?? 'UIOdnDz160w8',
-  legalUpdated: 'October 22, 2026',
+  legalUpdated: 'October 23, 2026',
   // Referral program (CRM → Referrals). Keep these in step with the CRM settings ref_rate, ref_months, ref_hold_days and ref_min_cash.
   refRate: 5, refMonths: 12, refHoldDays: 30, refLinkDays: 60, refMinCash: 25,
+  // Creator partners (creators.html). Keep in step with the CRM settings ref_creator_rate and ref_creator_discount.
+  creatorRate: 10, creatorDiscount: 10,
   // Cloudflare Turnstile bot check on the contact form (dash.cloudflare.com → Turnstile → the widget's site key).
   // The site key is public. The secret key goes only in app/config.php on the server. Empty turns the check off.
   turnstileSite: process.env.TURNSTILE_SITE ?? '',
@@ -82,6 +84,13 @@ const productTags = html => html
   .replace(/\{\{price:([a-z0-9-]+)\}\}/g, (m, sku) => { const p = products.find(x => x.sku === sku); if (!p) throw new Error('Unknown product ' + sku); return Cards.short(p); })
   // {{earn:sku}} → what a referrer earns on one purchase; {{earn:sku:12}} → on 12 months of a monthly plan
   .replace(/\{\{earn:([a-z0-9-]+)(?::(\d+))?\}\}/g, (m, sku, n) => { const p = products.find(x => x.sku === sku); if (!p) throw new Error('Unknown product ' + sku); return Cards.money(Math.round(p.price * (n ? +n : 1) * site.refRate) / 100); })
+  // Creator partners: {{cprice:sku}} → what their audience pays with the code; {{cearn:sku}} / {{cearn:sku:12}} → what the creator earns.
+  // The code takes money off one-time items only, so monthly plans stay full price.
+  .replace(/\{\{cprice:([a-z0-9-]+)\}\}/g, (m, sku) => { const p = products.find(x => x.sku === sku); if (!p) throw new Error('Unknown product ' + sku); return p.interval === 'month' ? Cards.short(p) : Cards.money(Math.round(p.price * (100 - site.creatorDiscount)) / 100); })
+  .replace(/\{\{cdisc:([a-z0-9-]+)\}\}/g, (m, sku) => { const p = products.find(x => x.sku === sku); if (!p) throw new Error('Unknown product ' + sku); return Cards.money(p.price - Math.round(p.price * (100 - site.creatorDiscount)) / 100); })
+  .replace(/\{\{cearn:([a-z0-9-]+)(?::(\d+))?\}\}/g, (m, sku, n) => { const p = products.find(x => x.sku === sku); if (!p) throw new Error('Unknown product ' + sku);
+    const paid = p.interval === 'month' ? p.price * (n ? +n : 1) : Math.round(p.price * (100 - site.creatorDiscount)) / 100;
+    return Cards.money(Math.round(paid * site.creatorRate) / 100); })
   .replace(/\{\{amount:([a-z0-9-]+)\}\}/g, (m, sku) => { const p = products.find(x => x.sku === sku); if (!p) throw new Error('Unknown product ' + sku); return Cards.money(p.price); });
 
 rmSync(OUT, { recursive: true, force: true });

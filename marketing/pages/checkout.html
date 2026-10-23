@@ -167,6 +167,14 @@
             <h2>Review &amp; pay</h2>
             <p class="muted">Check everything, then pay on Stripe’s secure page. <span data-promo hidden>Have a promo code? You can enter it there.</span></p>
             <div id="coReview" class="rev"></div>
+            <div class="code-box" id="codeBox">
+              <div class="code-on" id="codeOn" hidden></div>
+              <div class="code-form" id="codeForm">
+                <label for="codeIn">Creator code <small>(optional)</small></label>
+                <div class="code-row"><input id="codeIn" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20" placeholder="e.g. YOURNAME"><button type="button" class="btn btn-ghost btn-xs" id="codeApply">Apply</button></div>
+                <p class="code-msg" id="codeMsg" role="status" aria-live="polite"></p>
+              </div>
+            </div>
             <p class="alert info" data-show-if-mo hidden style="margin-top:16px"><b>Automatic renewal:</b> you’ll be charged <b class="mo-amt"></b>/month, starting <b class="mo-start">today</b> and on the same date each month, until you cancel. Cancel online any time in your client portal. Ads management ends at the first billing date at least 30 days after you cancel; other monthly plans end when the paid month runs out. <a href="terms.html#monthly" target="_blank" rel="noopener">Details</a></p>
             <label class="agree" style="margin-top:20px"><input type="checkbox" name="agree" value="1"> <span>I agree to the <a href="terms.html" target="_blank" rel="noopener">terms of sale</a>, including the refund terms<span data-show-if-mo hidden>, and I agree to be charged <b class="mo-amt"></b> every month starting <span class="mo-start">today</span> until I cancel</span>.</span></label>
             <div class="alert bad" id="payAlert" hidden style="margin-top:16px"></div>

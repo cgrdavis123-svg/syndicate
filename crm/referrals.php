@@ -10,6 +10,8 @@ if (is_post()) {
         setting('ref_months', (string)min(60, max(1, (int)post('ref_months'))));
         setting('ref_hold_days', (string)min(120, max(0, (int)post('ref_hold_days'))));
         setting('ref_min_cash', (string)max(0, round((float)post('ref_min_cash'), 2)));
+        setting('ref_creator_rate', (string)min(50, max(0.5, round((float)post('ref_creator_rate'), 2))));
+        setting('ref_creator_discount', (string)min(50, max(0, round((float)post('ref_creator_discount'), 2))));
         flash('Saved. New sign-ups get the new rate; existing referrers keep theirs (change them one by one). Update the numbers in build-marketing.mjs too, so the website matches.');
     } elseif (post('action') === 'sweep') {
         $n = ref_sweep(); flash($n ? "$n new earning(s) recorded." : 'Everything is up to date.');
@@ -18,10 +20,14 @@ if (is_post()) {
         if (mb_strlen($name) < 2 || !filter_var($email, FILTER_VALIDATE_EMAIL)) flash('Enter a name and a valid email.');
         elseif (val('SELECT 1 FROM referrers WHERE email = ?', [$email])) flash('Someone with that email already has a referral account.');
         else {
-            $kind = post('kind') === 'rep' ? 'rep' : 'referrer';
+            $kind = isset(REF_KINDS[post('kind')]) ? post('kind') : 'referrer';
+            $code = strtolower(preg_replace('/\s+/', '', post('code')));
+            if ($kind === 'creator' && ($why = ref_code_problem($code)) !== '') { flash($why); redirect('referrals.php'); }
             $contact = one('SELECT id FROM contacts WHERE email = ? COLLATE NOCASE ORDER BY id LIMIT 1', [$email]);
-            q('INSERT INTO referrers (code, name, email, business, contact_id, kind, rate, months, payout, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
-                [ref_new_code($name), $name, $email, mb_substr(post('business'), 0, 150), $contact ? (int)$contact['id'] : null, $kind, $kind === 'rep' ? 10 : ref_rate_default(), ref_months_default(), $kind === 'rep' ? 'cash' : 'credit', now(), now()]);
+            q('INSERT INTO referrers (code, name, email, business, contact_id, kind, rate, months, discount, audience, payout, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                [$kind === 'creator' ? $code : ref_new_code($name), $name, $email, mb_substr(post('business'), 0, 150), $contact ? (int)$contact['id'] : null, $kind,
+                 $kind === 'rep' ? 10 : ($kind === 'creator' ? ref_creator_rate() : ref_rate_default()), ref_months_default(), $kind === 'creator' ? ref_creator_discount() : 0, mb_substr(post('audience'), 0, 200),
+                 $kind === 'rep' ? 'cash' : 'credit', now(), now()]);
             $id = (int)db()->lastInsertId();
             if (post('invite') === '1') ref_send_signin(ref_get($id));
             flash('Added.' . (post('invite') === '1' ? ' We emailed them a sign-in link with their referral link.' : ''));
@@ -51,7 +57,7 @@ layout_top('Referrals', 'referrals', $user);
 </div>
 <section class="card"><div class="table-wrap"><table class="tbl cards"><thead><tr><th>Person</th><th>Rate</th><th>Payout</th><th class="r">Clients</th><th class="r">Brought in</th><th class="r">Waiting</th><th class="r">Ready</th><th class="r">Paid</th></tr></thead><tbody>
 <?php foreach ($rows as $r): ?>
-  <tr><td><a href="referrer.php?id=<?= (int)$r['id'] ?>"><b><?= e($r['name']) ?></b></a><?= $r['kind'] === 'rep' ? ' <span class="tag">Sales rep</span>' : '' ?><?= $r['status'] !== 'active' ? ' <span class="tag">' . e(REF_STATUSES[$r['status']]) . '</span>' : '' ?><br><span class="muted small"><?= e($r['email']) ?> · <span class="mono"><?= e($r['code']) ?></span></span></td>
+  <tr><td><a href="referrer.php?id=<?= (int)$r['id'] ?>"><b><?= e($r['name']) ?></b></a><?= $r['kind'] !== 'referrer' ? ' <span class="tag">' . e(REF_KINDS[$r['kind']] ?? '') . '</span>' : '' ?><?= $r['status'] !== 'active' ? ' <span class="tag">' . e(REF_STATUSES[$r['status']]) . '</span>' : '' ?><br><span class="muted small"><?= e($r['email']) ?> · <span class="mono"><?= e($r['code']) ?></span></span></td>
     <td data-label="Rate" class="num"><?= e(ref_pct($r['rate'])) ?></td><td data-label="Payout"><?= e(REF_PAYOUTS[$r['payout']] ?? $r['payout']) ?><?= $r['payout'] === 'cash' && !(int)$r['w9'] ? '<br><span class="muted small">No W-9 yet</span>' : '' ?></td>
     <td data-label="Clients" class="r num"><?= (int)$r['clients'] ?><?= $r['leads'] ? ' <span class="muted small">+' . (int)$r['leads'] . '</span>' : '' ?></td><td data-label="Brought in" class="r num"><?= ref_money($r['brought'], false) ?></td>
     <td data-label="Waiting" class="r num"><?= ref_money($r['held']) ?></td><td data-label="Ready" class="r num"><b><?= ref_money($r['ready']) ?></b></td><td data-label="Paid" class="r num"><?= ref_money($r['paid']) ?></td></tr>
@@ -63,7 +69,9 @@ layout_top('Referrals', 'referrals', $user);
     <label class="f"><span>Name</span><input name="name" required></label>
     <label class="f"><span>Email</span><input name="email" type="email" required></label>
     <label class="f"><span>Business <small>(optional)</small></span><input name="business"></label>
-    <label class="f"><span>Type</span><select name="kind"><option value="referrer">Referrer (<?= e(ref_pct(ref_rate_default())) ?>, credit by default)</option><option value="rep">Commissioned sales rep (10%, cash)</option></select></label>
+    <label class="f"><span>Type</span><select name="kind"><option value="referrer">Referrer (<?= e(ref_pct(ref_rate_default())) ?>, credit by default)</option><option value="creator">Creator partner (<?= e(ref_pct(ref_creator_rate())) ?>, their code gives <?= e(ref_pct(ref_creator_discount())) ?> off)</option><option value="rep">Commissioned sales rep (10%, cash)</option></select></label>
+    <label class="f"><span>Code <small>(creators: letters and numbers, like their handle)</small></span><input name="code" maxlength="20" autocapitalize="characters"></label>
+    <label class="f"><span>Where they post <small>(optional)</small></span><input name="audience" placeholder="TikTok @handle"></label>
     <label class="chk"><input type="checkbox" name="invite" value="1" checked> Email them their link and a sign-in link</label>
     <div><button class="btn primary sm">Add</button></div>
   </form>
@@ -73,8 +81,10 @@ layout_top('Referrals', 'referrals', $user);
     <label class="f"><span>Rate for new sign-ups (%)</span><input name="ref_rate" type="number" step="0.5" min="0.5" max="50" value="<?= e(setting('ref_rate')) ?>"></label>
     <label class="f"><span>Months each client earns for</span><input name="ref_months" type="number" min="1" max="60" value="<?= e(setting('ref_months')) ?>"></label>
     <label class="f"><span>Days to hold each earning (refunds)</span><input name="ref_hold_days" type="number" min="0" max="120" value="<?= e(setting('ref_hold_days')) ?>"></label>
+    <label class="f"><span>Creator partners: their rate (%)</span><input name="ref_creator_rate" type="number" step="0.5" min="0.5" max="50" value="<?= e((string)ref_creator_rate()) ?>"></label>
+    <label class="f"><span>Creator partners: discount their code gives (%)</span><input name="ref_creator_discount" type="number" step="1" min="0" max="50" value="<?= e((string)ref_creator_discount()) ?>"></label>
     <label class="f"><span>Smallest cash payout ($)</span><input name="ref_min_cash" type="number" step="1" min="0" value="<?= e(setting('ref_min_cash')) ?>"></label>
-    <p class="muted small">The website shows these numbers too. If you change them, change <span class="mono">refRate</span>, <span class="mono">refMonths</span>, <span class="mono">refHoldDays</span> and <span class="mono">refMinCash</span> in build-marketing.mjs, and tell existing referrers, since the rules page promises them.</p>
+    <p class="muted small">The website shows these numbers too. If you change them, change <span class="mono">refRate</span>, <span class="mono">refMonths</span>, <span class="mono">refHoldDays</span> and <span class="mono">refMinCash</span> (and <span class="mono">creatorRate</span>, <span class="mono">creatorDiscount</span>) in build-marketing.mjs, and tell existing referrers, since the rules page promises them.</p>
     <div><button class="btn primary sm">Save settings</button></div>
   </form>
 </div>
