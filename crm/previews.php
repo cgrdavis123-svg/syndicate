@@ -8,7 +8,8 @@ if (is_post()) {
     if ($a === 'make') {
         $res = pv_create(['business' => post('business'), 'niche' => post('niche'), 'city' => post('city'), 'phone' => post('phone'), 'email' => post('email'), 'website' => post('website'),
             'tagline' => post('tagline'), 'about' => post('about'), 'services' => array_filter(array_map('trim', explode("\n", post('services')))), 'areas' => array_filter(array_map('trim', explode(',', post('areas')))),
-            'hours' => array_filter(array_map('trim', explode("\n", post('hours')))), 'contact_name' => post('contact_name'), 'theme' => post('theme')], 'staff');
+            'hours' => array_filter(array_map('trim', explode("\n", post('hours')))), 'contact_name' => post('contact_name'), 'theme' => post('theme'),
+            'links' => ['steam' => post('steam'), 'discord' => post('discord')]], 'staff');
         flash($res['ok'] ? 'Preview made. It’s live for ' . PV_DAYS . ' days.' : 'Not made: ' . $res['error'] . '.');
         if ($res['ok']) redirect('previews.php?made=' . $res['token']);
     } elseif ($r && $a === 'remove') {
@@ -50,7 +51,9 @@ layout_top('Homepage previews', 'outreach', $user);
   <label class="f"><span>Their current website <small>(optional)</small></span><input name="website"></label>
   <label class="f"><span>Style</span><select name="theme"><option value="">Pick from the kind of business</option><?php foreach (PV_THEMES as $k2 => $t): ?><option value="<?= $k2 ?>"><?= e($t['label']) ?></option><?php endforeach; ?></select></label>
   <label class="f span2"><span>Headline <small>(optional, their own tagline)</small></span><input name="tagline" maxlength="90"></label>
-  <label class="f span2"><span>Services <small>(one per line, from their site or listing)</small></span><textarea name="services" rows="4" required></textarea></label>
+  <label class="f span2"><span>Services <small>(one per line, from their site or listing; for a game studio, their games)</small></span><textarea name="services" rows="4"></textarea></label>
+  <label class="f"><span>Steam page <small>(game studios, optional)</small></span><input name="steam" type="url" placeholder="https://store.steampowered.com/app/…"></label>
+  <label class="f"><span>Discord invite <small>(game studios, optional)</small></span><input name="discord" type="url" placeholder="https://discord.gg/…"></label>
   <label class="f"><span>Areas they serve <small>(comma separated)</small></span><input name="areas"></label>
   <label class="f"><span>Hours <small>(one per line, e.g. “Mon–Fri: 8am–5pm”)</small></span><textarea name="hours" rows="3"></textarea></label>
   <label class="f span2"><span>About <small>(optional, in their own words, shortened)</small></span><textarea name="about" rows="3" maxlength="600"></textarea></label>

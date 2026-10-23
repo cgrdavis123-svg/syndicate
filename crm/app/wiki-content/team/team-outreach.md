@@ -24,6 +24,8 @@ When someone opens a report the agent sent, the CRM adds a task (“… opened t
 
 For a business with no website, or one that needs rebuilding, the agent can make a **free homepage preview** (`outreach-api.php?a=preview`): a draft home page in one of six styles, built only from what they publish themselves (name, kind of business, town, phone, services, areas, hours). The first email links it as a concept we made for them. Every preview has a banner saying it’s a free concept and not their real site, isn’t in Google, expires after 30 days, and has a **Remove this preview** link. If they remove it and ask not to be contacted, they go on the do-not-contact list and their emails stop.
 
+Game studio previews are different: instead of services they show the studio’s games (name, status, platforms and a short description, as they publish them), **Wishlist on Steam** and **Join the Discord** buttons that go to their real Steam page and Discord invite, and a press kit fact sheet. Links are only kept for Steam, Discord, itch.io and YouTube. The Gaming outreach task makes one for studios with no proper website or press kit.
+
 When a real person opens it (not a link scanner, and not you while signed in), the CRM adds a task. See them all in **Outreach → Homepage previews**, where you can also extend one, take it down, or make one by hand before a call.
 
 Never add logos, photos, reviews, prices, awards or anything they haven’t said about themselves.

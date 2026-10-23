@@ -31,10 +31,18 @@ const PV_GUESS = ['trades' => '/hvac|heat|air|plumb|electric|roof|landscap|lawn|
     'shop' => '/shop|store|boutique|retail|comic|card|game store|tcg|book|gift|florist|jewel|candle|thrift|vintage|hobby/i',
     'studio' => '/studio|game|indie|interactive|esports/i'];
 
-function pv_theme_for(string $niche, string $asked = ''): string {
+// The kind of business decides first; the name is only a fallback ("Fairweather Games" isn't an HVAC company).
+function pv_theme_for(string $niche, string $asked = '', string $name = ''): string {
     if (isset(PV_THEMES[$asked])) return $asked;
-    foreach (PV_GUESS as $t => $re) if (preg_match($re, $niche)) return $t;
+    foreach ([$niche, $name] as $text) foreach (PV_GUESS as $t => $re) if ($text !== '' && preg_match($re, $text)) return $t;
     return 'general';
+}
+// Studios link out to the places they already publish: their Steam page, Discord invite, itch.io page and trailer. Only those hosts, https only.
+const PV_LINK_HOSTS = ['steam' => '/^store\.steampowered\.com$/', 'discord' => '/^(discord\.gg|discord\.com|www\.discord\.com)$/', 'itch' => '/^[a-z0-9-]+\.itch\.io$/', 'trailer' => '/^(www\.)?(youtube\.com|youtu\.be)$/'];
+function pv_link($url, string $kind): string {
+    $url = trim((string)$url); $u = parse_url($url);
+    if (!$u || ($u['scheme'] ?? '') !== 'https' || empty($u['host']) || isset($u['user']) || isset($u['port']) || strlen($url) > 300) return '';
+    return preg_match(PV_LINK_HOSTS[$kind], strtolower($u['host'])) ? $url : '';
 }
 function pv_s($v, int $max): string { return mb_substr(trim(preg_replace('/\s+/u', ' ', strip_tags((string)$v))), 0, $max); }
 function pv_list($v, int $count, int $max): array { return array_values(array_filter(array_map(function ($x) use ($max) { return pv_s(is_array($x) ? ($x['name'] ?? '') : $x, $max); }, array_slice((array)$v, 0, $count)), 'strlen')); }
@@ -44,7 +52,7 @@ function pv_create(array $in, string $via = 'agent'): array {
     $biz = pv_s($in['business'] ?? '', 80);
     if (mb_strlen($biz) < 2) return ['ok' => false, 'error' => 'needs the business name'];
     $niche = pv_s($in['niche'] ?? '', 60);
-    $theme = pv_theme_for($niche . ' ' . $biz, (string)($in['theme'] ?? ''));
+    $theme = pv_theme_for($niche, (string)($in['theme'] ?? ''), $biz);
     $phone = preg_replace('/[^0-9+()\-. ]/', '', (string)($in['phone'] ?? ''));
     $phone = strlen(preg_replace('/\D/', '', $phone)) >= 10 ? mb_substr(trim($phone), 0, 24) : '';
     $svc = [];
@@ -54,10 +62,22 @@ function pv_create(array $in, string $via = 'agent'): array {
     }
     $color = preg_match('/^#[0-9a-f]{6}$/i', (string)($in['color'] ?? '')) ? strtolower($in['color']) : '';
     $site = pv_s($in['website'] ?? '', 200);
-    $d = ['business' => $biz, 'niche' => $niche ?: PV_THEMES[$theme]['label'], 'city' => pv_s($in['city'] ?? '', 60), 'phone' => $phone,
+    $d = ['business' => $biz, 'niche' => $niche !== '' && !preg_match('/^gaming-/', $niche) ? $niche : PV_THEMES[$theme]['label'], 'city' => pv_s($in['city'] ?? '', 60), 'phone' => $phone,
         'tagline' => pv_s($in['tagline'] ?? '', 90), 'about' => pv_s($in['about'] ?? '', 600), 'services' => $svc,
         'areas' => pv_list($in['areas'] ?? [], 14, 40), 'hours' => pv_list($in['hours'] ?? [], 8, 60), 'color' => $color, 'first_name' => pv_s($in['contact_name'] ?? '', 40)];
-    if (!$svc && $theme !== 'studio') return ['ok' => false, 'error' => 'needs at least one service (from their own site or listing)'];
+    if ($theme === 'studio') {
+        $games = [];
+        foreach (array_slice((array)($in['games'] ?? []), 0, 4) as $g) {
+            $name = pv_s(is_array($g) ? ($g['name'] ?? '') : $g, 60);
+            if ($name !== '') $games[] = ['name' => $name, 'text' => is_array($g) ? pv_s($g['text'] ?? '', 220) : '', 'status' => is_array($g) ? pv_s($g['status'] ?? '', 40) : '',
+                'platforms' => is_array($g) ? pv_list($g['platforms'] ?? [], 6, 24) : []];
+        }
+        if (!$games) foreach (array_slice($svc, 0, 4) as $x) $games[] = ['name' => $x['name'], 'text' => $x['text'], 'status' => '', 'platforms' => []];
+        if (!$games) return ['ok' => false, 'error' => 'needs at least one game (name, and the status, platforms and short description they publish)'];
+        $links = [];
+        foreach (array_keys(PV_LINK_HOSTS) as $k) if (($l = pv_link(($in['links'][$k] ?? '') ?: ($in[$k] ?? ''), $k)) !== '') $links[$k] = $l;
+        $d['games'] = $games; $d['links'] = $links; $d['services'] = [];
+    } elseif (!$svc) return ['ok' => false, 'error' => 'needs at least one service (from their own site or listing)'];
     $email = strtolower(trim((string)($in['email'] ?? '')));
     $token = bin2hex(random_bytes(16));
     q('INSERT INTO previews (token, business, email, website, theme, data, via, created_at, expires_at) VALUES (?,?,?,?,?,?,?,?,?)',
@@ -115,6 +135,10 @@ function pv_render(array $r): void {
     if ($d['phone'] === '') $lede = str_replace(['Call us or request', ' or call us.'], ['Request', '.'], $lede);
     $eyebrow = implode(' · ', array_filter([$d['niche'], $d['city']]));
     $get = pv_get_url($r, $d);
+    $studio = $r['theme'] === 'studio'; $games = $d['games'] ?? []; $links = $d['links'] ?? [];
+    if ($studio) $lede = $links['discord'] ?? '' ? 'Follow along, join the community on Discord and be first to hear about updates and launch.' : 'Follow along and be first to hear about updates and launch.';
+    $plats = []; foreach ($games as $g) foreach ($g['platforms'] as $p) $plats[strtolower($p)] = $p;
+    $out = function (string $url, string $label, string $cls = 'btn') { return '<a class="' . $cls . '" href="' . e($url) . '" target="_blank" rel="noopener">' . e($label) . '</a>'; };
     $nameCss = $t['font'] === 'serif' ? 'font-family:"Instrument Serif",Georgia,serif;font-weight:400;letter-spacing:-.01em' : 'font-weight:800;letter-spacing:-.035em';
     header('X-Robots-Tag: noindex, nofollow');
     ?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
@@ -141,7 +165,8 @@ section{padding:56px 0}.grid{display:grid;grid-template-columns:repeat(auto-fill
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}.card .ic{color:var(--acc)}.card .ic svg{width:26px;height:26px}.card b{display:block;font-size:18px;margin:10px 0 4px}.card span{color:var(--muted);font-size:15px}
 .split{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}.chips{display:flex;flex-wrap:wrap;gap:8px;padding:0;list-style:none;margin:0}.chips li{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:15px}
 form.f{display:grid;gap:12px}form.f label{display:grid;gap:6px;font-size:14px;font-weight:600}form.f input,form.f textarea{font:inherit;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:<?= $dark ? '#0f141b' : '#fff' ?>;color:var(--text)}
-.note{font-size:13px;color:var(--muted)}.demo{background:rgba(127,127,127,.12);border-radius:10px;padding:10px 12px;font-size:14px}
+.note{font-size:13px;color:var(--muted)}.pill{display:inline-block!important;font-size:12px!important;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--acc)!important;border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:10px 18px;margin:0}.facts dt{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}.facts dd{margin:0;min-width:0}.facts a{color:var(--acc)}.demo{background:rgba(127,127,127,.12);border-radius:10px;padding:10px 12px;font-size:14px}
 footer{border-top:1px solid var(--line);padding:28px 0 90px;color:var(--muted);font-size:14px}
 .callbar{position:fixed;left:12px;right:12px;bottom:12px;display:none;z-index:15}.callbar a{width:100%;justify-content:center;box-shadow:0 12px 30px -10px rgba(0,0,0,.4)}
 @media(max-width:820px){.hero .w,.split{grid-template-columns:1fr}.nav a:not(.btn){display:none}<?= $tel !== '' ? '.callbar{display:block}' : '' ?>}
@@ -149,19 +174,33 @@ footer{border-top:1px solid var(--line);padding:28px 0 90px;color:var(--muted);f
 <div class="pv-bar" role="note"><div class="w"><span><b>Free concept</b> · We made this for <?= e($d['business']) ?> to show what a new homepage could look like. It isn’t their real website and nothing on it sends anything.</span>
   <span class="act"><a class="go" href="<?= e($get) ?>">Make it your real site</a><a href="<?= e(abs_url('preview.php?t=' . $r['token'] . '&remove=1')) ?>" class="rm">Remove this preview</a></span></div></div>
 <header class="top"><div class="w"><a class="logo" href="#top"><?= e($d['business']) ?></a>
-  <nav class="nav"><?= $d['services'] ? '<a href="#services">' . e($t['svc']) . '</a>' : '' ?><?= $d['about'] !== '' ? '<a href="#about">About</a>' : '' ?><a href="#contact">Contact</a><?= $tel !== '' ? '<a class="btn" href="' . e($tel) . '">' . e($d['phone']) . '</a>' : '' ?></nav></div></header>
+  <nav class="nav"><?= $d['services'] || $games ? '<a href="#services">' . e($t['svc']) . '</a>' : '' ?><?= $studio ? '<a href="#press">Press kit</a>' : '' ?><?= $d['about'] !== '' ? '<a href="#about">About</a>' : '' ?><a href="#contact">Contact</a><?= $tel !== '' ? '<a class="btn" href="' . e($tel) . '">' . e($d['phone']) . '</a>' : '' ?></nav></div></header>
 <main id="top">
 <div class="hero"><div class="w">
   <div><div class="eb"><?= e($eyebrow) ?></div><h1><?= e($d['tagline'] !== '' ? $d['tagline'] : $d['business']) ?></h1><p class="lede"><?= e($lede) ?></p>
-    <div class="row"><?php if ($r['theme'] === 'trades' || ($r['theme'] === 'general' && $tel !== '')): ?><?= $tel !== '' ? '<a class="btn" href="' . e($tel) . '">Call ' . e($d['phone']) . '</a>' : '' ?><a class="btn<?= $tel !== '' ? ' o' : '' ?>" href="#contact"><?= e($t['cta2']) ?></a>
+    <div class="row"><?php if ($studio): ?><?= isset($links['steam']) ? $out($links['steam'], 'Wishlist on Steam') : '<a class="btn" href="#services">See our games</a>' ?><?= isset($links['discord']) ? $out($links['discord'], 'Join the Discord', 'btn o') : '<a class="btn o" href="#press">Press kit</a>' ?>
+    <?php elseif ($r['theme'] === 'trades' || ($r['theme'] === 'general' && $tel !== '')): ?><?= $tel !== '' ? '<a class="btn" href="' . e($tel) . '">Call ' . e($d['phone']) . '</a>' : '' ?><a class="btn<?= $tel !== '' ? ' o' : '' ?>" href="#contact"><?= e($t['cta2']) ?></a>
     <?php elseif ($r['theme'] === 'health'): ?><a class="btn" href="#contact"><?= e($t['cta']) ?></a><?= $tel !== '' ? '<a class="btn o" href="' . e($tel) . '">' . e($t['cta2']) . '</a>' : '' ?>
     <?php else: ?><a class="btn" href="#<?= $r['theme'] === 'food' ? 'services' : 'contact' ?>"><?= e($t['cta']) ?></a><a class="btn o" href="#contact"><?= e($t['cta2']) ?></a><?php endif; ?></div></div>
   <div class="panel"><div class="ic"><?= pv_icon($r['theme']) ?></div>
-    <?php if ($d['hours']): ?><b>Hours</b><p><?= e($d['city'] !== '' ? $d['city'] : 'Open') ?></p><ul><?php foreach ($d['hours'] as $h): $parts = strpos($h, ':') !== false && !preg_match('/^\d/', $h) ? array_map('trim', explode(':', $h, 2)) : [$h]; ?><li><span><?= e($parts[0]) ?></span><span><?= e($parts[1] ?? '') ?></span></li><?php endforeach; ?></ul>
+    <?php if ($studio): $g = $games[0]; ?><b><?= e($g['name']) ?></b><p><?= e($g['status'] !== '' ? $g['status'] : 'Our game') ?></p>
+      <?php if ($g['platforms']): ?><ul><?php foreach ($g['platforms'] as $p): ?><li><span><?= e($p) ?></span><span>✓</span></li><?php endforeach; ?></ul><?php elseif ($g['text'] !== ''): ?><p style="margin:0"><?= e($g['text']) ?></p><?php endif; ?>
+      <?php if (isset($links['steam']) || isset($links['itch'])): ?><p style="margin:16px 0 0"><?= isset($links['steam']) ? $out($links['steam'], 'Wishlist on Steam') : $out($links['itch'], 'Play on itch.io') ?></p><?php endif; ?>
+    <?php elseif ($d['hours']): ?><b>Hours</b><p><?= e($d['city'] !== '' ? $d['city'] : 'Open') ?></p><ul><?php foreach ($d['hours'] as $h): $parts = strpos($h, ':') !== false && !preg_match('/^\d/', $h) ? array_map('trim', explode(':', $h, 2)) : [$h]; ?><li><span><?= e($parts[0]) ?></span><span><?= e($parts[1] ?? '') ?></span></li><?php endforeach; ?></ul>
     <?php elseif ($d['areas']): ?><b>Where we work</b><p>Close to home, wherever you are in the area.</p><ul><?php foreach (array_slice($d['areas'], 0, 6) as $a): ?><li><span><?= e($a) ?></span><span>✓</span></li><?php endforeach; ?></ul>
     <?php else: ?><b><?= e($t['form']) ?></b><p><?= e($t['formNote']) ?></p><a class="btn" href="#contact"><?= e($t['cta']) ?></a><?php endif; ?>
   </div>
 </div></div>
+<?php if ($studio): ?><section id="services"><div class="w"><h2><?= e($t['svc']) ?></h2><div class="grid">
+  <?php foreach ($games as $g): ?><div class="card"><span class="ic"><?= pv_icon('studio') ?></span><b><?= e($g['name']) ?></b><?= $g['status'] !== '' ? '<span class="pill">' . e($g['status']) . '</span>' : '' ?><?= $g['text'] !== '' ? '<span style="display:block;margin-top:8px">' . e($g['text']) . '</span>' : '' ?><?= $g['platforms'] ? '<span class="note" style="display:block;margin-top:10px">' . e(implode(' · ', $g['platforms'])) . '</span>' : '' ?></div><?php endforeach; ?>
+</div></div></section>
+<section id="press"><div class="w split">
+  <div><h2>Press kit</h2><p class="lede" style="font-size:17px">Everything a writer or streamer needs on one page. On the real site it also holds screenshots, the trailer, logos and short and long descriptions, ready to download.</p></div>
+  <dl class="card facts"><dt>Developer</dt><dd><?= e($d['business']) ?></dd><?= $d['city'] !== '' ? '<dt>Based in</dt><dd>' . e($d['city']) . '</dd>' : '' ?><dt><?= count($games) > 1 ? 'Games' : 'Game' ?></dt><dd><?= e(implode(', ', array_column($games, 'name'))) ?></dd>
+    <?= $plats ? '<dt>Platforms</dt><dd>' . e(implode(', ', $plats)) . '</dd>' : '' ?><?= $games[0]['status'] !== '' ? '<dt>Status</dt><dd>' . e($games[0]['status']) . '</dd>' : '' ?>
+    <?php $ll = array_filter(['steam' => 'Steam', 'itch' => 'itch.io', 'discord' => 'Discord', 'trailer' => 'Trailer']); $have = array_intersect_key($ll, $links); if ($have): ?><dt>Links</dt><dd><?= implode(' · ', array_map(function ($k) use ($links, $ll) { return '<a href="' . e($links[$k]) . '" target="_blank" rel="noopener">' . e($ll[$k]) . '</a>'; }, array_keys($have))) ?></dd><?php endif; ?>
+    <dt>Press contact</dt><dd><a href="#contact">The form below</a></dd></dl>
+</div></section><?php endif; ?>
 <?php if ($d['services']): ?><section id="services"><div class="w"><h2><?= e($t['svc']) ?></h2><div class="grid">
   <?php foreach ($d['services'] as $s): ?><div class="card"><span class="ic"><?= pv_icon($r['theme']) ?></span><b><?= e($s['name']) ?></b><?= $s['text'] !== '' ? '<span>' . e($s['text']) . '</span>' : '' ?></div><?php endforeach; ?>
 </div></div></section><?php endif; ?>

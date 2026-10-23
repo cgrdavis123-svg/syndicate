@@ -125,7 +125,7 @@ Monthly plans renew through Stripe; each renewal becomes a paid invoice here. If
 
 ## Homepage previews
 
-For outreach, the agent (or you, in Outreach → Homepage previews) can make a free draft home page for a prospect from their public details. It always shows a banner saying it’s a concept and not their real site, isn’t in Google, expires after 30 days, and the owner can remove it (and stop all emails) in one click. You get a task when a real person opens it. Code: `app/previews.php`, page `preview.php`.
+For outreach, the agent (or you, in Outreach → Homepage previews) can make a free draft home page for a prospect from their public details. It always shows a banner saying it’s a concept and not their real site, isn’t in Google, expires after 30 days, and the owner can remove it (and stop all emails) in one click. Game studio previews show their games, a press kit fact sheet, and buttons to their real Steam page and Discord invite (only Steam, Discord, itch.io and YouTube links are kept). You get a task when a real person opens it. Code: `app/previews.php`, page `preview.php`.
 
 ## Review requests
 
