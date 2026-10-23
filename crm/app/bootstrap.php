@@ -592,6 +592,20 @@ function migrate(PDO $pdo): void {
         ");
         $pdo->exec('PRAGMA user_version = 25');
     }
+    if ($v < 26) {
+        // v26: one Google review request per finished project (app/reviews.php). Projects already finished are skipped, so nobody gets a surprise email.
+        $pdo->exec("
+            CREATE TABLE review_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, project_id INTEGER UNIQUE REFERENCES projects(id) ON DELETE SET NULL,
+                company_id INTEGER REFERENCES companies(id) ON DELETE SET NULL, contact_id INTEGER REFERENCES contacts(id) ON DELETE SET NULL,
+                email TEXT NOT NULL DEFAULT '' COLLATE NOCASE, status TEXT NOT NULL DEFAULT 'scheduled', reason TEXT NOT NULL DEFAULT '',
+                token TEXT NOT NULL UNIQUE, due_at INTEGER, sent_at INTEGER, clicked_at INTEGER, created_at INTEGER NOT NULL);
+            CREATE INDEX idx_review_requests_status ON review_requests(status, due_at);
+            INSERT INTO review_requests (project_id, company_id, contact_id, status, reason, token, created_at)
+                SELECT id, company_id, contact_id, 'skipped', 'Finished before review requests were turned on', lower(hex(randomblob(16))), strftime('%s', 'now') FROM projects WHERE status = 'done';
+            INSERT OR IGNORE INTO settings (key, value) VALUES ('review_on', '1'), ('review_url', ''), ('review_delay_days', '3');
+        ");
+        $pdo->exec('PRAGMA user_version = 26');
+    }
 }
 function migrate_v1(PDO $pdo): void {
     $pdo->exec("

@@ -84,6 +84,10 @@ layout_top($p['name'], 'projects', $user);
     <a class="btn primary sm" href="project-edit.php?id=<?= $id ?>">Edit</a>
   </div>
 </div>
+<?php require_once __DIR__ . '/app/reviews.php'; if ($rv = rv_for_project($id)): ?><div class="notice row" style="flex-wrap:wrap;gap:10px"><span class="grow"><?= e(rv_line($rv)) ?></span>
+  <?php if ($rv['status'] === 'scheduled'): ?><form method="post" action="reviews.php" class="row" style="gap:8px"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int)$rv['id'] ?>"><input type="hidden" name="back" value="project"><input type="hidden" name="project" value="<?= $id ?>"><button class="btn ghost sm" name="action" value="send">Send now</button><button class="link-danger" name="action" value="skip">Don’t ask</button></form><?php endif; ?>
+  <a class="muted small" href="reviews.php">Review requests →</a></div>
+<?php elseif ($p['status'] === 'done' && rv_on()): ?><div class="notice">A review request will be scheduled within 15 minutes. <a class="muted small" href="reviews.php">Review requests →</a></div><?php endif; ?>
 <?php if ($errors): ?><div class="notice bad"><?= implode('<br>', array_map('e', $errors)) ?></div><?php endif; ?>
 <div class="grid-detail">
   <div class="stack">

@@ -126,6 +126,10 @@ layout_top('Settings', 'settings', $user);
       <div class="save-bar span2"><span></span><button class="btn primary sm" type="submit">Save</button></div>
     </form>
     <section class="card">
+      <div class="card-h"><h2>Review requests</h2><a class="muted small" href="reviews.php">Manage →</a></div>
+      <p class="muted small"><?php require_once __DIR__ . '/app/reviews.php'; echo !rv_on() ? 'Switched off.' : (rv_url() === '' ? '<b>Add your Google review link</b> so finished clients can be asked for a review.' : 'Finished clients are asked for one honest Google review ' . rv_delay() . ' days after their project is marked Complete.'); ?></p>
+    </section>
+    <section class="card">
       <div class="card-h"><h2>Website sync</h2></div>
       <p class="muted small">New stusyn.com contact form messages and consultation requests become leads in your pipeline, with a "Reply to…" task for today. It checks every time you open the dashboard. Careers messages stay in the hiring dashboard.</p>
       <dl class="facts">

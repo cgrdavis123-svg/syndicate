@@ -389,6 +389,7 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 | Calendar | `calendar.php` | Private ICS feed (token-protected) of consultations, bookings and tasks |
 | Search | `search.php` | Search across everything |
 | Team | `users.php`, `join.php` | Staff logins: owners invite people by email (`user_invites`, one-time link, 7 days), change roles (owner/member, `USER_ROLES`), remove people, clear a teammate's two-step sign-in, and can require two-step for everyone (`require_2fa`). Always at least one owner. Team article `team-logins` |
+| Review requests | `reviews.php` (linked from Settings and each project) | Google review link, delay, on/off, and every request: scheduled, sent, not sent (with the reason), opened. Send now, Don’t ask, Ask after all. See “Review requests” in §14 |
 | Settings | `settings.php` | Business details, invoice numbering, rates, mail, booking link, calendar token, your password and two-step sign-in |
 | Export | `export.php` | CSV exports |
 | Wiki | `wiki/*` on wiki.stusyn.com (menu item “Wiki ↗”) | Help center editor, Team docs, client questions; see “Help center & wiki” |
@@ -407,6 +408,7 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 | `book.php` | Public booking page (`?type=discovery-call`, `kickoff`, `tiktok-shop-consultation`) |
 | `care-report.php` | Monthly care report web page (signed link) |
 | `outreach-api.php` | Outreach agent API (key-protected: `Authorization: Bearer <key>` or `X-Api-Key`): `status`, `check`, `add`, `pending`, `respond`, `checkup` |
+| `rv.php` | The link in a review request email: records that it was opened, then redirects to the Google review page (`?t=` token) |
 | `u.php` | Unsubscribe from outreach emails (`?t=` token; one-click POST from mail apps) |
 | `refer.php` | Referral partner's page (emailed one-time sign-in link, own `syn_ref` session): their link, referrals, earnings, payouts, payout choice |
 | `portal-ads.php` | One-click hop from the client portal into the ads portal (2-minute one-time link) |
@@ -430,6 +432,7 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 - **Booking:** `booking_hours` (JSON; Mon–Thu 09:00–17:00, Fri 09:00–15:00), `booking_notice_hours` (12), `booking_window_days` (30), `booking_buffer` (15 min), `booking_step` (30 min), `booking_meeting_url` (your video link)
 - **Analytics:** `analytics_retention_days` (760)
 - **Care:** `psi_key` (Google PageSpeed API key, encrypted), `care_report_<siteId>` (last month emailed)
+- **Reviews:** `review_on` (1), `review_url` (the Google review link; nothing sends until it’s set), `review_delay_days` (3)
 - **Ads:** `ads_access_email`, `ads_google_manager`, `ads_meta_business`, `ads_tiktok_bc` (shown to clients on their Setup page; edit at ads.stusyn.com → Access details)
 
 ### Lists and statuses (constants in `crm/app/bootstrap.php`)
@@ -713,7 +716,7 @@ A public help center for clients and staff-only Team docs, in the CRM's `wiki/` 
 - **Staff pages**: `team.php` (Team docs by topic, recent changes), `articles.php` (views and helpful %), `edit.php` (editor with preview, live tags help, every save keeps the previous version with one-click restore, reader comments), `insights.php` (questions to answer, searches with no answer, unhelpful articles, most read, top searches).
 - **Topics** (`WIKI_CATEGORIES` / `WIKI_TEAM_CATEGORIES`): Getting started, Websites, Paid ads, Community management, Website care, Site Stats, Client portal, Billing & plans, Audits & consulting, Policies & privacy, Glossary; Team: Running the business, Client work, Systems & setup, Rules & voice, When something breaks.
 - **Linked from**: the marketing site footer, the client portal and ads portal footers, and the CRM menu (“Wiki ↗”).
-- **Keep it true:** when a promise, process or feature changes, update the matching help article (search the wiki) in the same change. 70 public and 25 team articles shipped on October 18, 2026; `offers-and-free-months` added the same day, then a **Community management** topic with `community-plans-compared`, `discord-server-setup`, `discord-access` and `community-moderation` (75 public). Team article `team-outreach` added October 19, 2026 (26 team); `team-logins` October 20, 2026 (27 team); `referral-program` and `team-referrals` October 22, 2026 (76 public, 28 team); `free-website-checkup` the same day (77 public), and `team-outreach` now covers the checkup.
+- **Keep it true:** when a promise, process or feature changes, update the matching help article (search the wiki) in the same change. 70 public and 25 team articles shipped on October 18, 2026; `offers-and-free-months` added the same day, then a **Community management** topic with `community-plans-compared`, `discord-server-setup`, `discord-access` and `community-moderation` (75 public). Team article `team-outreach` added October 19, 2026 (26 team); `team-logins` October 20, 2026 (27 team); `referral-program` and `team-referrals` October 22, 2026 (76 public, 28 team); `free-website-checkup` the same day (77 public), and `team-outreach` now covers the checkup; `team-reviews` the same day (29 team).
 
 ### Outreach (cold email)
 The outreach agent finds prospects and the CRM emails them. Engine `app/outreach.php`, admin `outreach.php`, agent API `outreach-api.php`, unsubscribe page `u.php`, Team article `team-outreach`.
@@ -733,6 +736,14 @@ A public, automated check of any website's home page, at `syndicatemarketing.co/
 - **Leads:** “Email me this report” (`a=checkup-lead`, Turnstile, 6/hour) creates the contact and company (website filled in), a `new` deal with source **“Marketing site — checkup”** (reused for the same site), a follow-up task, the report summary on the timeline, an email to `shop_notify`, and one email per address per day to the visitor with the summary and link. Referral codes are attached like the contact form.
 - **Outreach:** `outreach-api.php?a=checkup` (`url`, `business`; 60 a day) returns the report link, score and findings for the first email. The first time someone opens a report the agent sent, the CRM adds a task. Agent reports are never reused for website visitors or the other way round.
 - **Retention:** reports nobody asked to have emailed are deleted after 180 days (`ck_cleanup()`, cron). Disclosed in the marketing privacy policy (`#checkup`).
+
+### Review requests
+One email asking for an honest Google review after a project is marked Complete. Engine `app/reviews.php`, staff page `reviews.php`, click link `rv.php`, Team article `team-reviews`.
+- **When:** `rv_cron()` (every cron run) schedules a `review_requests` row (one per project, `project_id` unique) for each newly finished project, due `review_delay_days` later, to the project's contact (or the company's first contact with an email). A project reopened before it goes out drops its row and is scheduled again when finished. Projects already finished when migration v26 ran were marked skipped.
+- **Skipped or held** (`rv_blocker()`): not linked to a client, hidden from the portal, not a Syndicate Marketing project (the link is that brand's Google profile), no email, on the outreach do-not-contact list (email or domain), the business already asked in the last year, a refund in the last 180 days, or an overdue invoice (waits 3 days at a time; skipped after a month). Sending one marks any other waiting request for the same business as asked.
+- **Honest by design:** everyone gets the same email and link (no “review gating”), nothing is offered in return (FTC 16 CFR 465, Google policy), no suggested wording. One ask per business per year; the email says so.
+- **Email** from hello@, signed Grady Davis, Syndicate Marketing; logged on the contact and company. `rv.php?t=` records `clicked_at` (mail scanners can open links too) and redirects to `review_url`.
+- **Staff:** the project page shows the request's state with Send now / Don’t ask; `reviews.php` lists everything and holds the settings.
 
 ### Referral program
 Anyone 18+ can join; new clients they send earn them a share of what those clients pay. Engine `app/referrals.php`, staff `referrals.php` / `referrer.php`, referrer page `refer.php`, sign-up `shop-api.php?a=refer` from `referrals.html`, help article `referral-program`, Team article `team-referrals`.
@@ -790,10 +801,11 @@ Each run:
 9. `care_cron()`: uptime checks every run; SSL daily; domain, security scan and PageSpeed weekly; backup-due, Care Plus tune-up and review-call tasks; monthly care reports on days 1–5
 10. `ads_cron()`: monthly ads report notes tasks and emails (days 1–5), one approval reminder after 2 days
 11. `outreach_cron()` (`app/outreach.php`): reads replies, bounces and opt-outs in the outreach mailbox, then sends what's due (weekdays 9–5, within the warm-up limit)
-12. `ck_cleanup()` (`app/checkup.php`): deletes free checkup reports older than 180 days that nobody asked to have emailed
-13. `backup_run()` (`app/backup.php`): once a day after 2 AM, the **nightly backup** (see “Backups” in §17)
-14. `ref_cron()` (`app/referrals.php`): records referral earnings from new paid invoices, releases 30-day holds, and on days 1–5 adds one “Pay referral earnings” task
-15. `pipeline_digest_send()` (`app/digest.php`): the **weekly summary**, emailed to `shop_notify` once a week on Monday from 7 AM (setting `digest_week` stops repeats). It lists tasks due or overdue, open deals with no activity in 14+ days, quotes waiting on the client (flags those expiring within 7 days), overdue invoices, unpaid checkouts from the last 7 days, calls booked this week, and the last 7 days in numbers (new leads, deals won, money in, visitors to the two campaign pages). Also includes outreach (conversations waiting on Grady, and the week's sends, replies and bounces). Sent on demand from the dashboard (“Email me this week’s summary”) or `php app/cli.php digest [send]` (without `send` it just prints).
+12. `rv_cron()` (`app/reviews.php`): schedules review requests for newly finished projects and sends those that are due
+13. `ck_cleanup()` (`app/checkup.php`): deletes free checkup reports older than 180 days that nobody asked to have emailed
+14. `backup_run()` (`app/backup.php`): once a day after 2 AM, the **nightly backup** (see “Backups” in §17)
+15. `ref_cron()` (`app/referrals.php`): records referral earnings from new paid invoices, releases 30-day holds, and on days 1–5 adds one “Pay referral earnings” task
+16. `pipeline_digest_send()` (`app/digest.php`): the **weekly summary**, emailed to `shop_notify` once a week on Monday from 7 AM (setting `digest_week` stops repeats). It lists tasks due or overdue, open deals with no activity in 14+ days, quotes waiting on the client (flags those expiring within 7 days), overdue invoices, unpaid checkouts from the last 7 days, calls booked this week, and the last 7 days in numbers (new leads, deals won, money in, visitors to the two campaign pages). Also includes outreach (conversations waiting on Grady, and the week's sends, replies and bounces). Sent on demand from the dashboard (“Email me this week’s summary”) or `php app/cli.php digest [send]` (without `send` it just prints).
 
 It prints a one-line summary (cPanel can email it to you; set the cron email to blank to silence it).
 
@@ -802,7 +814,7 @@ It prints a one-line summary (cPanel can email it to you; set the cron email to 
 ## 17. Databases and migrations
 
 ### CRM: `crm/storage/crm.sqlite`
-Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v26**.
+Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v27**.
 
 | Version | Adds |
 |---|---|
@@ -830,6 +842,7 @@ Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_versi
 | v22 | `users.passkeys` (JSON list of passkey public keys for two-step sign-in) |
 | v24 | Referral program: `referrers`, `referrer_links`, `referrals`, `referral_earnings`, `referral_payouts`; `orders.ref_code`, `bookings.ref_code`; settings `ref_on`, `ref_rate` (5), `ref_months` (12), `ref_hold_days` (30), `ref_min_cash` (25), `ref_task_month` |
 | v25 | Free website checkups: `checkups` (token, host, via site/agent/staff, label, score, result JSON, PageSpeed JSON, contact and deal once emailed, views); deal source “Marketing site — checkup” |
+| v26 | Review requests: `review_requests` (one per project: contact, email, status scheduled/sent/skipped, reason, token, due, sent, clicked); projects already finished are marked skipped; settings `review_on`, `review_url`, `review_delay_days` |
 | v18 | Community products (`com-discord-setup`, `com-audit`, `com-manage`, `com-manage-plus`, after the care plans) and the `add-presskit` add-on, from `catalog.json` |
 
 ### Site Stats: `crm/storage/analytics.sqlite`
@@ -1014,6 +1027,7 @@ All setup items below were done by October 18, 2026, except the ones still open.
 - [x] Read Grady's note on `gaming-communities.html` (kept as written, October 20, 2026)
 - [x] Write the Discord staff guide template the setup promises (done October 20, 2026: the doc “Discord Staff Guide — [Server name]”; copy it per client and fill the brackets)
 - [ ] Add the official brand logo files to `icons/brands/` (cards, Apple Pay, Google Pay, Stripe, Google, Meta, TikTok, Discord; list and sources in `icons/README.md`). Until then those spots show the name as text
+- [ ] Paste the Google review link (Google Business Profile → Ask for reviews) in CRM → Settings → Review requests; until then review requests wait
 - [ ] Set up a Discord account for Syndicate Marketing (with two-factor on) to use for client servers
 - [x] Outreach setup (done October 19, 2026): create outreach@syndicatemarketing.co in cPanel (SPF, DKIM and DMARC valid for syndicatemarketing.co), connect it in Inbox → Mailboxes, choose it and enter the postal address in CRM → Outreach, make an agent key and add it as a network secret for crm.stusyn.com on the scheduled tasks' cloud environment (network access must include crm.stusyn.com), then switch outreach on. Steps in the Team article `team-outreach`
 - [ ] Later: apply for API access (Google Ads developer token, Meta Marketing API, TikTok Marketing API) to replace CSV imports
@@ -1037,9 +1051,8 @@ All setup items below were done by October 18, 2026, except the ones still open.
 
 **Ideas we've discussed but not built** (don't build without a go-ahead)
 - Two-way Google Calendar sync for booking
-- Review requests after project completion (only real reviews, never seeded)
 
-(Automatic CRM backups were built October 22, 2026. The abandoned-cart email and monthly ads reports already exist: `shop_remind_abandoned()` and `ads_cron()`.)
+(Review requests were built October 22, 2026; add the Google review link in Settings → Review requests. Automatic CRM backups were built October 22, 2026. The abandoned-cart email and monthly ads reports already exist: `shop_remind_abandoned()` and `ads_cron()`.)
 
 ---
 
@@ -1069,7 +1082,8 @@ All setup items below were done by October 18, 2026, except the ones still open.
 | Consulting rate | $150/hour |
 | Exclude own visits | `?syn_ignore=1` |
 | Cart storage | `localStorage.sm_cart`, `sm_ref`, `sessionStorage.sm_src`, `sm_checkout`, `sm_order` |
-| CRM DB version | v25 (next: v26) |
+| CRM DB version | v26 (next: v27) |
+| Review requests | Settings → Review requests (`reviews.php`); one honest Google review ask per business a year, 3 days after Complete |
 | Free website checkup | `syndicatemarketing.co/checkup.html` · reports `checkup.html?r=TOKEN` · CRM → Checkups · agent `outreach-api.php?a=checkup` |
 | Referral program | 5% for 12 months, 30-day hold, credit or cash ($25+, W-9) · sign-up `syndicatemarketing.co/referrals.html` · referrer page `crm.stusyn.com/refer.php` · CRM → Referrals |
 | Gaming campaign | `syndicatemarketing.co/gaming-communities.html?t=studio\|creator\|esports\|business&b=Name&n=First` |
