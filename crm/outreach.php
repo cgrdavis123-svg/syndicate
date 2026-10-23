@@ -75,7 +75,7 @@ if (!$p):
     $interestedWk = (int)val("SELECT COUNT(*) FROM outreach_log WHERE kind = 'agent' AND body LIKE 'Interested%' AND created_at >= ?", [$week]);
     $boxes = mailboxes(); $key = $_SESSION['out_key'] ?? ''; unset($_SESSION['out_key']);
 ?>
-<div class="page-head"><div><h1>Outreach</h1><p class="muted small">Prospects the outreach agent researched and emailed from <?= e(out_mailbox()['email'] ?? 'your outreach mailbox') ?>. Follow-ups, opt-outs and bounces are handled automatically.</p></div>
+<div class="page-head"><div><h1>Outreach</h1><p class="small"><a href="previews.php">Homepage previews →</a> · <a href="checkups.php">Checkups →</a></p><p class="muted small">Prospects the outreach agent researched and emailed from <?= e(out_mailbox()['email'] ?? 'your outreach mailbox') ?>. Follow-ups, opt-outs and bounces are handled automatically.</p></div>
   <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="toggle"><button class="btn <?= $on ? 'ghost' : 'primary' ?> sm" type="submit"><?= $on ? 'Switch off' : 'Switch on' ?></button></form></div>
 <?php if (setting('outreach_paused') !== ''): ?><p class="notice bad"><?= e(setting('outreach_paused')) ?></p><?php endif; ?>
 <?php if (setting('outreach_error') !== ''): ?><p class="notice bad">Last send failed. <?= e(setting('outreach_error')) ?></p><?php endif; ?>

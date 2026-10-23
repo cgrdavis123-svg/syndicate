@@ -27,6 +27,8 @@ try { $refs = ref_cron(); if ($refs) $ads = trim($ads . ' · ' . $refs, ' ·'); 
 require_once __DIR__ . '/app/reviews.php';
 try { $rv = rv_cron(); if ($rv) $ads = trim($ads . ' · ' . $rv, ' ·'); } catch (Throwable $e) { $ads = trim($ads . ' · Review requests failed: ' . $e->getMessage(), ' ·'); }
 require_once __DIR__ . '/app/checkup.php';
+require_once __DIR__ . '/app/previews.php';
+try { pv_cleanup(); } catch (Throwable $e) { $ads = trim($ads . ' · Preview cleanup failed: ' . $e->getMessage(), ' ·'); }
 try { ck_cleanup(); } catch (Throwable $e) { $ads = trim($ads . ' · Checkup cleanup failed: ' . $e->getMessage(), ' ·'); }
 require_once __DIR__ . '/app/backup.php';
 try { $bk = backup_run(); if ($bk) $ads = trim($ads . ' · ' . $bk, ' ·'); } catch (Throwable $e) { $ads = trim($ads . ' · ' . backup_failed($e->getMessage()), ' ·'); }

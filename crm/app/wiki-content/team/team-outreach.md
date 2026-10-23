@@ -20,6 +20,14 @@ The agent can run the [free website checkup](https://syndicatemarketing.co/check
 
 When someone opens a report the agent sent, the CRM adds a task (“… opened the website checkup we sent”), since that’s a good moment to reply. Every report is listed in CRM → Checkups with its views.
 
+## Homepage previews
+
+For a business with no website, or one that needs rebuilding, the agent can make a **free homepage preview** (`outreach-api.php?a=preview`): a draft home page in one of six styles, built only from what they publish themselves (name, kind of business, town, phone, services, areas, hours). The first email links it as a concept we made for them. Every preview has a banner saying it’s a free concept and not their real site, isn’t in Google, expires after 30 days, and has a **Remove this preview** link. If they remove it and ask not to be contacted, they go on the do-not-contact list and their emails stop.
+
+When a real person opens it (not a link scanner, and not you while signed in), the CRM adds a task. See them all in **Outreach → Homepage previews**, where you can also extend one, take it down, or make one by hand before a call.
+
+Never add logos, photos, reviews, prices, awards or anything they haven’t said about themselves.
+
 ## The rules it can’t break
 
 - Every email has your name, the business postal address, a “reply no thanks” line and an unsubscribe link, plus the unsubscribe header mail apps use for their one-click button.

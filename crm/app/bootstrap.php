@@ -611,6 +611,16 @@ function migrate(PDO $pdo): void {
         $pdo->exec("ALTER TABLE checkups ADD COLUMN quote_id INTEGER REFERENCES quotes(id) ON DELETE SET NULL");
         $pdo->exec('PRAGMA user_version = 27');
     }
+    if ($v < 28) {
+        // v28: free homepage previews for prospects (app/previews.php, preview.php)
+        $pdo->exec("
+            CREATE TABLE previews (id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT NOT NULL UNIQUE, business TEXT NOT NULL, email TEXT NOT NULL DEFAULT '' COLLATE NOCASE,
+                website TEXT NOT NULL DEFAULT '', theme TEXT NOT NULL DEFAULT 'general', data TEXT NOT NULL DEFAULT '{}', via TEXT NOT NULL DEFAULT 'agent',
+                views INTEGER NOT NULL DEFAULT 0, viewed_at INTEGER, created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL, removed_at INTEGER, removed_by TEXT NOT NULL DEFAULT '');
+            CREATE INDEX idx_previews_email ON previews(email);
+        ");
+        $pdo->exec('PRAGMA user_version = 28');
+    }
 }
 function migrate_v1(PDO $pdo): void {
     $pdo->exec("

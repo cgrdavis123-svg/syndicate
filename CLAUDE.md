@@ -379,6 +379,7 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 | Contacts | `contacts.php`, `contact.php`, `contact-edit.php` | People, with a timeline of activities (note, call, email, meeting) |
 | Tasks | `tasks.php` | To-dos with due dates and priority, linked to records |
 | Projects | `projects.php`, `project.php`, `project-edit.php`, `project-file.php` | Client projects with steps, updates and files, shared with the client portal |
+| Homepage previews | `previews.php` (linked from Outreach) | Every free homepage concept made for a prospect: style, who made it, views (real browsers only), live/expired/removed; extend, take down, or make one by hand. See “Homepage previews” in §14 |
 | Outreach | `outreach.php` | Prospects the outreach agent found and emailed, replies waiting on you, settings (mailbox, postal address, warm-up), agent key, do-not-contact list; see “Outreach (cold email)” |
 | Store | `store.php`, `store-order.php`, `store-products.php`, `store-product.php`, `store-offers.php`, `store-settings.php` | Orders from syndicatemarketing.co, product/price editor, special offers, Stripe keys, promo/tax/notify settings |
 | Referrals | `referrals.php`, `referrer.php` | Everyone with a referral link (referrers and sales reps), what they brought in, earnings waiting/ready/paid, payouts, adding people by hand, tying a client who named a referrer, program settings; see “Referral program” |
@@ -408,7 +409,8 @@ The two gaming concepts (Fernhollow, Lampwright) back the gaming campaign and `c
 | `q.php` | Public proposal: view, choose options, accept, pay deposit, decline |
 | `book.php` | Public booking page (`?type=discovery-call`, `kickoff`, `tiktok-shop-consultation`) |
 | `care-report.php` | Monthly care report web page (signed link) |
-| `outreach-api.php` | Outreach agent API (key-protected: `Authorization: Bearer <key>` or `X-Api-Key`): `status`, `check`, `add`, `pending`, `respond`, `checkup` |
+| `outreach-api.php` | Outreach agent API (key-protected: `Authorization: Bearer <key>` or `X-Api-Key`): `status`, `check`, `add`, `pending`, `respond`, `checkup`, `preview` |
+| `preview.php` | A free homepage concept for a prospect (`?t=` token), its remove page (`&remove=1`) and view beacon (`&seen=1`, from `assets/js/pv.js`) |
 | `rv.php` | The link in a review request email: records that it was opened, then redirects to the Google review page (`?t=` token) |
 | `u.php` | Unsubscribe from outreach emails (`?t=` token; one-click POST from mail apps) |
 | `refer.php` | Referral partner's page (emailed one-time sign-in link, own `syn_ref` session): their link, referrals, earnings, payouts, payout choice |
@@ -717,7 +719,7 @@ A public help center for clients and staff-only Team docs, in the CRM's `wiki/` 
 - **Staff pages**: `team.php` (Team docs by topic, recent changes), `articles.php` (views and helpful %), `edit.php` (editor with preview, live tags help, every save keeps the previous version with one-click restore, reader comments), `insights.php` (questions to answer, searches with no answer, unhelpful articles, most read, top searches).
 - **Topics** (`WIKI_CATEGORIES` / `WIKI_TEAM_CATEGORIES`): Getting started, Websites, Paid ads, Community management, Website care, Site Stats, Client portal, Billing & plans, Audits & consulting, Policies & privacy, Glossary; Team: Running the business, Client work, Systems & setup, Rules & voice, When something breaks.
 - **Linked from**: the marketing site footer, the client portal and ads portal footers, and the CRM menu (“Wiki ↗”).
-- **Keep it true:** when a promise, process or feature changes, update the matching help article (search the wiki) in the same change. 70 public and 25 team articles shipped on October 18, 2026; `offers-and-free-months` added the same day, then a **Community management** topic with `community-plans-compared`, `discord-server-setup`, `discord-access` and `community-moderation` (75 public). Team article `team-outreach` added October 19, 2026 (26 team); `team-logins` October 20, 2026 (27 team); `referral-program` and `team-referrals` October 22, 2026 (76 public, 28 team); `free-website-checkup` the same day (77 public), and `team-outreach` now covers the checkup; `team-reviews` the same day (29 team).
+- **Keep it true:** when a promise, process or feature changes, update the matching help article (search the wiki) in the same change. 70 public and 25 team articles shipped on October 18, 2026; `offers-and-free-months` added the same day, then a **Community management** topic with `community-plans-compared`, `discord-server-setup`, `discord-access` and `community-moderation` (75 public). Team article `team-outreach` added October 19, 2026 (26 team); `team-logins` October 20, 2026 (27 team); `referral-program` and `team-referrals` October 22, 2026 (76 public, 28 team); `free-website-checkup` the same day (77 public), and `team-outreach` now covers the checkup and homepage previews; `team-reviews` the same day (29 team).
 
 ### Outreach (cold email)
 The outreach agent finds prospects and the CRM emails them. Engine `app/outreach.php`, admin `outreach.php`, agent API `outreach-api.php`, unsubscribe page `u.php`, Team article `team-outreach`.
@@ -738,6 +740,14 @@ A public, automated check of any website's home page, at `syndicatemarketing.co/
 - **Outreach:** `outreach-api.php?a=checkup` (`url`, `business`; 60 a day) returns the report link, score and findings for the first email. The first time someone opens a report the agent sent, the CRM adds a task. Agent reports are never reused for website visitors or the other way round.
 - **Draft quote** (`ck_quote()`, the button on `checkups.php` for reports someone asked to have emailed; the staff email links there): a draft quote for that contact on the checkup's deal, titled “Website fixes — host”, with the most useful fix included and the rest optional, each line saying which findings it fixes (a Starter rebuild replaces the site audit; never both care tiers). The intro names their score and worst problems and links the report. Deposit 100% under $500, else 50%. Opens in the quote editor to review before sending; the checkup keeps the link (`checkups.quote_id`), so the button then opens that quote.
 - **Retention:** reports nobody asked to have emailed are deleted after 180 days (`ck_cleanup()`, cron). Disclosed in the marketing privacy policy (`#checkup`).
+
+### Homepage previews
+A free draft home page for a prospect's business, made from their public details and linked in a cold email, so they can see what a new site could look like. Engine `app/previews.php`, public page `preview.php`, staff page `previews.php`, beacon `assets/js/pv.js`.
+- **Making one:** `outreach-api.php?a=preview` (40 a day) or by hand on `previews.php`. Input: business, niche, city, phone, email, website, contact_name, tagline, about, services[] (required unless a game studio), areas[], hours[], color, theme. The style (`PV_THEMES`: trades, food, health, shop, studio, general) is picked from the kind of business (`pv_theme_for()`). Refused for anyone on the do-not-contact list.
+- **Honest by design:** a banner on every page, always visible, says it's a free concept by Syndicate Marketing and not their real website, with “Make it your real site” (the Starter offer page, or the game studio page) and “Remove this preview”. Only details they publish themselves: no logos, photos, reviews, prices, awards or claims. The contact form is disabled and says so. The footer says it's a concept made from public details and not affiliated with or endorsed by them. `noindex` (header and meta), an unguessable link, live for 30 days (`PV_DAYS`; staff can extend), deleted 60 days after expiring (`pv_cleanup()`, cron).
+- **Remove:** the owner can take it down from the banner, with a box (ticked when we have their email) to stop all emails: it goes on the do-not-contact list, their outreach sequence stops, and `shop_notify` is emailed.
+- **Views** count only when a real browser shows the page for 3 seconds (`pv.js` beacon), never for link scanners or signed-in staff. The first view adds a task and logs it on the outreach prospect.
+- **In outreach:** the Syndicate prospecting task makes a preview for businesses with no site or one that needs a full redo, and links it as the first email's one link.
 
 ### Review requests
 One email asking for an honest Google review after a project is marked Complete. Engine `app/reviews.php`, staff page `reviews.php`, click link `rv.php`, Team article `team-reviews`.
@@ -803,11 +813,12 @@ Each run:
 9. `care_cron()`: uptime checks every run; SSL daily; domain, security scan and PageSpeed weekly; backup-due, Care Plus tune-up and review-call tasks; monthly care reports on days 1–5
 10. `ads_cron()`: monthly ads report notes tasks and emails (days 1–5), one approval reminder after 2 days
 11. `outreach_cron()` (`app/outreach.php`): reads replies, bounces and opt-outs in the outreach mailbox, then sends what's due (weekdays 9–5, within the warm-up limit)
-12. `rv_cron()` (`app/reviews.php`): schedules review requests for newly finished projects and sends those that are due
-13. `ck_cleanup()` (`app/checkup.php`): deletes free checkup reports older than 180 days that nobody asked to have emailed
-14. `backup_run()` (`app/backup.php`): once a day after 2 AM, the **nightly backup** (see “Backups” in §17)
-15. `ref_cron()` (`app/referrals.php`): records referral earnings from new paid invoices, releases 30-day holds, and on days 1–5 adds one “Pay referral earnings” task
-16. `pipeline_digest_send()` (`app/digest.php`): the **weekly summary**, emailed to `shop_notify` once a week on Monday from 7 AM (setting `digest_week` stops repeats). It lists tasks due or overdue, open deals with no activity in 14+ days, quotes waiting on the client (flags those expiring within 7 days), overdue invoices, unpaid checkouts from the last 7 days, calls booked this week, and the last 7 days in numbers (new leads, deals won, money in, visitors to the two campaign pages). Also includes outreach (conversations waiting on Grady, and the week's sends, replies and bounces). Sent on demand from the dashboard (“Email me this week’s summary”) or `php app/cli.php digest [send]` (without `send` it just prints).
+12. `pv_cleanup()` (`app/previews.php`): deletes homepage previews 60 days after they expire
+13. `rv_cron()` (`app/reviews.php`): schedules review requests for newly finished projects and sends those that are due
+14. `ck_cleanup()` (`app/checkup.php`): deletes free checkup reports older than 180 days that nobody asked to have emailed
+15. `backup_run()` (`app/backup.php`): once a day after 2 AM, the **nightly backup** (see “Backups” in §17)
+16. `ref_cron()` (`app/referrals.php`): records referral earnings from new paid invoices, releases 30-day holds, and on days 1–5 adds one “Pay referral earnings” task
+17. `pipeline_digest_send()` (`app/digest.php`): the **weekly summary**, emailed to `shop_notify` once a week on Monday from 7 AM (setting `digest_week` stops repeats). It lists tasks due or overdue, open deals with no activity in 14+ days, quotes waiting on the client (flags those expiring within 7 days), overdue invoices, unpaid checkouts from the last 7 days, calls booked this week, and the last 7 days in numbers (new leads, deals won, money in, visitors to the two campaign pages). Also includes outreach (conversations waiting on Grady, and the week's sends, replies and bounces). Sent on demand from the dashboard (“Email me this week’s summary”) or `php app/cli.php digest [send]` (without `send` it just prints).
 
 It prints a one-line summary (cPanel can email it to you; set the cron email to blank to silence it).
 
@@ -816,7 +827,7 @@ It prints a one-line summary (cPanel can email it to you; set the cron email to 
 ## 17. Databases and migrations
 
 ### CRM: `crm/storage/crm.sqlite`
-Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v28**.
+Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v29**.
 
 | Version | Adds |
 |---|---|
@@ -846,6 +857,7 @@ Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_versi
 | v25 | Free website checkups: `checkups` (token, host, via site/agent/staff, label, score, result JSON, PageSpeed JSON, contact and deal once emailed, views); deal source “Marketing site — checkup” |
 | v26 | Review requests: `review_requests` (one per project: contact, email, status scheduled/sent/skipped, reason, token, due, sent, clicked); projects already finished are marked skipped; settings `review_on`, `review_url`, `review_delay_days` |
 | v27 | `checkups.quote_id` (the quote drafted from a checkup) |
+| v28 | Homepage previews: `previews` (token, business, email, website, theme, data JSON, via agent/staff, views, viewed_at, expires_at, removed_at, removed_by) |
 | v18 | Community products (`com-discord-setup`, `com-audit`, `com-manage`, `com-manage-plus`, after the care plans) and the `add-presskit` add-on, from `catalog.json` |
 
 ### Site Stats: `crm/storage/analytics.sqlite`
@@ -1085,7 +1097,8 @@ All setup items below were done by October 18, 2026, except the ones still open.
 | Consulting rate | $150/hour |
 | Exclude own visits | `?syn_ignore=1` |
 | Cart storage | `localStorage.sm_cart`, `sm_ref`, `sessionStorage.sm_src`, `sm_checkout`, `sm_order` |
-| CRM DB version | v27 (next: v28) |
+| CRM DB version | v28 (next: v29) |
+| Homepage previews | `crm.stusyn.com/preview.php?t=TOKEN` · CRM → Outreach → Homepage previews · agent `outreach-api.php?a=preview` · 30 days, owner can remove |
 | Review requests | Settings → Review requests (`reviews.php`); one honest Google review ask per business a year, 3 days after Complete |
 | Free website checkup | `syndicatemarketing.co/checkup.html` · reports `checkup.html?r=TOKEN` · CRM → Checkups · agent `outreach-api.php?a=checkup` |
 | Referral program | 5% for 12 months, 30-day hold, credit or cash ($25+, W-9) · sign-up `syndicatemarketing.co/referrals.html` · referrer page `crm.stusyn.com/refer.php` · CRM → Referrals |
