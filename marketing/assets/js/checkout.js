@@ -61,7 +61,7 @@
   /* ---------- Summary sidebar ---------- */
   function paintSummary() {
     var ls = SM.lines(), t = SM.totals(ls), c = cats();
-    var perks = ['Kickoff call within one business day', 'Your own client portal for drafts, files and approvals'];
+    var perks = ['A short kickoff form or call, whichever you prefer', 'Your own client portal for drafts, files and approvals'];
     if (c.indexOf('website') !== -1 || c.indexOf('ads') !== -1 || ls.some(function (l) { return l.p.sku === 'svc-analytics'; })) perks.push('Live Site Stats dashboard included');
     if (t.trialEnds) perks.unshift('Free months until ' + SM.longDate(t.trialEnds) + '. We email you a week before the first charge');
     if (t.mo) perks.push('Monthly plans: cancel online any time');
@@ -159,7 +159,7 @@
     $('#coReview').innerHTML =
       '<div class="rev-block"><h4>Order <button type="button" data-goto="1">Edit</button></h4>' + ls.map(function (l) { return '<div style="display:flex;justify-content:space-between;gap:12px"><span>' + (l.qty > 1 ? l.qty + ' × ' : '') + C.esc(l.p.name) + '</span><b style="text-align:right">' + priceText(l) + '</b></div>'; }).join('') + '</div>' +
       '<div class="rev-block"><h4>You <button type="button" data-goto="2">Edit</button></h4><dl>' + dl(CUSTOMER) + '</dl></div>' +
-      '<div class="rev-block"><h4>Project <button type="button" data-goto="3">Edit</button></h4>' + (b ? '<dl>' + b + '</dl>' : '<p class="muted">No details yet. That’s fine, we’ll cover it on the kickoff call.</p>') + '</div>';
+      '<div class="rev-block"><h4>Project <button type="button" data-goto="3">Edit</button></h4>' + (b ? '<dl>' + b + '</dl>' : '<p class="muted">No details yet. That’s fine, we’ll cover it at kickoff.</p>') + '</div>';
   }
   function optLabel(name, value) {
     var el = $('input[name="' + name + '"][value="' + (w.CSS && CSS.escape ? CSS.escape(value) : value) + '"]', form);

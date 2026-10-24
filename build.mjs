@@ -11,7 +11,7 @@ const SRC = 'src', OUT = 'dist';
 const site = {
   email: 'hello@stusyn.com',
   careers: 'careers@stusyn.com',
-  legalUpdated: 'October 17, 2026',
+  legalUpdated: 'October 23, 2026',
   // Cookie-free site stats from the CRM (Site stats → stusyn.com → Settings & install code). Leave statsSite empty to turn them off.
   statsSrc: 'https://crm.stusyn.com/a.js',
   statsSite: 't4xJf60nIgv4',

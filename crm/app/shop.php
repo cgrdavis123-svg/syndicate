@@ -830,7 +830,7 @@ function shop_lead(array $in): array {
     if (mb_strlen($name) < 2) return ['ok' => false, 'error' => 'Enter your name.', 'field' => 'name'];
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return ['ok' => false, 'error' => 'Enter a valid email address.', 'field' => 'email'];
     if (mb_strlen($msg) < 10) return ['ok' => false, 'error' => 'Tell us a little more about what you need.', 'field' => 'message'];
-    $topics = ['website' => 'Website', 'ads' => 'Paid ads', 'analytics' => 'Analytics', 'other' => 'Something else'];
+    $topics = ['website' => 'Website', 'ads' => 'Paid ads', 'analytics' => 'Analytics', 'care' => 'Website care', 'community' => 'Discord community', 'other' => 'Something else'];
     $topic = $topics[$s('topic', 20)] ?? 'Something else';
     $budget = $s('budget', 60); $phone = $s('phone', 40);
     $contact = find_or_create_contact($name, $email, $biz);
@@ -853,7 +853,7 @@ function shop_lead(array $in): array {
     $rk = hash('sha256', 'lead-reply|' . $email);
     if (!val('SELECT 1 FROM attempts WHERE kind = ? AND ip_hash = ? AND created_at > ?', ['lead_reply', $rk, time() - 86400])) {
         q('INSERT INTO attempts (kind, ip_hash, created_at) VALUES (?,?,?)', ['lead_reply', $rk, time()]);
-        send_mail($email, 'We got your message — ' . SHOP_BRAND, "Hi there,\n\nThanks for reaching out to " . SHOP_BRAND . " about " . (["Website" => "a website", "Paid ads" => "paid ads", "Analytics" => "analytics"][$topic] ?? "your project") . ". We read every message and will reply within one business day.\n\nIf you didn’t send this, you can ignore this email.\n\n" . SHOP_BRAND . "\n" . setting('business_email'), setting('business_email'), SHOP_BRAND);
+        send_mail($email, 'We got your message — ' . SHOP_BRAND, "Hi there,\n\nThanks for reaching out to " . SHOP_BRAND . " about " . (["Website" => "a website", "Paid ads" => "paid ads", "Analytics" => "analytics", "Website care" => "website care", "Discord community" => "your Discord community"][$topic] ?? "your project") . ". We read every message and will reply within one business day.\n\nIf you didn’t send this, you can ignore this email.\n\n" . SHOP_BRAND . "\n" . setting('business_email'), setting('business_email'), SHOP_BRAND);
     }
     return ['ok' => true];
 }

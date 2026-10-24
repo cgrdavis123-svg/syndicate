@@ -211,7 +211,7 @@ No frameworks, no npm dependencies. Node 18+ locally.
 ### `build.mjs` (stusyn.com)
 - The `site` config object holds:
   - `email` hello@stusyn.com, `careers` careers@stusyn.com
-  - `legalUpdated` 'October 17, 2026'
+  - `legalUpdated` 'October 23, 2026'
   - `turnstileSite` (Turnstile site key, or `TURNSTILE_SITE` env; empty = no widget)
   - `statsSrc` `https://crm.stusyn.com/a.js`, `statsSite` `t4xJf60nIgv4`
   - `onePagePrice` '$350', `onePageAmount` '350'
@@ -279,7 +279,7 @@ No frameworks, no npm dependencies. Node 18+ locally.
 | `order-thanks.html` | Legacy thank-you page (kept for old links) |
 | `404.html` | Not found |
 
-Legal (`src/legal/`): `privacy.html`, `cookies.html`, `terms.html` (section 7 covers one-page website orders placed on syndicatemarketing.co), `applicant-privacy.html`, `accessibility.html`. Last updated **October 17, 2026** (Turnstile disclosure).
+Legal (`src/legal/`): `privacy.html`, `cookies.html`, `terms.html` (section 7 covers one-page website orders placed on syndicatemarketing.co), `applicant-privacy.html`, `accessibility.html`. Last updated **October 23, 2026** (consultations booked and paid online; kickoff form in the refund rule).
 
 ### PHP (`src/php/`)
 - `careers.php`: careers hub with open roles. `job.php`: role page plus application form (resume upload up to **8 MB**; PDF/DOC/DOCX).
@@ -329,7 +329,7 @@ Legal (`src/legal/`): `privacy.html`, `cookies.html`, `terms.html` (section 7 co
 | `pricing.html` | Every product and price, comparison table |
 | `work.html` + `work-<slug>.html` | Portfolio grid + case pages: real client sites first (labelled “Client site · Live”), then fictional concepts (labelled “Concept”) |
 | `about.html` | Who we are (part of Syndicate Holdings Group, Grady) |
-| `contact.html` | Lead form → CRM `shop-api.php?a=lead` (creates contact + deal + task) |
+| `contact.html` | Lead form → CRM `shop-api.php?a=lead` (creates contact + deal + task); topics: website, ads, analytics, care, community, other |
 | `checkout.html` | 4-step checkout (see below) |
 | `thank-you.html` | Polls the order API until Stripe confirms, then shows next steps and fires the `Purchase` goal once |
 | `starter-website-offer.html` | **Email-campaign landing page** for the `starter-500` offer (see “Special offers” in §10). `noindex`, not in the menu or sitemap; the header shows only the logo and cart. Personalize the link with `?b=Business+Name&n=FirstName` (shown as plain text). Prices, spots left and the end date refresh live from the CRM; when the offer ends or fills, the page says so and the buttons go to the regular packages. Styles `assets/css/offer.css`, script `assets/js/offer.js` (front matter `styles` / `scripts`) |

@@ -15,7 +15,7 @@
   }
   function per(p) { return p.interval === 'month' ? '/month' : (p.unit ? p.unit : 'one-time'); }
   function short(p) { return money(p.price) + (p.interval === 'month' ? '/mo' : '') + (p.unit ? ' <small>' + esc(p.unit) + '</small>' : ''); }
-  function needs(p) { return (p.requires || []).length ? 'Add-on for a ' + p.requires.map(function (r) { return REQ[r] || r; }).join(' or ') : ''; }
+  function needs(p) { return (p.requires || []).length ? 'Add-on for ' + (/^[aeiou]/i.test(REQ[p.requires[0]] || p.requires[0]) ? 'an ' : 'a ') + p.requires.map(function (r) { return REQ[r] || r; }).join(' or ') : ''; }
 
   // A full package card (websites, ads plans, care plan).
   function pkg(p) {
