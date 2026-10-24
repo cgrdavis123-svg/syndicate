@@ -56,13 +56,14 @@ This is the master reference for this repository (`syndicate`: stusyn.com, syndi
 `BRANDS` in the CRM is exactly: `Syndicate Marketing`, `Creator Ops Media`, `Syndicate Holdings Group`. Deals, invoices and quotes are tagged with one.
 
 ### Grady Davis (as told on the site)
-Sources: `src/pages/about.html`, `src/pages/grady.html`, and the resume (`tools/resume/`, output `src/static/grady-davis-resume.pdf`).
+Sources: `src/pages/about.html`, `src/pages/grady.html`, `src/pages/grady-davis.html` (employer page), and the resumes (`tools/resume/resume.html` → `src/static/grady-davis-resume.pdf` for clients; `tools/resume/resume-jobs.html` → `src/static/grady-davis-cv.pdf` for job applications).
+- **Headshot** (added October 23, 2026): `src/assets/img/grady-davis.jpg`/`.webp` (3:4) and `grady-davis-square.jpg`/`.webp` (face crop). Used on `grady.html`, the founder card on `about.html`, `grady-davis.html`, its share image `share-grady-davis.jpg` and both PDF resumes.
 - Retail and operations: Dollar General shift lead (2016); Circle K, ran a team of 25; security operations, about 50 officers.
 - American Credit Acceptance: grew the dealer network by about 10%.
 - General manager at 7-Eleven in Spartanburg (Feb 2023 – Aug 2025).
 - No college degree: never list one (removed October 23, 2026).
 - TikTok Shop: **$10M+ GMV** driven for brands including Intake Breathing and Rap Snacks; worked with TikTok/ByteDance in 2024–25.
-- **Still unconfirmed** and kept off the site until Grady confirms: the start years for brand work and a headshot. Don't invent these.
+- **Still unconfirmed** and kept off the site until Grady confirms: the start years for brand work. Don't invent these.
 
 ---
 
@@ -190,7 +191,7 @@ No frameworks, no npm dependencies. Node 18+ locally.
 | `npm run build:marketing` | Builds syndicatemarketing.co into `dist-marketing/` |
 | `npm run package:marketing` | Build + `syndicate-marketing-cpanel.zip` (includes `.htaccess`) |
 | `npm run package:crm` | Copies `crm/` to `dist-crm/`, adds fonts, zips `syndicate-crm-cpanel.zip` (skips DBs, sessions, backups, logs, mail, mail.key, portal uploads, `.mmdb`) |
-| `npm run resume:pdf` | Rebuilds the resume PDF (uses Playwright/Chromium) |
+| `npm run resume:pdf` | Rebuilds both resume PDFs: `grady-davis-resume.pdf` and the employer `grady-davis-cv.pdf` (uses Playwright/Chromium) |
 | `npm run demos` | Regenerates the portfolio demo sites in `marketing/work/` from `marketing/demos/*.mjs` (then run `node tools/work-shots.cjs`) |
 
 ### Automatic deploys (GitHub Actions → FTPS) — the usual way
@@ -270,6 +271,7 @@ No frameworks, no npm dependencies. Node 18+ locally.
 | `index.html` | Home: holding company intro, brands, proof ($10M+ GMV), CTAs |
 | `about.html` | Company story, founded 2019, Spartanburg, remote, not an incubator |
 | `grady.html` | Grady's profile/career, resume download |
+| `grady-davis.html` | **Employer resume & portfolio** for job applications (Grady sends the link): `noindex, nofollow` (meta and `X-Robots-Tag` in `src/php/.htaccess`), not in the menu, ⌘K list or sitemap. Hero with headshot, stats, what he brings, a detailed portfolio (Creator Ops, TikTok/ByteDance, Syndicate Marketing store, Kirby’s, CRM and portal, growth systems, community offer, stusyn.com, labelled concepts) with screenshots in `src/assets/img/portfolio/`, experience, skills, and the `grady-davis-cv.pdf` download. Only real results and live links; it says plainly that he builds with AI-assisted development |
 | `portfolio.html` | Our work and brand results |
 | `creator-ops-media.html` | TikTok Shop consulting, **$150/hr**, "Book a consultation" → CRM booking (`tiktok-shop-consultation`) |
 | `syndicate-marketing.html` | Summary of the agency, links to syndicatemarketing.co |
@@ -1106,7 +1108,7 @@ All setup items below were done by October 18, 2026, except the ones still open.
 
 **Content**
 - [x] Confirm the promises in §23
-- [x] Confirm resume items: 7-Eleven end date (Aug 2025), no degree, brand start years; add a headshot
+- [x] Confirm resume items: 7-Eleven end date (Aug 2025), no degree, brand start years; headshot added October 23, 2026
 
 **TikTok videos** (set up October 20, 2026; **paused October 23, 2026** at Grady's request, to save plan usage. Turn the “TikTok videos” scheduled task back on to restart)
 - A scheduled task makes two videos a day (about 6:45 AM and 5:45 PM ET) with `tools/video/` and sends each to Grady's phone with its caption, hashtags and first comment; Grady posts them at 7 AM and 7 PM. It follows `tools/video/PLAYBOOK.md` (rotation, research, hard rules). TikTok's API posts only privately until an app passes TikTok's audit, so posting stays manual.

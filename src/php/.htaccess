@@ -42,6 +42,13 @@ ErrorDocument 404 /404.html
   </IfModule>
 </FilesMatch>
 
+# The employer resume page and its PDF are shared by link only: keep them out of search
+<IfModule mod_headers.c>
+  <FilesMatch "^(grady-davis\.html|grady-davis-cv\.pdf)$">
+    Header set X-Robots-Tag "noindex, nofollow"
+  </FilesMatch>
+</IfModule>
+
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "SAMEORIGIN"
