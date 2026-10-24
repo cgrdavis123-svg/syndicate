@@ -59,10 +59,10 @@ This is the master reference for this repository (`syndicate`: stusyn.com, syndi
 Sources: `src/pages/about.html`, `src/pages/grady.html`, and the resume (`tools/resume/`, output `src/static/grady-davis-resume.pdf`).
 - Retail and operations: Dollar General shift lead (2016); Circle K, ran a team of 25; security operations, about 50 officers.
 - American Credit Acceptance: grew the dealer network by about 10%.
-- General manager in Spartanburg (2023).
-- BBA, Limestone University.
+- General manager at 7-Eleven in Spartanburg (Feb 2023 – Aug 2025).
+- No college degree: never list one (removed October 23, 2026).
 - TikTok Shop: **$10M+ GMV** driven for brands including Intake Breathing and Rap Snacks; worked with TikTok/ByteDance in 2024–25.
-- **Still unconfirmed** and kept off the site until Grady confirms: his 7-Eleven end date, the start years for brand work, his Limestone graduation year, and a headshot. Don't invent these.
+- **Still unconfirmed** and kept off the site until Grady confirms: the start years for brand work and a headshot. Don't invent these.
 
 ---
 
@@ -871,7 +871,7 @@ It prints a one-line summary (cPanel can email it to you; set the cron email to 
 ## 17. Databases and migrations
 
 ### CRM: `crm/storage/crm.sqlite`
-Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v32**.
+Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v33**.
 
 | Version | Adds |
 |---|---|
@@ -905,6 +905,7 @@ Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_versi
 | v29 | Creator partners: `referrers.discount`, `referrers.audience`, `orders.ref_discount`; settings `ref_creator_rate` (10), `ref_creator_discount` (10) |
 | v30 | Website drafts: `builds` (one per website project: sku, brief, add-ons, status, rounds, notes, publish, change notes, question, version, claim), `build_versions` (token, summary, to-confirm list, files, bytes, source zip, the approval post); setting `build_on` |
 | v31 | Online kickoff form: `builds.intake` (JSON answers), `intake_at`, `intake_call`, `intake_reminded_at` |
+| v32 | Starter website blurb now fits studios and creators too (only if unedited) |
 | v18 | Community products (`com-discord-setup`, `com-audit`, `com-manage`, `com-manage-plus`, after the care plans) and the `add-presskit` add-on, from `catalog.json` |
 
 ### Site Stats: `crm/storage/analytics.sqlite`
@@ -1105,7 +1106,7 @@ All setup items below were done by October 18, 2026, except the ones still open.
 
 **Content**
 - [x] Confirm the promises in §23
-- [x] Confirm resume items: 7-Eleven end date, brand start years, Limestone grad year; add a headshot
+- [x] Confirm resume items: 7-Eleven end date (Aug 2025), no degree, brand start years; add a headshot
 
 **TikTok videos** (set up October 20, 2026; **paused October 23, 2026** at Grady's request, to save plan usage. Turn the “TikTok videos” scheduled task back on to restart)
 - A scheduled task makes two videos a day (about 6:45 AM and 5:45 PM ET) with `tools/video/` and sends each to Grady's phone with its caption, hashtags and first comment; Grady posts them at 7 AM and 7 PM. It follows `tools/video/PLAYBOOK.md` (rotation, research, hard rules). TikTok's API posts only privately until an app passes TikTok's audit, so posting stays manual.
@@ -1144,7 +1145,7 @@ All setup items below were done by October 18, 2026, except the ones still open.
 | Consulting rate | $150/hour |
 | Exclude own visits | `?syn_ignore=1` |
 | Cart storage | `localStorage.sm_cart`, `sm_ref`, `sessionStorage.sm_src`, `sm_checkout`, `sm_order` |
-| CRM DB version | v31 (next: v32) |
+| CRM DB version | v32 (next: v33) |
 | Website drafts | CRM → Website drafts · previews `crm.stusyn.com/draft/TOKEN/` · agent `build-api.php` · scheduled task “Daily operations” |
 | Blog | `marketing/blog/` (rules in its README) · syndicatemarketing.co/blog · drafts from the Wednesday “Weekly growth” run, published on Grady's OK |
 | Homepage previews | `crm.stusyn.com/preview.php?t=TOKEN` · CRM → Outreach → Homepage previews · agent `outreach-api.php?a=preview` · 30 days, owner can remove |

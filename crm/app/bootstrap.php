@@ -661,6 +661,12 @@ function migrate(PDO $pdo): void {
         ");
         $pdo->exec('PRAGMA user_version = 31');
     }
+    if ($v < 32) {
+        // v32: the Starter website blurb also fits game studios and creators. Only if nobody has edited it.
+        $pdo->prepare("UPDATE products SET blurb = ?, updated_at = ? WHERE sku = 'web-starter' AND blurb = ?")
+            ->execute(['Up to five pages for a small business, studio or creator that needs to look established and get found.', date('Y-m-d H:i:s'), 'Up to five pages for a local business or service company that needs to look established and get found.']);
+        $pdo->exec('PRAGMA user_version = 32');
+    }
 }
 function migrate_v1(PDO $pdo): void {
     $pdo->exec("
