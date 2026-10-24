@@ -456,9 +456,13 @@ function shop_fulfil(array $o, array $s): void {
             q('UPDATE order_items SET project_id = ? WHERE id = ?', [$target, $it['id']]);
             foreach ($steps as $i => $step) q('INSERT INTO project_steps (project_id, title, position) VALUES (?,?,?)', [$target, mb_substr($step, 0, 200), 15 + $i]); // right after kickoff
         }
+        // A website order starts with the online kickoff form (builds.php adds a “Start here” post), so don't promise to call about scheduling.
+        $kickoffNext = isset($projects['website'])
+            ? ' Your next step is the kickoff form: it takes about 10 minutes, and we start your website as soon as it’s in. The link is on your website project and in your order email.'
+            : ' We’ll be in touch within one business day to schedule your kickoff call.';
         foreach ($projects['_all'] ?? [] as $pid) {
             q("INSERT INTO project_posts (project_id, author, kind, body, created_at) VALUES (?, 'staff', 'update', ?, ?)", [$pid,
-                "Welcome! Your order is confirmed and we’re getting started. We’ll be in touch within one business day to schedule your kickoff call.\n\nThis is where you’ll see progress, review drafts, approve work and send us files. You can upload your logo, photos and anything else you’d like us to use right here.", now()]);
+                "Welcome! Your order is confirmed and we’re getting started." . $kickoffNext . "\n\nThis is where you’ll see progress, review drafts, approve work and send us files. You can upload your logo, photos and anything else you’d like us to use right here.", now()]);
         }
 
         // Site Stats for the client's website

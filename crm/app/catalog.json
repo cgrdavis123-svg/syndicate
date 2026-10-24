@@ -556,6 +556,19 @@
       ]
     },
     {
+      "sku": "apple-biz",
+      "category": "addon",
+      "name": "Apple Business Profile Setup",
+      "price": 100,
+      "interval": "",
+      "blurb": "Your profile on Apple Maps and Siri set up or cleaned up, with photos, hours and services.",
+      "features": [],
+      "steps": [
+        "Apple Business Profile updated"
+      ],
+      "timeline_days": 14
+    },
+    {
       "sku": "add-presskit",
       "category": "addon",
       "name": "Press kit page",

@@ -3,6 +3,7 @@
 // the setup key plus the account email sends a one-time link to that inbox, so the key alone can't take over an account.
 require __DIR__ . '/app/bootstrap.php';
 header('Cache-Control: no-store');
+start_session(); // before any output: the form's CSRF token lives in the session, and hosts without output buffering can't start one later
 $has = (int)val('SELECT COUNT(*) FROM users') > 0;
 $reset = $has && get('reset') === '1';
 if ($has && !$reset) redirect('login.php');

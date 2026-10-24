@@ -536,6 +536,7 @@ Rules: one community management plan per order (setup and audit can be bought wi
 | `add-copy` | Copywriting | **$50 per page** | a website |
 | `add-logo` | Logo design | **$200** | — |
 | `add-gbp` | Google Business Profile setup | **$100** | — |
+| `apple-biz` | Apple Business Profile setup (Apple Maps and Siri: photos, hours, services). Added in CRM → Store → Products, synced to `catalog.json` October 24, 2026 | **$100** | — |
 | `add-domain-setup` | Domain, hosting & email setup on **Namecheap**, in an account in the client's name (domain registered or connected, hosting, SSL, business email with SPF/DKIM/DMARC, logins handed over). The client pays Namecheap directly; we never resell or mark up hosting or domains. **Free with the Business website and Online store** (`free_with` in `catalog.json` / the `products.free_with` column; costs $0 and is left off the Stripe charge when one of those is in the order). Checkout suggests it when they answer “No” or “Not sure” to having a domain | **$100** | a website |
 | `add-rush` | Rush delivery | **$150** | a website |
 | `add-presskit` | Press kit page (fact sheet, description, screenshots, trailer, logos, press contact) | **$150** | a website |

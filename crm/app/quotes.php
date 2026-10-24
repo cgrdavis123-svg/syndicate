@@ -215,8 +215,10 @@ function quote_fulfil(array $q, ?array $s, string $method = ''): void {
                 [($q['title'] ?: 'Project') . ' — ' . $client, $companyId, $q['contact_id'], $dealId, $brand, today(), $days ? date('Y-m-d', strtotime("+$days days")) : null, 'From proposal ' . $q['number'] . '.', now(), now()]);
             $projectId = (int)db()->lastInsertId();
             foreach ($steps ?: ['Kickoff call', 'Work in progress', 'Review and changes', 'Delivered'] as $i => $st) q('INSERT INTO project_steps (project_id, title, position) VALUES (?,?,?)', [$projectId, mb_substr($st, 0, 200), ($i + 1) * 10]);
+            // A website package starts with the online kickoff form (builds.php adds a “Start here” post below this one).
+            $hasWebsite = (bool)array_filter($items, function ($i) { return $i['product_id'] && val('SELECT category FROM products WHERE id = ?', [$i['product_id']]) === 'website'; });
             q("INSERT INTO project_posts (project_id, author, kind, body, created_at) VALUES (?, 'staff', 'update', ?, ?)", [$projectId,
-                "Welcome! Your proposal is accepted and we’re getting started. We’ll be in touch within one business day to schedule your kickoff call.\n\nThis is where you’ll see progress, review drafts, approve work and send us files.", now()]);
+                "Welcome! Your proposal is accepted and we’re getting started." . ($hasWebsite ? ' Your next step is the kickoff form: it takes about 10 minutes, and we start your website as soon as it’s in.' : ' We’ll be in touch within one business day to schedule your kickoff call.') . "\n\nThis is where you’ll see progress, review drafts, approve work and send us files.", now()]);
         }
 
         // Site Stats, when a website or ads product is part of it
