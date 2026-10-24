@@ -19,7 +19,8 @@
         "Their own story up front: one family, two generations, and you talk to a Kirby, not a call center."
       ],
       "built": ["One-page site, mobile first", "Free estimate form sent to their inbox", "Tap-to-call header on phones", "Services, how it works and service area", "Business details for Google: hours, area and services", "Site Stats for calls and estimate requests"],
-      "goals": ["Quote request", "Phone call"]
+      "goals": ["Quote request", "Phone call"],
+      "quote": { "text": "The website was set up quick and more than professional. Leads come straight to my phone and it’s never been easier to keep up with the quotes.", "by": "Kirby’s Home Improvement", "role": "Painting, drywall & home repairs, Spartanburg" }
     },
     {
       "slug": "hearth-and-grain",

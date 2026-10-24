@@ -761,3 +761,15 @@ p.alert { display: block; }
 .demo-link { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 24px 0 0; }
 .demo-link .muted { font-size: 14px; }
 .demo-link .btn { white-space: normal; height: auto; min-height: 50px; padding-block: 12px; max-width: 100%; text-align: left; }
+
+/* Client quote ({{quote:slug}} from work.json): a real client's own words. */
+.tquote { margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 30px 32px 26px; position: relative; box-shadow: var(--shadow); }
+.tquote::before { content: ""; position: absolute; left: 0; top: 26px; bottom: 26px; width: 4px; border-radius: 0 4px 4px 0; background: var(--lime-2); }
+.tquote blockquote { margin: 0; }
+.tquote blockquote p { font-family: var(--serif); font-style: italic; font-size: clamp(23px, 2.4vw, 31px); line-height: 1.28; letter-spacing: -.01em; color: var(--ink); }
+.tquote figcaption { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-top: 18px; font-size: 15px; }
+.tquote figcaption span { color: var(--muted); }
+.tquote figcaption .link { color: var(--ink-2); font-size: 14.5px; }
+.night .tquote { background: var(--night-2); border-color: var(--night-line); box-shadow: none; }
+.night .tquote blockquote p { color: var(--night-text); }
+@media (max-width: 640px) { .tquote { padding: 24px 22px 20px; } }

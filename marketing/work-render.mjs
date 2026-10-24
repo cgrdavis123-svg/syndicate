@@ -1,5 +1,6 @@
 // Renders the portfolio from marketing/work.json (real client sites and concept work): the grid of projects and one case-study page each,
 // including sample ads drawn in HTML the way they appear on Meta, Google and TikTok.
+import { quote } from './blog-render.mjs';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const nl = s => esc(s).replace(/\n/g, '<br>');
 const SERVICE = { website: 'Website', ads: 'Paid ads', analytics: 'Site Stats', community: 'Community' };
@@ -105,6 +106,13 @@ export function casePage(p, projects, products) {
     </div>
   </div>
 </section>
+
+${p.quote ? `<section class="section tight" style="padding-top:0">
+  <div class="wrap" style="max-width:900px">
+    <span class="eyebrow reveal" style="margin-bottom:16px"><span class="dot"></span>In their words</span>
+    ${quote(p, false)}
+  </div>
+</section>` : ''}
 
 ${p.ads ? `<section class="night band section" id="ads">
   <div class="wrap">

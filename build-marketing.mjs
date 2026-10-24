@@ -5,6 +5,7 @@ import { readFileSync, writeFileSync, readdirSync, mkdirSync, rmSync, cpSync } f
 import { join } from 'node:path';
 import { iconTags, reportMissing } from './tools/icons.mjs';
 import { grid as workGrid, casePage } from './marketing/work-render.mjs';
+import { loadPosts, indexPage as blogIndex, postPage, latest as latestPosts, feed as blogFeed, quote as clientQuote } from './marketing/blog-render.mjs';
 
 const SRC = 'marketing', OUT = 'dist-marketing';
 const site = {
@@ -134,6 +135,14 @@ ${body}
 const sitemap = [];
 // One case-study page per concept project.
 work.forEach(p => { const c = casePage(p, listed, products); pages.push([null, `work-${p.slug}.html`, c.front, c.body]); });
+// The blog: blog.html, one blog-<slug>.html per post (marketing/blog/), and blog.xml.
+const posts = loadPosts(join(SRC, 'blog'));
+{ const b = blogIndex(posts); pages.push([null, 'blog.html', b.front, b.body]); }
+posts.forEach(p => { const b = postPage(p, posts, site); pages.push([null, p.file, b.front, b.body]); });
+// {{blog:latest:3}} → the newest posts as cards; {{quote:slug}} → that client's own words from work.json
+const blogTags = html => html
+  .replace(/\{\{blog:latest:(\d+)\}\}/g, (m, n) => latestPosts(posts, Number(n)))
+  .replace(/\{\{quote:([a-z0-9-]+)(:nolink)?\}\}/g, (m, slug, nolink) => clientQuote(work.find(w => w.slug === slug), !nolink));
 
 for (const [srcPath, file, virtMeta, virtBody] of pages) {
   let meta, body;
@@ -145,6 +154,7 @@ for (const [srcPath, file, virtMeta, virtBody] of pages) {
   } else { meta = virtMeta; body = virtBody; }
   const name = file.replace(/\.html$/, '');
   const nav = meta.nav || name;
+  body = blogTags(body);
   body = body.replace(/\{\{work:grid\}\}/g, () => workGrid(listed, products)).replace(/\{\{work:grid:(\d+)\}\}/g, (m, n) => workGrid(listed.slice(0, Number(n)), products));
   body = productTags(meta.heading ? legalPage(meta, body) : body);
   let html = fill(layout, {
@@ -152,6 +162,7 @@ for (const [srcPath, file, virtMeta, virtBody] of pages) {
     title: productTags(fill(meta.title, site)),
     description: productTags(fill(meta.description, site)),
     path: name === 'index' ? '' : file,
+    ogType: meta.ogType || 'website',
     bodyClass: meta.bodyClass || '',
     stats,
     scripts: (meta.scripts || []).map(s => `<script src="assets/js/${s}" defer></script>`).join('\n'),
@@ -159,7 +170,7 @@ for (const [srcPath, file, virtMeta, virtBody] of pages) {
     content: fill(body, site),
   });
   if (meta.robots) html = html.replace('<meta name="theme-color"', `<meta name="robots" content="${meta.robots}">\n<meta name="theme-color"`);
-  else if (name !== '404') sitemap.push(name === 'index' ? '' : file);
+  else if (name !== '404') sitemap.push([name === 'index' ? '' : file, meta.lastmod]);
   if (name === '404') html = html.replace('<head>', '<head>\n<base href="/">');
   html = html.replaceAll(`data-nav="${nav}"`, `data-nav="${nav}" aria-current="page"`);
   html = iconTags(html);
@@ -169,8 +180,9 @@ for (const [srcPath, file, virtMeta, virtBody] of pages) {
 }
 
 const today = new Date().toISOString().slice(0, 10);
-writeFileSync(join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemap.map(p => `  <url><loc>${site.siteUrl}/${p}</loc><lastmod>${today}</lastmod></url>`).join('\n')}\n</urlset>\n`);
+writeFileSync(join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemap.map(([p, mod]) => `  <url><loc>${site.siteUrl}/${p}</loc><lastmod>${mod || today}</lastmod></url>`).join('\n')}\n</urlset>\n`);
+writeFileSync(join(OUT, 'blog.xml'), blogFeed(posts, site));
 writeFileSync(join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /checkout.html\nDisallow: /thank-you.html\n\nSitemap: ${site.siteUrl}/sitemap.xml\n`);
 writeFileSync(join(OUT, '.htaccess'), fill(readFileSync(join(SRC, 'htaccess.txt'), 'utf8'), site));
-console.log(`Built ${pages.length} pages → ${OUT}/ (${site.domain})`);
+console.log(`Built ${pages.length} pages → ${OUT}/ (${site.domain}), ${posts.filter(p => !p.draft).length} blog posts${posts.some(p => p.draft) ? ` + drafts: ${posts.filter(p => p.draft).map(p => p.file).join(', ')}` : ''}`);
 reportMissing('syndicatemarketing.co');
