@@ -558,7 +558,7 @@
     {
       "sku": "apple-biz",
       "category": "addon",
-      "name": "Apple Business Profile Setup",
+      "name": "Apple Business Profile setup",
       "price": 100,
       "interval": "",
       "blurb": "Your profile on Apple Maps and Siri set up or cleaned up, with photos, hours and services.",

@@ -876,7 +876,7 @@ It prints a one-line summary (cPanel can email it to you; set the cron email to 
 ## 17. Databases and migrations
 
 ### CRM: `crm/storage/crm.sqlite`
-Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v33**.
+Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_version`. **Never edit an old migration. Add a new version.** Next free version: **v34**.
 
 | Version | Adds |
 |---|---|
@@ -911,6 +911,7 @@ Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_versi
 | v30 | Website drafts: `builds` (one per website project: sku, brief, add-ons, status, rounds, notes, publish, change notes, question, version, claim), `build_versions` (token, summary, to-confirm list, files, bytes, source zip, the approval post); setting `build_on` |
 | v31 | Online kickoff form: `builds.intake` (JSON answers), `intake_at`, `intake_call`, `intake_reminded_at` |
 | v32 | Starter website blurb now fits studios and creators too (only if unedited) |
+| v33 | `apple-biz` renamed “Apple Business Profile setup” (sentence case; only if unedited) |
 | v18 | Community products (`com-discord-setup`, `com-audit`, `com-manage`, `com-manage-plus`, after the care plans) and the `add-presskit` add-on, from `catalog.json` |
 
 ### Site Stats: `crm/storage/analytics.sqlite`
@@ -1150,7 +1151,7 @@ All setup items below were done by October 18, 2026, except the ones still open.
 | Consulting rate | $150/hour |
 | Exclude own visits | `?syn_ignore=1` |
 | Cart storage | `localStorage.sm_cart`, `sm_ref`, `sessionStorage.sm_src`, `sm_checkout`, `sm_order` |
-| CRM DB version | v32 (next: v33) |
+| CRM DB version | v33 (next: v34) |
 | Website drafts | CRM → Website drafts · previews `crm.stusyn.com/draft/TOKEN/` · agent `build-api.php` · scheduled task “Daily operations” |
 | Blog | `marketing/blog/` (rules in its README) · syndicatemarketing.co/blog · drafts from the Wednesday “Weekly growth” run, published on Grady's OK |
 | Homepage previews | `crm.stusyn.com/preview.php?t=TOKEN` · CRM → Outreach → Homepage previews · agent `outreach-api.php?a=preview` · 30 days, owner can remove |

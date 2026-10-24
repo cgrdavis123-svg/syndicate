@@ -667,6 +667,12 @@ function migrate(PDO $pdo): void {
             ->execute(['Up to five pages for a small business, studio or creator that needs to look established and get found.', date('Y-m-d H:i:s'), 'Up to five pages for a local business or service company that needs to look established and get found.']);
         $pdo->exec('PRAGMA user_version = 32');
     }
+    if ($v < 33) {
+        // v33: “Apple Business Profile setup” in sentence case, like the Google one. Only if the name is still the original.
+        $pdo->prepare("UPDATE products SET name = ?, updated_at = ? WHERE sku = 'apple-biz' AND name = ?")
+            ->execute(['Apple Business Profile setup', date('Y-m-d H:i:s'), 'Apple Business Profile Setup']);
+        $pdo->exec('PRAGMA user_version = 33');
+    }
 }
 function migrate_v1(PDO $pdo): void {
     $pdo->exec("
