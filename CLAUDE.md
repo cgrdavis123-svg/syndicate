@@ -289,14 +289,16 @@ Legal (`src/legal/`): `privacy.html`, `cookies.html`, `terms.html` (section 7 co
 - **Commissioned Sales Rep** (Syndicate Marketing, remote US, 1099 contractor, added by migration v3 on October 20, 2026): finds small businesses in our niches (local trades and services; gaming studios, creators, esports, gaming businesses) and sends them to packages, discovery calls or quotes. Pay: **10%** of what each client they bring in pays us: one-off purchases in full, monthly plans for the client's first 12 months; ad spend and refunds excluded. No base pay, quota or fee. Must follow our outreach rules (honest claims, real prices, opt-outs, CAN-SPAM). Tracked and paid through the referral program (see “Referral program” in §14): add each rep in CRM → Referrals as a Commissioned sales rep (10%, cash).
 - `contact.php`: contact form handler (rate-limited by `attempts`, honeypot, saves to `messages`, emails hello@). The CRM imports these messages as leads (see §8, "Website sync").
 - `sitemap.php`: dynamic sitemap including open jobs.
+- **Team onboarding portal** (`team/`, engine `app/team.php`, layout `app/views/team-top.php`; added October 24, 2026): stusyn.com/team/ for hired contractors. Members sign in with a one-time emailed link (`team/login.php` → `team/auth.php`, which spends the link only when they press the button, so mail scanners can't use it up; invites last 7 days, sign-in links 30 minutes; no passwords). Each role gets a checklist (`team_steps_for()`): e-sign the agreement (legal name and mailing address captured), the outreach rules (Exhibit B, reps only) and the Team Handbook (`team/sign.php`: typed name + e-sign consent, saved with the statement, doc link, time, hashed IP and browser, receipt emailed); tick the role guide and two-step sign-in; choose ACH or PayPal (never account numbers); and steps Grady marks done (countersign, W-9 received, referral link, welcome call; members can say “I've sent it”, which emails `contact_to` and badges Hiring HQ → Team). Reps see their referral link and sales tools; specialists see CRM, ads and wiki links. Status Leaving adds offboarding steps (final pay, handover, access removed, signed data-deletion statement, profiles cleaned); Left turns sign-in off. W-9s are never uploaded: they go to hello@ as password-protected PDFs. The five doc links (agreement templates, handbook, playbook, role descriptions; the Claude docs from October 24, 2026) are set in Hiring HQ → Team, with an optional per-member agreement link. `noindex` and `no-store` on every page.
 - **Removed:** `order.php` (the old $500 Stripe payment link flow). `.htaccess` 301-redirects it to `/one-page-website.html#order`.
-- Database tables (`storage/*.sqlite`): `admins`, `jobs`, `applications`, `messages`, `attempts`.
+- Database tables (`storage/*.sqlite`): `admins`, `jobs`, `applications`, `messages`, `attempts`, `team_members`, `team_links`, `team_steps`, `team_settings`.
 
 ### Hiring HQ (`/admin/`)
 - `index.php` dashboard
 - `applications.php`, `application.php` (review, status, notes, resume)
 - `jobs.php`, `job-edit.php`
 - `messages.php` (contact form inbox)
+- `team.php`, `member.php` (Team: add and invite members, document links, each member's checklist with signature records, sign-in links, status and offboarding)
 - `account.php`, `export.php` (CSV), `resume.php` (secure resume download)
 - `login.php`, `logout.php`, `setup.php`
 - Applicants get a receipt from careers@. Retention: **730 days**, then data is purged.
@@ -914,7 +916,7 @@ Migrations run automatically in `crm/app/bootstrap.php` using `PRAGMA user_versi
 Separate file so heavy analytics writes never slow down the CRM.
 
 ### Main site: `src/php/storage/` (on the server, `public_html/storage/`)
-`admins`, `jobs`, `applications`, `messages`, `attempts`. Resumes in `storage/resumes/`. Schema version v3 (v2: two-step sign-in columns on `admins`; v3: the Commissioned Sales Rep job).
+`admins`, `jobs`, `applications`, `messages`, `attempts`, `team_members`, `team_links`, `team_steps`, `team_settings`. Resumes in `storage/resumes/`. Schema version v4 (v2: two-step sign-in columns on `admins`; v3: the Commissioned Sales Rep job; v4: the team onboarding portal).
 
 ### Backups
 - **Nightly, automatic** (`app/backup.php`, from cron after 2 AM, once a day): `crm.sqlite`, `analytics.sqlite`, `mail.key`, `totp.key`, the stusyn.com database (`site_db_path()`) and its `totp.key` go into `crm/storage/backups/YYYY-MM-DD/` with a `manifest.json` (sizes, SHA-256). Databases are copied with `VACUUM INTO` (WAL-safe; falls back to copy + `-wal` on old SQLite) and must pass `PRAGMA integrity_check`. Built in a temp folder and swapped in, so a failed run never replaces a good one. Keeps `BACKUP_KEEP` (14) days; checks free disk space first.

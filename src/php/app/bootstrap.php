@@ -209,6 +209,49 @@ function migrate(PDO $pdo): void {
         }
         $pdo->exec('PRAGMA user_version = 3');
     }
+    if ($v < 4) {
+        // v4: team onboarding portal (stusyn.com/team/): members, one-time sign-in links, checklist steps, doc links.
+        $pdo->exec("
+            CREATE TABLE IF NOT EXISTS team_members (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                role TEXT NOT NULL DEFAULT 'sales_rep',
+                status TEXT NOT NULL DEFAULT 'onboarding',
+                start_date TEXT NOT NULL DEFAULT '',
+                end_date TEXT NOT NULL DEFAULT '',
+                ref_link TEXT NOT NULL DEFAULT '',
+                agreement_url TEXT NOT NULL DEFAULT '',
+                pay_method TEXT NOT NULL DEFAULT '',
+                notes TEXT NOT NULL DEFAULT '',
+                invited_at TEXT,
+                last_seen_at TEXT,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS team_links (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                member_id INTEGER NOT NULL REFERENCES team_members(id) ON DELETE CASCADE,
+                token_hash TEXT NOT NULL UNIQUE,
+                expires_at INTEGER NOT NULL,
+                used_at INTEGER
+            );
+            CREATE TABLE IF NOT EXISTS team_steps (
+                member_id INTEGER NOT NULL REFERENCES team_members(id) ON DELETE CASCADE,
+                step TEXT NOT NULL,
+                done_at TEXT,
+                done_by TEXT NOT NULL DEFAULT '',
+                nudged_at TEXT,
+                data TEXT NOT NULL DEFAULT '{}',
+                PRIMARY KEY (member_id, step)
+            );
+            CREATE TABLE IF NOT EXISTS team_settings (
+                k TEXT PRIMARY KEY,
+                v TEXT NOT NULL DEFAULT ''
+            );
+        ");
+        $pdo->exec('PRAGMA user_version = 4');
+    }
 }
 
 /* ---------- Jobs ---------- */

@@ -1395,3 +1395,51 @@ em.up { color: #3ff0a0; }
 .cv-photo { width: 76px; height: 76px; border-radius: 14px; object-fit: cover; border: 1px solid rgba(198,255,61,.35); display: block; }
 .rs-bring .tag, .rs-big .tag, .rs-concepts .tag { justify-self: start; }
 @media (max-width: 600px) { .rs-photo { max-width: 250px; } }
+
+/* Team portal (stusyn.com/team/) and Hiring HQ → Team */
+.t-meter { width: 220px; max-width: 100%; height: 8px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid var(--line); overflow: hidden; }
+.t-meter span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), #e8ffb0); }
+.t-meter.sm { width: 110px; height: 6px; display: inline-block; vertical-align: middle; margin-right: 8px; }
+.t-steps { list-style: none; margin: 0; padding: 0; display: grid; }
+.t-step { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 14px; align-items: start; padding: 16px 0; border-top: 1px solid var(--line); scroll-margin-top: 24px; }
+.t-steps .t-step:first-child { border-top: 0; padding-top: 4px; }
+.t-dot { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--line-2); display: grid; place-items: center; margin-top: 1px; }
+.t-dot svg { width: 13px; height: 13px; }
+.t-step.done .t-dot { background: var(--accent); border-color: var(--accent); color: #0b0d10; }
+.t-step.nudged .t-dot { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(198,255,61,.15); }
+.t-step.done .t-body > b { color: var(--muted); }
+.t-body > b { font-weight: 600; font-size: 15.5px; letter-spacing: -.01em; }
+.t-body p { margin: 6px 0 0; font-size: 14px; color: var(--muted); line-height: 1.5; }
+.t-body .tag { vertical-align: 2px; margin-left: 6px; }
+.t-small { font-size: 12.5px !important; }
+.t-doc { color: var(--text); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; font-size: 14px; }
+.t-doc:hover { text-decoration-color: var(--accent); }
+.t-act { display: flex; align-items: center; justify-content: flex-end; min-width: 0; }
+.t-act form { margin: 0; }
+.t-pay { display: flex; gap: 8px; align-items: center; }
+.t-pay select { height: 36px; }
+.t-phase { margin: 18px 0 2px; padding-top: 16px; border-top: 1px solid var(--line-2); font-size: 13px; font-family: var(--mono); font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+.t-nudge { color: var(--accent); font-weight: 500; }
+.t-copy { display: flex; gap: 8px; }
+.t-copy input { flex: 1; min-width: 0; font-family: var(--mono); font-size: 13px; }
+.t-sign { max-width: 760px; }
+.t-docbox { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px; border-radius: 12px; border: 1px solid var(--line-2); background: rgba(255,255,255,.02); }
+.t-docbox .grow { display: grid; gap: 2px; min-width: 180px; }
+.t-docbox small { font-size: 13px; }
+.t-fs { border: 0; margin: 0; padding: 0; display: grid; gap: 14px; min-width: 0; }
+.t-fs legend { padding: 0; margin-bottom: 4px; font-weight: 600; font-size: 15px; }
+.t-cb { display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: start; font-size: 14px; color: var(--muted); line-height: 1.5; cursor: pointer; }
+.t-cb input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); }
+.t-sig { font-family: var(--serif); font-style: italic; font-size: 22px !important; }
+.t-sigfacts { margin-top: 10px; }
+.t-sigfacts div { grid-template-columns: 130px 1fr; font-size: 13px; padding: 7px 0; }
+.t-s-onboarding { --c: #c6ff3d; } .t-s-active { --c: #3ff0a0; } .t-s-leaving { --c: #ffb36b; } .t-s-left { --c: #8a929c; }
+@media (max-width: 700px) {
+  .t-step { grid-template-columns: 26px minmax(0, 1fr); }
+  .t-act { grid-column: 2; justify-content: flex-start; }
+  .t-meter { width: 100%; }
+  .t-sigfacts div { grid-template-columns: 1fr; gap: 2px; }
+}
+.t-pay select { padding: 0 12px; border-radius: 10px; border: 1px solid var(--line-2); background: rgba(0,0,0,.25); color: var(--text); font: inherit; font-size: 14px; }
+.panel .form-grid { display: grid; }
+@media (max-width: 700px) { .panel .form-grid { grid-template-columns: 1fr; } }

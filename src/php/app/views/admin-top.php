@@ -3,11 +3,13 @@
 $GLOBALS['ADMIN_SHELL'] = (bool)$admin;
 $unread = $admin ? (int)db()->query('SELECT COUNT(*) FROM messages WHERE is_read = 0')->fetchColumn() : 0;
 $newApps = $admin ? (int)db()->query("SELECT COUNT(*) FROM applications WHERE status = 'new'")->fetchColumn() : 0;
+$teamWaiting = $admin ? (int)db()->query("SELECT COUNT(*) FROM team_steps s JOIN team_members m ON m.id = s.member_id WHERE s.nudged_at IS NOT NULL AND s.done_at IS NULL AND m.status != 'left'")->fetchColumn() : 0;
 $nav = [
     'dashboard' => ['admin/', 'Dashboard', '<path d="M3 3h6v8H3zM11 3h6v5h-6zM11 10h6v7h-6zM3 13h6v4H3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>'],
     'applications' => ['admin/applications.php', 'Applicants', '<circle cx="10" cy="7" r="3.2" stroke="currentColor" stroke-width="1.5"/><path d="M3.5 17c.8-3 3.3-4.6 6.5-4.6s5.7 1.6 6.5 4.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>', $newApps],
     'jobs' => ['admin/jobs.php', 'Jobs', '<rect x="3" y="6" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 6V4.5A1.5 1.5 0 0 1 9 3h2a1.5 1.5 0 0 1 1.5 1.5V6" stroke="currentColor" stroke-width="1.5"/>'],
     'messages' => ['admin/messages.php', 'Messages', '<path d="M3 5h14v9H8l-4 3v-3H3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>', $unread],
+    'team' => ['admin/team.php', 'Team', '<circle cx="7.5" cy="7" r="2.6" stroke="currentColor" stroke-width="1.5"/><circle cx="13.8" cy="8" r="2.1" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 16.5c.6-2.6 2.6-4 5-4s4.4 1.4 5 4M12.5 12.7c2.3-.4 4.3.8 5 3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>', $teamWaiting],
     'account' => ['admin/account.php', 'Account', '<circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>'],
 ];
 ?><!doctype html>
