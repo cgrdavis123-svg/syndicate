@@ -278,6 +278,7 @@ No frameworks, no npm dependencies. Node 18+ locally.
 | `one-page-website.html` | **$350** one-page website offer; "Order" button → syndicatemarketing.co checkout with `?add=web-one-page` |
 | `ideas.html` | Ideas / insights page |
 | `contact.html` | Contact form (posts to `contact.php`) |
+| `links.html` | **TikTok link-in-bio page** at `stusyn.com/links` (rewrite in `src/php/.htaccess`; added October 24, 2026). `noindex, follow`, not in the menu, ⌘K list or sitemap; the site nav and footer are hidden (`bodyClass` `lb`), the cookie notice stays. Groups: Start here (free checkup, starter offer, discovery call), What we do, Our work (Kirby’s with their quote word for word, blog), Work with us (sales rep, creators, referrals). Every outbound link carries `utm_source=tiktok&utm_medium=social&utm_campaign=<page>`, so Site Stats on both sites shows which button pulled. Take the starter offer button off after November 30, 2026 |
 | `order-thanks.html` | Legacy thank-you page (kept for old links) |
 | `404.html` | Not found |
 

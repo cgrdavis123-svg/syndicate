@@ -22,6 +22,8 @@ ErrorDocument 404 /404.html
   RewriteRule ^careers/?$ /careers.php [L,R=301,QSA]
   RewriteRule ^careers/([a-z0-9-]+)/?$ /job.php?slug=$1 [L,R=301,QSA]
   RewriteRule ^careers\.html$ /careers.php [L,R=301]
+  # TikTok link-in-bio page: stusyn.com/links (served without the .html)
+  RewriteRule ^links/?$ /links.html [L]
   RewriteRule ^how-we-build\.html$ /ideas.html [L,R=301]
   RewriteRule ^sitemap\.xml$ sitemap.php [L]
   # One-page website orders moved to the Syndicate Marketing store
